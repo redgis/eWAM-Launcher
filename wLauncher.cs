@@ -8,24 +8,31 @@ using System.Xml;
 
 namespace eWamLauncher
 {
-    [DataContract(Name = "Launcher", Namespace = "http://www.wyde.com/")]
-    public class wLauncher
-    {
-        [DataMember()]
-        public string name;
+   [DataContract(Name = "Launcher", Namespace = "http://www.wyde.com/")]
+   public class wLauncher : ICloneable
+   {
+      [DataMember()]
+      public string name { get; set; }
 
-        [DataMember()]
-        public string program;
+      [DataMember()]
+      public string program { get; set; }
 
-        [DataMember()]
-        public string arguments;
+      [DataMember()]
+      public string arguments { get; set; }
 
-        [DataMember()]
-        public string binariesSet;
+      [DataMember()]
+      public string binariesSet { get; set; }
 
-        public wLauncher()
-        {
-            this.binariesSet = "";
-        }
-    }
+      public wLauncher()
+      {
+         this.binariesSet = "";
+      }
+
+      public object Clone()
+      {
+         return this.MemberwiseClone();
+      }
+
+
+   }
 }

@@ -11,7 +11,7 @@ namespace eWamLauncher
 
         void importEnvironmentVariables(string path, wEnvironment environment);
 
-        void importLaunches(string path, wEnvironment environment);
+        void importLaunchers(string path, wEnvironment environment);
 
         void importBinaries(string path, wEnvironment environment);
     }
