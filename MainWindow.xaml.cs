@@ -16,10 +16,11 @@ namespace eWamLauncher
    /// </summary>
    public partial class MainWindow : MetroWindow
    {
-      public ObservableCollection<wEnvironment> environments { get; set; } = new ObservableCollection<wEnvironment>();
+      public ObservableCollection<wEnvironment> environments { get; set; }
 
       public MainWindow()
       {
+         this.environments = new ObservableCollection<wEnvironment>();
 
          string defaultXMLSettings = Environment.ExpandEnvironmentVariables("%APPDATA%\\ewamLauncher.config.xml");
          string defaultJSONSettings = Environment.ExpandEnvironmentVariables("%APPDATA%\\ewamLauncher.config.json");

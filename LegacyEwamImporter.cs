@@ -48,8 +48,8 @@ namespace eWamLauncher
          // Look for binaries
          try
          {
-            //string wydeRoot = this.environmentVariables["WYDE-ROOT"];
-            string wydeRoot = "D:\\Desktop\\Work\\Tiny Projects\\eWAM_Tools\\Dummy_eWAM\\eWAM_6.1.5.11_x64";
+            string wydeRoot = this.environmentVariables["WYDE-ROOT"];
+            //string wydeRoot = "D:\\Desktop\\Work\\Tiny Projects\\eWAM_Tools\\Dummy_eWAM\\eWAM_6.1.5.11_x64";
             //string wydeRoot = "D:\\wyde\\eWAM\\eWAM-Developper-6.1.5.x64\\6.1.5.11";
             this.importBinaries(wydeRoot, environment);
          }
