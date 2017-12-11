@@ -140,7 +140,7 @@
                      <Label Content="Program: " Grid.Column="0" Grid.Row="1"/>
                      <TextBox Text="{Binding SelectedItem.program, ElementName=lbLauncherList, Mode=TwoWay}" Grid.Column="1" Grid.Row="1" Margin="5"/>
                      <Label Content="Arguments: " Grid.Column="0" Grid.Row="2"/>
-                     <TextBox Text="{Binding SelectedItem.arguments, ElementName=lbLauncherList, Mode=TwoWay}" Grid.Column="1" Grid.Row="2" Margin="5"/>
+                     <TextBox Text="{Binding SelectedItem.arguments, ElementName=lbLauncherList, Mode=TwoWay}" TextWrapping="Wrap" Grid.Column="1" Grid.Row="2" Margin="5"/>
                      <Label Content="Binary set: " Grid.Column="0" Grid.Row="3"/>
                      <ComboBox ItemsSource="{Binding SelectedItem.binariesSets, ElementName=lbEnvList}"
                                DisplayMemberPath="name"

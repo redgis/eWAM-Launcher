@@ -48,7 +48,14 @@ namespace eWamLauncher
          // Look for binaries
          try
          {
-            string wydeRoot = this.environmentVariables["WYDE-ROOT"];
+            string wydeRoot = "";
+            foreach (wEnvironmentVariable variable in environment.environmentVariables)
+            {
+               if (variable.name == "WYDE-ROOT")
+               {
+                  wydeRoot = variable.value;
+               }
+            }
             //string wydeRoot = "D:\\Desktop\\Work\\Tiny Projects\\eWAM_Tools\\Dummy_eWAM\\eWAM_6.1.5.11_x64";
             //string wydeRoot = "D:\\wyde\\eWAM\\eWAM-Developper-6.1.5.x64\\6.1.5.11";
             this.importBinaries(wydeRoot, environment);
@@ -107,11 +114,9 @@ namespace eWamLauncher
                      if (match.Groups["comment"].Value == "")
                      {
                         // Add entries to environment variables list
-                        environment.environmentVariables.Add(new wEnvironmentVariable(match.Groups["key"].Value.ToUpper(), match.Groups["value"].Value));
-                        //if (!environment.environmentVariables.ContainsKey(match.Groups["key"].Value))
-                        //{
-                        //    environment.environmentVariables.Add(match.Groups["key"].Value.ToUpper(), match.Groups["value"].Value);
-                        //}
+                        environment.environmentVariables.Add(
+                           new wEnvironmentVariable(
+                              match.Groups["key"].Value.ToUpper(), match.Groups["value"].Value));
                      }
                   }
                }

@@ -141,7 +141,6 @@ namespace eWamLauncher
 
          OpenFileDialog fileBrowser = new OpenFileDialog();
 
-         fileBrowser.InitialDirectory = "D:\\";
          fileBrowser.Filter = "TGV Base1|W001001.tgv|Any TGV|*.tgv";
          fileBrowser.FilterIndex = 1;
          fileBrowser.RestoreDirectory = true;
