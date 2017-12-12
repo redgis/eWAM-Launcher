@@ -17,6 +17,7 @@ Todo :
    
 - Auto updater using Squirrel
 - Process monitor looking up possible launchers working
+   => use WYDE-TGV env var to find matches
 - Give information about eWAM binaries versions / and if it is up to date
 - Allow binaries updating
 - Shouldn't we simply have a pool of eWAMs referenced by the various environments ?

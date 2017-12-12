@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Collections.ObjectModel;
 
 namespace eWamLauncher
 {
@@ -48,16 +49,7 @@ namespace eWamLauncher
          // Look for binaries
          try
          {
-            string wydeRoot = "";
-            foreach (wEnvironmentVariable variable in environment.environmentVariables)
-            {
-               if (variable.name == "WYDE-ROOT")
-               {
-                  wydeRoot = variable.value;
-               }
-            }
-            //string wydeRoot = "D:\\Desktop\\Work\\Tiny Projects\\eWAM_Tools\\Dummy_eWAM\\eWAM_6.1.5.11_x64";
-            //string wydeRoot = "D:\\wyde\\eWAM\\eWAM-Developper-6.1.5.x64\\6.1.5.11";
+            string wydeRoot = environment.environmentVariables["WYDE-ROOT"].value;
             this.importBinaries(wydeRoot, environment);
          }
          catch (DirectoryNotFoundException)
@@ -81,11 +73,46 @@ namespace eWamLauncher
 
       }
 
+      private string resolveVariable(string name, ObservableDictionary<string, wEnvVariableValue> variables)
+      {
+         string result = Environment.GetEnvironmentVariable(name);
+
+         // If not found, look in provided environment variables
+         if (result == null)
+         {
+            if (variables.ContainsKey(name))
+            {
+               string pattern = @"%(?<variable>[^=%]+)%";
+               string input = variables[name].value;
+
+               Regex rgx = new Regex(pattern);
+               MatchCollection matches = rgx.Matches(input);
+               if (matches.Count > 0)
+               {
+                  foreach (Match match in matches)
+                  {
+                     if (match.Groups["variable"].Value != "")
+                     {
+
+                     }
+                  }
+               }
+            }
+         }
+
+         if (result == null) 
+            result = "";
+
+         return result;
+      }
+
       private void expandEnvVariables(wEnvironment environment)
       {
-         foreach (wEnvironmentVariable variable in environment.environmentVariables)
+         // Expand all variables
+         foreach (KeyValuePair<string, wEnvVariableValue> envVariable in 
+            environment.environmentVariables)
          {
-
+            resolveVariable(envVariable.Value.value, environment.environmentVariables);
          }
       }
 
@@ -100,11 +127,10 @@ namespace eWamLauncher
          foreach (string batch in batches)
          {
             StreamReader sr = new StreamReader(batch);
-            string input;
-            string pattern = @"(?<comment>^[\@\t\s]*(?:REM|:)+)?.*set[\t\s]+(?<key>[a-zA-Z0-9\-_\+]+)[\t\s]*=[\t\s]*(?<value>.+)";
+            string pattern = @"(?<comment>^[\@\t\s]*(?:REM|:)+)?.*set[\t\s]+(?<key>[^=%]+)[\t\s]*=[\t\s]*(?<value>.+)";
             while (sr.Peek() >= 0)
             {
-               input = sr.ReadLine();
+               string input = sr.ReadLine();
                Regex rgx = new Regex(pattern, RegexOptions.IgnoreCase);
                MatchCollection matches = rgx.Matches(input);
                if (matches.Count > 0)
@@ -113,10 +139,36 @@ namespace eWamLauncher
                   {
                      if (match.Groups["comment"].Value == "")
                      {
+                        
+
+                        string newKey = match.Groups["key"].Value.ToUpper();
+
+                        // If this variable already exists, AND has a different value, we still 
+                        // want to keep this different value, so that the user can make a clean up,
+                        // and choose the right value by himself. We thus increment the variable
+                        // name, before adding it to the dictionary
+                        if (environment.environmentVariables.ContainsKey(newKey))
+                        {
+                           if (environment.environmentVariables[newKey].value == match.Groups["value"].Value)
+                           {
+                              // if it's same value, just ignore this match, move on to next one.
+                              continue;
+                           }
+                           else
+                           {
+                              int increment = 0;
+                              while (environment.environmentVariables.ContainsKey(newKey))
+                              {
+                                 increment++;
+                                 newKey = match.Groups["key"].Value.ToUpper() + "_" + increment.ToString();
+                              }
+                           }
+                        }
+
                         // Add entries to environment variables list
                         environment.environmentVariables.Add(
-                           new wEnvironmentVariable(
-                              match.Groups["key"].Value.ToUpper(), match.Groups["value"].Value));
+                           newKey,
+                           new wEnvVariableValue(match.Groups["value"].Value));
                      }
                   }
                }
@@ -136,11 +188,10 @@ namespace eWamLauncher
          {
             string launcherName = Path.GetFileNameWithoutExtension(batch);
             StreamReader sr = new StreamReader(batch);
-            string input;
             string pattern = @"(?<comment>^[\@\t\s]*(?:REM|:)+)?.*(?<command>ewam\.exe|ewamconsole\.exe|wyseman\.exe|wydeweb\.exe)[""\t\s]*(?<value>.+)";
             while (sr.Peek() >= 0)
             {
-               input = sr.ReadLine();
+               string input = sr.ReadLine();
                Regex rgx = new Regex(pattern, RegexOptions.IgnoreCase);
                MatchCollection matches = rgx.Matches(input);
                if (matches.Count > 0)

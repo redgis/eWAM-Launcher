@@ -8,6 +8,7 @@ using System.Runtime.Serialization.Json;
 using System.Xml;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Diagnostics;
 
 
 namespace eWamLauncher
@@ -22,7 +23,8 @@ namespace eWamLauncher
       public string tgvPath { get; set; }
 
       [DataMember()]
-      public ObservableCollection<wEnvironmentVariable> environmentVariables { get; set; }
+      //public ObservableCollection<wEnvironmentVariable> environmentVariables { get; set; }
+      public ObservableDictionary<string, wEnvVariableValue> environmentVariables { get; set; }
 
       [DataMember()]
       public ObservableCollection<wBinariesSet> binariesSets { get; set; }
@@ -30,9 +32,11 @@ namespace eWamLauncher
       [DataMember()]
       public ObservableCollection<wLauncher> launchers { get; set; }
 
+      public ObservableCollection<Process> processes { get; set; }
+
       public wEnvironment()
       {
-         this.environmentVariables = new ObservableCollection<wEnvironmentVariable>();
+         this.environmentVariables = new ObservableDictionary<string, wEnvVariableValue>();
          this.binariesSets = new ObservableCollection<wBinariesSet>();
          this.launchers = new ObservableCollection<wLauncher>();
       }
@@ -53,13 +57,13 @@ namespace eWamLauncher
       public object Clone()
       {
          wEnvironment clone = (wEnvironment)this.MemberwiseClone();
-         clone.environmentVariables = new ObservableCollection<wEnvironmentVariable>();
+         clone.environmentVariables = new ObservableDictionary<string, wEnvVariableValue>();
          clone.binariesSets = new ObservableCollection<wBinariesSet>();
          clone.launchers = new ObservableCollection<wLauncher>();
 
-         foreach (wEnvironmentVariable variable in this.environmentVariables)
+         foreach (KeyValuePair<string, wEnvVariableValue> varValue in this.environmentVariables)
          {
-            clone.environmentVariables.Add((wEnvironmentVariable)variable.Clone());
+            clone.environmentVariables.Add(varValue.Key, (wEnvVariableValue)varValue.Value.Clone());
          }
 
          foreach (wBinariesSet binariesSet in this.binariesSets)

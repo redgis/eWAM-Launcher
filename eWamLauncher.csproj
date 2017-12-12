@@ -68,9 +68,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ObservableDictionary.cs" />
     <Compile Include="wBinaries.cs" />
     <Compile Include="wEnvironment.cs" />
     <Compile Include="wEnvironmentVariable.cs" />
+    <Compile Include="wEnvVariableValue.cs" />
     <Compile Include="wLauncher.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
