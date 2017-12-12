@@ -1,18 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 
 namespace eWamLauncher
 {
-    interface IEwamImporter
-    {
-        void importFromPath(string path, wEnvironment environment);
+   interface IEwamImporter
+   {
+      void SetInitialEnvironment(wEnvironment environment);
 
-        void importEnvironmentVariables(string path, wEnvironment environment);
+      wEnvironment ImportFromPath(string path);
 
-        void importLaunchers(string path, wEnvironment environment);
+      ObservableDictionary<string, wEnvVariableValue> ImportEnvironmentVariables(string path);
 
-        void importBinaries(string path, wEnvironment environment);
-    }
+      wLauncher[] ImportLaunchers(string path);
+
+      wBinariesSet[] ImportBinaries(string path);
+
+      wEnvironment GetEnvironment();
+   }
 }

@@ -9,6 +9,7 @@ using System.Xml;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 
 namespace eWamLauncher
@@ -79,5 +80,47 @@ namespace eWamLauncher
          return clone;
       }
 
+      private string ExpandEnvVariableMatch(Match m)
+      {
+         return this.ResolveVariable(m.ToString());
+      }
+
+      public string ResolveVariable(string name)
+      {
+         string result = null;
+
+         string variableValue = "";
+
+         // Look for variable in current wEnvironment (i.e. this)
+         if (this.environmentVariables.ContainsKey(name))
+         {
+            variableValue = this.environmentVariables[name].value;
+         }
+         else 
+         {
+            // If not found, look in provided environment variables, look in process env. 
+            // variables
+            variableValue = Environment.GetEnvironmentVariable(name);
+         }
+
+         // Expand env variable value by looking up all %....% and expanding each of these matches
+         Regex rgx = new Regex(@"%(?<variable>[^=%]+)%");
+         result = rgx.Replace(
+            variableValue,
+            new MatchEvaluator(this.ExpandEnvVariableMatch));
+
+
+         return result;
+      }
+
+      public void ExpandAllEnvVariables()
+      {
+         // Expand all variables
+         foreach (KeyValuePair<string, wEnvVariableValue> envVariable in
+            this.environmentVariables)
+         {
+            this.ResolveVariable(envVariable.Value.value);
+         }
+      }
    }
 }

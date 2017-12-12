@@ -8,6 +8,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using MahApps.Metro.Controls;
 using System.Windows.Forms;
+using System.Reflection;
 
 namespace eWamLauncher
 {
@@ -20,6 +21,10 @@ namespace eWamLauncher
 
       public MainWindow()
       {
+         Version version = Assembly.GetEntryAssembly().GetName().Version;
+
+         Assembly curAssembly = Assembly.GetEntryAssembly();
+
          this.environments = new ObservableCollection<wEnvironment>();
 
          string defaultXMLSettings = Environment.ExpandEnvironmentVariables("%APPDATA%\\ewamLauncher.config.xml");
@@ -148,10 +153,10 @@ namespace eWamLauncher
          if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
          {
             IEwamImporter importer = new LegacyEwamImporter();
-            wEnvironment environment = new wEnvironment();
+
             // Get Parent of Tgv/ folder containing W001001.TGV
             string envPath = Path.GetDirectoryName(Path.GetDirectoryName(fileBrowser.FileName));
-            importer.importFromPath(envPath, environment);
+            wEnvironment environment = importer.ImportFromPath(envPath);
             ((ObservableCollection<wEnvironment>)lbEnvList.ItemsSource).Add(environment);
             lbEnvList.SelectedItem = environment;
          }
@@ -219,9 +224,9 @@ namespace eWamLauncher
 
             string envPath = Path.GetDirectoryName(Path.GetDirectoryName(fileBrowser.FileName));
 
-            IEwamImporter importer = new LegacyEwamImporter();
             wEnvironment dummyEnvironment = new wEnvironment();
-            importer.importBinaries(envPath, dummyEnvironment);
+            IEwamImporter importer = new LegacyEwamImporter(dummyEnvironment);
+            importer.ImportBinaries(envPath);
 
             foreach (wBinariesSet binariesSet in dummyEnvironment.binariesSets)
             {
@@ -295,9 +300,10 @@ namespace eWamLauncher
 
             string envPath = Path.GetDirectoryName(fileBrowser.FileName);
 
-            IEwamImporter importer = new LegacyEwamImporter();
             wEnvironment dummyEnvironment = new wEnvironment();
-            importer.importLaunchers(envPath, dummyEnvironment);
+            IEwamImporter importer = new LegacyEwamImporter(dummyEnvironment);
+            
+            importer.ImportLaunchers(envPath);
 
             foreach (wLauncher launcher in dummyEnvironment.launchers)
             {

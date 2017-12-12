@@ -10,8 +10,30 @@ namespace eWamLauncher
 {
    public class LegacyEwamImporter : IEwamImporter
    {
+      private wEnvironment environment;
 
-      public void importFromPath(string path, wEnvironment environment)
+
+      public LegacyEwamImporter()
+      {
+         this.environment = new wEnvironment();
+      }
+
+      public LegacyEwamImporter(wEnvironment environment)
+      {
+         this.environment = environment;
+      }
+
+      public void SetInitialEnvironment(wEnvironment environment)
+      {
+         this.environment = environment;
+      }
+
+      public wEnvironment GetEnvironment()
+      {
+         return this.environment;
+      }
+
+      public wEnvironment ImportFromPath(string path) 
       {
          if (!Directory.Exists(path)) throw new DirectoryNotFoundException(path);
 
@@ -21,36 +43,36 @@ namespace eWamLauncher
             throw new FileNotFoundException("W001001.TGV or W003001.TGV");
          }
 
-         environment.tgvPath = path + "\\tgv";
+         this.environment.tgvPath = path + "\\tgv";
 
          if (File.Exists(path + "\\tgv\\Prevoyance.TGV") &&
              File.Exists(path + "\\tgv\\WydePolicyAdminSolution.TGV"))
          {
-            environment.name = "Wynsure";
+            this.environment.name = "Wynsure";
          }
          else
          {
-            environment.name = "eWAM";
+            this.environment.name = "eWAM";
          }
 
          // Look for env vars
          try
          {
-            this.importEnvironmentVariables(path + "\\bin", environment);
+            this.ImportEnvironmentVariables(path + "\\bin");
          }
          catch (IOException)
          {
-            this.importEnvironmentVariables(path + "\\batches", environment);
+            this.ImportEnvironmentVariables(path + "\\batches");
          }
 
          // Resolve env. vars
-         this.expandEnvVariables(environment);
+         this.environment.ExpandAllEnvVariables();
 
          // Look for binaries
          try
          {
-            string wydeRoot = environment.environmentVariables["WYDE-ROOT"].value;
-            this.importBinaries(wydeRoot, environment);
+            string wydeRoot = this.environment.environmentVariables["WYDE-ROOT"].value;
+            ImportBinaries(wydeRoot);
          }
          catch (DirectoryNotFoundException)
          {
@@ -64,59 +86,17 @@ namespace eWamLauncher
          // Look for launchers, load launcher-specific env. variables
          try
          {
-            this.importLaunchers(path + "\\bin", environment);
+            this.ImportLaunchers(path + "\\bin");
          }
          catch (IOException)
          {
-            this.importLaunchers(path + "\\batches", environment);
+            this.ImportLaunchers(path + "\\batches");
          }
 
+         return this.environment;
       }
 
-      private string resolveVariable(string name, ObservableDictionary<string, wEnvVariableValue> variables)
-      {
-         string result = Environment.GetEnvironmentVariable(name);
-
-         // If not found, look in provided environment variables
-         if (result == null)
-         {
-            if (variables.ContainsKey(name))
-            {
-               string pattern = @"%(?<variable>[^=%]+)%";
-               string input = variables[name].value;
-
-               Regex rgx = new Regex(pattern);
-               MatchCollection matches = rgx.Matches(input);
-               if (matches.Count > 0)
-               {
-                  foreach (Match match in matches)
-                  {
-                     if (match.Groups["variable"].Value != "")
-                     {
-
-                     }
-                  }
-               }
-            }
-         }
-
-         if (result == null) 
-            result = "";
-
-         return result;
-      }
-
-      private void expandEnvVariables(wEnvironment environment)
-      {
-         // Expand all variables
-         foreach (KeyValuePair<string, wEnvVariableValue> envVariable in 
-            environment.environmentVariables)
-         {
-            resolveVariable(envVariable.Value.value, environment.environmentVariables);
-         }
-      }
-
-      public void importEnvironmentVariables(string path, wEnvironment environment)
+      public ObservableDictionary<string, wEnvVariableValue> ImportEnvironmentVariables(string path)
       {
          if (!Directory.Exists(path)) throw new DirectoryNotFoundException(path);
 
@@ -147,9 +127,9 @@ namespace eWamLauncher
                         // want to keep this different value, so that the user can make a clean up,
                         // and choose the right value by himself. We thus increment the variable
                         // name, before adding it to the dictionary
-                        if (environment.environmentVariables.ContainsKey(newKey))
+                        if (this.environment.environmentVariables.ContainsKey(newKey))
                         {
-                           if (environment.environmentVariables[newKey].value == match.Groups["value"].Value)
+                           if (this.environment.environmentVariables[newKey].value == match.Groups["value"].Value)
                            {
                               // if it's same value, just ignore this match, move on to next one.
                               continue;
@@ -157,7 +137,7 @@ namespace eWamLauncher
                            else
                            {
                               int increment = 0;
-                              while (environment.environmentVariables.ContainsKey(newKey))
+                              while (this.environment.environmentVariables.ContainsKey(newKey))
                               {
                                  increment++;
                                  newKey = match.Groups["key"].Value.ToUpper() + "_" + increment.ToString();
@@ -166,7 +146,7 @@ namespace eWamLauncher
                         }
 
                         // Add entries to environment variables list
-                        environment.environmentVariables.Add(
+                        this.environment.environmentVariables.Add(
                            newKey,
                            new wEnvVariableValue(match.Groups["value"].Value));
                      }
@@ -174,9 +154,10 @@ namespace eWamLauncher
                }
             }
          }
+         return this.environment.environmentVariables;
       }
 
-      public void importLaunchers(string path, wEnvironment environment)
+      public wLauncher[] ImportLaunchers(string path)
       {
          if (!Directory.Exists(path)) throw new DirectoryNotFoundException(path);
 
@@ -205,16 +186,18 @@ namespace eWamLauncher
                         launcher.name = launcherName;
                         launcher.program = match.Groups["command"].Value;
                         launcher.arguments = match.Groups["value"].Value;
-                        if (environment.binariesSets.Count > 0)
+                        if (this.environment.binariesSets.Count > 0)
                         {
-                           launcher.binariesSet = environment.binariesSets[0].name;
+                           launcher.binariesSet = this.environment.binariesSets[0].name;
                         }
-                        environment.launchers.Add(launcher);
+                        this.environment.launchers.Add(launcher);
                      }
                   }
                }
             }
          }
+
+         return this.environment.launchers.ToArray();
       }
 
       private void appendPathIfFoundFiles(string path, string files, ICollection<string> list)
@@ -232,7 +215,7 @@ namespace eWamLauncher
          { }
       }
 
-      public void importBinaries(string path, wEnvironment environment)
+      public wBinariesSet[] ImportBinaries(string path)
       {
          if (Directory.Exists(path))
          {
@@ -249,13 +232,15 @@ namespace eWamLauncher
             this.appendPathIfFoundFiles(path + "\\dll.debug", "*.dll", debugBinaries.dllPathes);
             this.appendPathIfFoundFiles(path + "\\cppdll.debug", "*.dll", debugBinaries.cppdllPathes);
 
-            environment.binariesSets.Add(releaseBinaries);
-            environment.binariesSets.Add(debugBinaries);
+            this.environment.binariesSets.Add(releaseBinaries);
+            this.environment.binariesSets.Add(debugBinaries);
          }
          else
          {
             throw new DirectoryNotFoundException("WYDE-ROOT : " + path);
          }
+
+         return this.environment.binariesSets.ToArray();
       }
 
    }
