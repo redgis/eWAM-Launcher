@@ -22,4 +22,4 @@ Todo :
 - Allow binaries updating
 - Shouldn't we simply have a pool of eWAMs referenced by the various environments ?
 
-[Test push on protected branch]
+[Test push on protected branch 2]
