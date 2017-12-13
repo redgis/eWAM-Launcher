@@ -21,5 +21,3 @@ Todo :
 - Give information about eWAM binaries versions / and if it is up to date
 - Allow binaries updating
 - Shouldn't we simply have a pool of eWAMs referenced by the various environments ?
-
-[Test push on protected branch 2]

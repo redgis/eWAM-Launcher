@@ -71,7 +71,7 @@ namespace eWamLauncher
          // Look for binaries
          try
          {
-            string wydeRoot = this.environment.environmentVariables["WYDE-ROOT"].value;
+            string wydeRoot = this.environment.GetEnvironmentVariable("WYDE-ROOT").value;
             ImportBinaries(wydeRoot);
          }
          catch (DirectoryNotFoundException)
@@ -96,7 +96,7 @@ namespace eWamLauncher
          return this.environment;
       }
 
-      public ObservableDictionary<string, wEnvVariableValue> ImportEnvironmentVariables(string path)
+      public ObservableCollection<wEnvironmentVariable> ImportEnvironmentVariables(string path)
       {
          if (!Directory.Exists(path)) throw new DirectoryNotFoundException(path);
 
@@ -127,9 +127,10 @@ namespace eWamLauncher
                         // want to keep this different value, so that the user can make a clean up,
                         // and choose the right value by himself. We thus increment the variable
                         // name, before adding it to the dictionary
-                        if (this.environment.environmentVariables.ContainsKey(newKey))
+                        wEnvironmentVariable localEnVariable = this.environment.GetEnvironmentVariable(newKey);
+                        if (localEnVariable != null)
                         {
-                           if (this.environment.environmentVariables[newKey].value == match.Groups["value"].Value)
+                           if (localEnVariable.value == match.Groups["value"].Value)
                            {
                               // if it's same value, just ignore this match, move on to next one.
                               continue;
@@ -137,7 +138,7 @@ namespace eWamLauncher
                            else
                            {
                               int increment = 0;
-                              while (this.environment.environmentVariables.ContainsKey(newKey))
+                              while (this.environment.GetEnvironmentVariable(newKey) != null)
                               {
                                  increment++;
                                  newKey = match.Groups["key"].Value.ToUpper() + "_" + increment.ToString();
@@ -147,8 +148,7 @@ namespace eWamLauncher
 
                         // Add entries to environment variables list
                         this.environment.environmentVariables.Add(
-                           newKey,
-                           new wEnvVariableValue(match.Groups["value"].Value));
+                           new wEnvironmentVariable(newKey, match.Groups["value"].Value));
                      }
                   }
                }
@@ -157,7 +157,7 @@ namespace eWamLauncher
          return this.environment.environmentVariables;
       }
 
-      public wLauncher[] ImportLaunchers(string path)
+      public ObservableCollection<wLauncher> ImportLaunchers(string path)
       {
          if (!Directory.Exists(path)) throw new DirectoryNotFoundException(path);
 
@@ -197,7 +197,7 @@ namespace eWamLauncher
             }
          }
 
-         return this.environment.launchers.ToArray();
+         return this.environment.launchers;
       }
 
       private void appendPathIfFoundFiles(string path, string files, ICollection<string> list)
@@ -215,7 +215,7 @@ namespace eWamLauncher
          { }
       }
 
-      public wBinariesSet[] ImportBinaries(string path)
+      public ObservableCollection<wBinariesSet> ImportBinaries(string path)
       {
          if (Directory.Exists(path))
          {
@@ -240,7 +240,7 @@ namespace eWamLauncher
             throw new DirectoryNotFoundException("WYDE-ROOT : " + path);
          }
 
-         return this.environment.binariesSets.ToArray();
+         return this.environment.binariesSets;
       }
 
    }

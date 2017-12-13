@@ -12,11 +12,11 @@ namespace eWamLauncher
 
       wEnvironment ImportFromPath(string path);
 
-      ObservableDictionary<string, wEnvVariableValue> ImportEnvironmentVariables(string path);
+      ObservableCollection<wEnvironmentVariable> ImportEnvironmentVariables(string path);
 
-      wLauncher[] ImportLaunchers(string path);
+      ObservableCollection<wLauncher> ImportLaunchers(string path);
 
-      wBinariesSet[] ImportBinaries(string path);
+      ObservableCollection<wBinariesSet> ImportBinaries(string path);
 
       wEnvironment GetEnvironment();
    }

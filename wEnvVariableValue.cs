@@ -3,13 +3,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
 
 namespace eWamLauncher
 {
-   public class wEnvVariableValue
+   [DataContract(Name = "EnvironmentVariableValue", Namespace = "http://www.wyde.com/")]
+   public class wEnvVariableValue : DependencyObject
    {
-      public string value { set; get; }
-      public string result { set; get; }
+      [DataMember()]
+      public string value
+      {
+         get { return (string)GetValue(valueProperty); }
+         set { SetValue(valueProperty, value); }
+      }
+      public static readonly DependencyProperty valueProperty =
+          DependencyProperty.Register("value", typeof(string), typeof(wEnvVariableValue), new PropertyMetadata(""));
+
+      [DataMember()]
+      public string result
+      {
+         get { return (string)GetValue(resultProperty); }
+         set { SetValue(resultProperty, value); }
+      }
+      public static readonly DependencyProperty resultProperty =
+          DependencyProperty.Register("result", typeof(string), typeof(wEnvVariableValue), new PropertyMetadata(""));
 
       public wEnvVariableValue()
       {

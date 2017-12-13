@@ -9,20 +9,40 @@ using System.Runtime.Serialization.Json;
 using MahApps.Metro.Controls;
 using System.Windows.Forms;
 using System.Reflection;
+using System.ComponentModel;
+using System.Xml.Serialization;
+using System.Runtime.Serialization.Formatters;
 
 namespace eWamLauncher
 {
    /// <summary>
    /// Interaction logic for MainWindow.xaml
    /// </summary>
-   public partial class MainWindow : MetroWindow
+   [DataContract(Name = "eWamLauncher", Namespace = "http://www.wyde.com")]
+   public partial class MainWindow : MetroWindow, INotifyPropertyChanged
    {
-      public ObservableCollection<wEnvironment> environments { get; set; }
+      [DataMember()] private ObservableCollection<wEnvironment> _environments;
+      public ObservableCollection<wEnvironment> environments { get { return _environments; } set { _environments = value;  this.NotifyPropertyChanged(); } }
+
+      [DataMember()] public string Settings { get; set; }
+
+
+      public event PropertyChangedEventHandler PropertyChanged;
+
+      // This method is called by the Set accessor of each property.
+      // The CallerMemberName attribute that is applied to the optional propertyName
+      // parameter causes the property name of the caller to be substituted as an argument.
+      private void NotifyPropertyChanged(string propertyName = "")
+      {
+         if (this.PropertyChanged != null)
+         {
+            this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+         }
+      }
 
       public MainWindow()
       {
          Version version = Assembly.GetEntryAssembly().GetName().Version;
-
          Assembly curAssembly = Assembly.GetEntryAssembly();
 
          this.environments = new ObservableCollection<wEnvironment>();
@@ -30,20 +50,21 @@ namespace eWamLauncher
          string defaultXMLSettings = Environment.ExpandEnvironmentVariables("%APPDATA%\\ewamLauncher.config.xml");
          string defaultJSONSettings = Environment.ExpandEnvironmentVariables("%APPDATA%\\ewamLauncher.config.json");
 
-         if (File.Exists(defaultXMLSettings))
+         try
+         { LoadFromXML(defaultXMLSettings); }
+         catch
          {
-            LoadFromXML(defaultXMLSettings);
-         }
-         else if (File.Exists(defaultJSONSettings))
-         {
-            LoadFromJSON(defaultJSONSettings);
+            try
+            { LoadFromJSON(defaultJSONSettings); }
+            catch
+            { }
          }
 
          InitializeComponent();
          this.DataContext = this;
       }
 
-      ~MainWindow()
+      protected override void OnClosing(CancelEventArgs e)
       {
          string defaultXMLSettings = Environment.ExpandEnvironmentVariables("%APPDATA%\\ewamLauncher.config.xml");
          string defaultJSONSettings = Environment.ExpandEnvironmentVariables("%APPDATA%\\ewamLauncher.config.json");
@@ -55,7 +76,6 @@ namespace eWamLauncher
       {
          try
          {
-
             FileStream reader = new FileStream(fileName, FileMode.Open);
             DataContractSerializer xmlDeserializer = new DataContractSerializer(typeof(ObservableCollection<wEnvironment>));
             this.environments =
@@ -64,8 +84,8 @@ namespace eWamLauncher
          }
          catch (FileNotFoundException)
          {
-
          }
+
       }
 
       public void SaveToXML(string fileName)
@@ -134,16 +154,6 @@ namespace eWamLauncher
             this.environments = new ObservableCollection<wEnvironment>();
          }
 
-         //FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
-
-         //folderBrowser.Description = "Select the folder containing TGVs of the environment you want to import.";
-
-         //DialogResult dlgResult = folderBrowser.ShowDialog();
-         //if (dlgResult == System.Windows.Forms.DialogResult.OK)
-         //{
-
-         //}
-
          OpenFileDialog fileBrowser = new OpenFileDialog();
 
          fileBrowser.Filter = "TGV Base1|W001001.tgv|Any TGV|*.tgv";
@@ -202,17 +212,6 @@ namespace eWamLauncher
 
       public void OnImportBinariesSets(object sender, RoutedEventArgs e)
       {
-         //FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
-
-         //folderBrowser.Description = "Select the folder containing Bin/, Dll/, CppDll, etc. Folders.";
-
-         //DialogResult dlgResult = folderBrowser.ShowDialog();
-         //if (dlgResult == System.Windows.Forms.DialogResult.OK)
-         //{
-         //   IEwamImporter importer = new LegacyEwamImporter();
-         //   wEnvironment dummyEnvironment = new wEnvironment();
-         //   importer.importBinaries(folderBrowser.SelectedPath, dummyEnvironment);
-
          OpenFileDialog fileBrowser = new OpenFileDialog();
 
          fileBrowser.Filter = "Any file|*.exe;*.dll";
@@ -224,16 +223,8 @@ namespace eWamLauncher
 
             string envPath = Path.GetDirectoryName(Path.GetDirectoryName(fileBrowser.FileName));
 
-            wEnvironment dummyEnvironment = new wEnvironment();
-            IEwamImporter importer = new LegacyEwamImporter(dummyEnvironment);
+            IEwamImporter importer = new LegacyEwamImporter((wEnvironment)lbEnvList.SelectedItem);
             importer.ImportBinaries(envPath);
-
-            foreach (wBinariesSet binariesSet in dummyEnvironment.binariesSets)
-            {
-               binariesSet.name += " (imported) " + ((ObservableCollection<wBinariesSet>)lbBinariesSets.ItemsSource).Count.ToString();
-               ((wEnvironment)lbEnvList.SelectedItem).binariesSets.Add(binariesSet);
-               lbBinariesSets.SelectedItem = binariesSet;
-            }
          }
       }
 
@@ -241,7 +232,7 @@ namespace eWamLauncher
 
 
       #region launchers actions
-      
+
 
       public void OnNewLauncher(object sender, RoutedEventArgs e)
       {
@@ -278,17 +269,6 @@ namespace eWamLauncher
 
       public void OnImportLaunchers(object sender, RoutedEventArgs e)
       {
-         //FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
-
-         //folderBrowser.Description = "Select the folder containing Bin/, Dll/, CppDll, etc. Folders.";
-
-         //DialogResult dlgResult = folderBrowser.ShowDialog();
-         //if (dlgResult == System.Windows.Forms.DialogResult.OK)
-         //{
-         //   IEwamImporter importer = new LegacyEwamImporter();
-         //   wEnvironment dummyEnvironment = new wEnvironment();
-         //   importer.importBinaries(folderBrowser.SelectedPath, dummyEnvironment);
-
          OpenFileDialog fileBrowser = new OpenFileDialog();
 
          fileBrowser.Filter = "Batch file|*.bat";
@@ -300,22 +280,12 @@ namespace eWamLauncher
 
             string envPath = Path.GetDirectoryName(fileBrowser.FileName);
 
-            wEnvironment dummyEnvironment = new wEnvironment();
-            IEwamImporter importer = new LegacyEwamImporter(dummyEnvironment);
-            
+            IEwamImporter importer = new LegacyEwamImporter((wEnvironment)lbEnvList.SelectedItem);
             importer.ImportLaunchers(envPath);
-
-            foreach (wLauncher launcher in dummyEnvironment.launchers)
-            {
-               launcher.name += " (imported) " + ((ObservableCollection<wLauncher>)lbLauncherList.ItemsSource).Count.ToString();
-               ((wEnvironment)lbEnvList.SelectedItem).launchers.Add(launcher);
-               lbLauncherList.SelectedItem = launcher;
-            }
          }
       }
 
       #endregion
-
 
    }
 }

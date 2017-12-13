@@ -65,7 +65,20 @@
                </Grid>
             </TabItem>
             <TabItem Header="Environment ">
-               <DataGrid ItemsSource="{Binding SelectedItem.environmentVariables, ElementName=lbEnvList, Mode=TwoWay}" />
+               <!--<DataGrid ItemsSource="{Binding SelectedItem.environmentVariables, ElementName=lbEnvList, Mode=TwoWay}" AutoGenerateColumns="False">
+                  <DataGrid.Columns>
+                     <DataGridTextColumn Header="Name" Binding="{Binding Key}" />
+                     <DataGridTextColumn Header="Value" Binding="{Binding Value.value, Mode=TwoWay}" />
+                     <DataGridTextColumn Header="Interpreted" Binding="{Binding Value.result, Mode=TwoWay}" />
+                  </DataGrid.Columns>
+               </DataGrid>-->
+               <DataGrid ItemsSource="{Binding SelectedItem.environmentVariables, ElementName=lbEnvList, Mode=TwoWay}" AutoGenerateColumns="False">
+                  <DataGrid.Columns>
+                     <DataGridTextColumn Header="Name" Binding="{Binding name, Mode=TwoWay}" />
+                     <DataGridTextColumn Header="Value" Binding="{Binding value, Mode=TwoWay}" />
+                     <DataGridTextColumn Header="Interpreted" Binding="{Binding result, Mode=TwoWay}" />
+                  </DataGrid.Columns>
+               </DataGrid>
             </TabItem>
             <TabItem Header="Binaries ">
                <DockPanel>

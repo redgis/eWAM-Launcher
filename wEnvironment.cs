@@ -10,61 +10,64 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using System.Windows;
+using System.Xml.Serialization;
+
 
 
 namespace eWamLauncher
 {
-   [DataContract(Name = "Environment", Namespace = "http://www.wyde.com/")]
-   public class wEnvironment : INotifyPropertyChanged, ICloneable
+   [DataContract(Name = "wEnvironment", Namespace = "http://www.wyde.com")]
+   public class wEnvironment : ICloneable, INotifyPropertyChanged
    {
-      [DataMember()]
-      public string name { get; set; }
+      [DataMember()] private string _name;
+      public string name { get { return _name; }  set { _name = value;  NotifyPropertyChanged(); } }
 
-      [DataMember()]
-      public string tgvPath { get; set; }
+      [DataMember()] private string _tgvPath;
+      public string tgvPath { get { return _tgvPath; } set { _tgvPath = value;  NotifyPropertyChanged(); } }
 
-      [DataMember()]
-      //public ObservableCollection<wEnvironmentVariable> environmentVariables { get; set; }
-      public ObservableDictionary<string, wEnvVariableValue> environmentVariables { get; set; }
+      [DataMember()] private ObservableCollection<wEnvironmentVariable> _environmentVariables;
+      public ObservableCollection<wEnvironmentVariable> environmentVariables { get { return _environmentVariables; } set { _environmentVariables = value;  NotifyPropertyChanged(); } }
 
-      [DataMember()]
-      public ObservableCollection<wBinariesSet> binariesSets { get; set; }
+      [DataMember()] private ObservableCollection<wBinariesSet> _binariesSets;
+      public ObservableCollection<wBinariesSet> binariesSets { get { return _binariesSets; } set { _binariesSets = value;  NotifyPropertyChanged(); } }
 
-      [DataMember()]
-      public ObservableCollection<wLauncher> launchers { get; set; }
+      [DataMember()] private ObservableCollection<wLauncher> _launchers;
+      public ObservableCollection<wLauncher> launchers { get { return _launchers; } set { _launchers = value;  NotifyPropertyChanged(); } }
 
       public ObservableCollection<Process> processes { get; set; }
 
-      public wEnvironment()
-      {
-         this.environmentVariables = new ObservableDictionary<string, wEnvVariableValue>();
-         this.binariesSets = new ObservableCollection<wBinariesSet>();
-         this.launchers = new ObservableCollection<wLauncher>();
-      }
 
       public event PropertyChangedEventHandler PropertyChanged;
 
       // This method is called by the Set accessor of each property.
       // The CallerMemberName attribute that is applied to the optional propertyName
       // parameter causes the property name of the caller to be substituted as an argument.
-      private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
+      private void NotifyPropertyChanged(string propertyName = "")
       {
-         if (PropertyChanged != null)
+         if (this.PropertyChanged != null)
          {
-            PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
          }
+      }
+
+      public wEnvironment()
+      {
+         this.environmentVariables = new ObservableCollection<wEnvironmentVariable>();
+         this.binariesSets = new ObservableCollection<wBinariesSet>();
+         this.launchers = new ObservableCollection<wLauncher>();
       }
 
       public object Clone()
       {
          wEnvironment clone = (wEnvironment)this.MemberwiseClone();
-         clone.environmentVariables = new ObservableDictionary<string, wEnvVariableValue>();
+         clone.environmentVariables = new ObservableCollection<wEnvironmentVariable>();
          clone.binariesSets = new ObservableCollection<wBinariesSet>();
          clone.launchers = new ObservableCollection<wLauncher>();
 
-         foreach (KeyValuePair<string, wEnvVariableValue> varValue in this.environmentVariables)
+         foreach (wEnvironmentVariable variable in this.environmentVariables)
          {
-            clone.environmentVariables.Add(varValue.Key, (wEnvVariableValue)varValue.Value.Clone());
+            clone.environmentVariables.Add((wEnvironmentVariable)variable.Clone());
          }
 
          foreach (wBinariesSet binariesSet in this.binariesSets)
@@ -80,9 +83,26 @@ namespace eWamLauncher
          return clone;
       }
 
-      private string ExpandEnvVariableMatch(Match m)
+
+      public wEnvironmentVariable GetEnvironmentVariable(string name)
       {
-         return this.ResolveVariable(m.ToString());
+         wEnvironmentVariable result = null;
+
+         foreach (wEnvironmentVariable variable in this.environmentVariables)
+         {
+            if (variable.name == name)
+            {
+               result = variable;
+               break;
+            }
+         }
+
+         return result;
+      }
+
+      private string ExpandEnvVariableMatch(Match match)
+      {
+         return this.ResolveVariable(match.Groups["variable"].Value);
       }
 
       public string ResolveVariable(string name)
@@ -91,24 +111,39 @@ namespace eWamLauncher
 
          string variableValue = "";
 
+         bool variableIsInEnvironment = false;
+
          // Look for variable in current wEnvironment (i.e. this)
-         if (this.environmentVariables.ContainsKey(name))
+         wEnvironmentVariable localEnvVar = this.GetEnvironmentVariable(name);
+         if (localEnvVar != null)
          {
-            variableValue = this.environmentVariables[name].value;
+            variableValue = localEnvVar.value;
+            variableIsInEnvironment = true;
          }
-         else 
+         else
          {
             // If not found, look in provided environment variables, look in process env. 
             // variables
             variableValue = Environment.GetEnvironmentVariable(name);
          }
 
-         // Expand env variable value by looking up all %....% and expanding each of these matches
-         Regex rgx = new Regex(@"%(?<variable>[^=%]+)%");
-         result = rgx.Replace(
-            variableValue,
-            new MatchEvaluator(this.ExpandEnvVariableMatch));
+         if (variableValue == null)
+         {
+            result = "";
+         }
+         else
+         {
+            // Expand env variable value by looking up all %....% and expanding each of these matches
+            Regex rgx = new Regex(@"%(?<variable>[^=%\s\t]+)%");
+            result = rgx.Replace(
+               variableValue,
+               new MatchEvaluator(this.ExpandEnvVariableMatch));
 
+            if (variableIsInEnvironment)
+            {
+               localEnvVar.result = result;
+            }
+         }
 
          return result;
       }
@@ -116,11 +151,11 @@ namespace eWamLauncher
       public void ExpandAllEnvVariables()
       {
          // Expand all variables
-         foreach (KeyValuePair<string, wEnvVariableValue> envVariable in
-            this.environmentVariables)
+         foreach (wEnvironmentVariable envVariable in this.environmentVariables)
          {
-            this.ResolveVariable(envVariable.Value.value);
+            envVariable.result = this.ResolveVariable(envVariable.name);
          }
       }
+
    }
 }

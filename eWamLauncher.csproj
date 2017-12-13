@@ -69,6 +69,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ObservableDictionary.cs" />
+    <Compile Include="ObservableObject.cs" />
     <Compile Include="wBinaries.cs" />
     <Compile Include="wEnvironment.cs" />
     <Compile Include="wEnvironmentVariable.cs" />
