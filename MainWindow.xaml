@@ -40,7 +40,10 @@
       </StackPanel>
       <GridSplitter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" Background="IndianRed"/>
       <DockPanel Grid.Column="2" VerticalAlignment="Stretch">
-         <Image Source="pack://application:,,,/icon.ico" Width="64" Height="64" Margin="0,20" HorizontalAlignment="Center" VerticalAlignment="Bottom" DockPanel.Dock="Bottom"/>
+         <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" HorizontalAlignment="Center">
+            <Image Source="pack://application:,,,/icon.ico" Width="64" Height="64" Margin="20" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
+            <!-- <TextBlock Text="{Binding assemblyVersion}" HorizontalAlignment="Center" VerticalAlignment="Center" FontStyle="Italic" FontSize="15" Margin="50,0"/> -->
+         </StackPanel>
          <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5" HorizontalContentAlignment="Center" TabStripPlacement="Left">
             <TabItem Header="General ">
                <Grid>
@@ -65,13 +68,6 @@
                </Grid>
             </TabItem>
             <TabItem Header="Environment ">
-               <!--<DataGrid ItemsSource="{Binding SelectedItem.environmentVariables, ElementName=lbEnvList, Mode=TwoWay}" AutoGenerateColumns="False">
-                  <DataGrid.Columns>
-                     <DataGridTextColumn Header="Name" Binding="{Binding Key}" />
-                     <DataGridTextColumn Header="Value" Binding="{Binding Value.value, Mode=TwoWay}" />
-                     <DataGridTextColumn Header="Interpreted" Binding="{Binding Value.result, Mode=TwoWay}" />
-                  </DataGrid.Columns>
-               </DataGrid>-->
                <DataGrid ItemsSource="{Binding SelectedItem.environmentVariables, ElementName=lbEnvList, Mode=TwoWay}" AutoGenerateColumns="False">
                   <DataGrid.Columns>
                      <DataGridTextColumn Header="Name" Binding="{Binding name, Mode=TwoWay}" />
@@ -82,15 +78,7 @@
             </TabItem>
             <TabItem Header="Binaries ">
                <DockPanel>
-                  <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
-                     x:Name="lbBinariesSets"
-                     ItemsSource="{Binding SelectedItem.binariesSets, ElementName=lbEnvList, Mode=TwoWay}"
-                     SelectedIndex="0"
-                     DisplayMemberPath="name"
-                     MinWidth="120"
-                     DockPanel.Dock="Left"
-                     Margin="5"/>
-                  <WrapPanel Orientation="Horizontal" Margin="0,2" DockPanel.Dock="Bottom">
+                  <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,2" DockPanel.Dock="Bottom">
                      <Button Click="OnNewBinariesSet" Content="New" Margin="2,2"/>
                      <Button Click="OnDuplicateBinariesSet" Content="Duplicate" Margin="2,2"/>
                      <Button Click="OnDeleteBinariesSet" Content="Delete" Margin="2,2"/>
@@ -98,37 +86,45 @@
                   </WrapPanel>
                   <Grid>
                      <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition/>
+                        <ColumnDefinition Width="170" MinWidth="150"/>
+                        <ColumnDefinition Width="2"/>
+                        <ColumnDefinition Width="*"/>
                      </Grid.ColumnDefinitions>
-                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="*"/>
-                     </Grid.RowDefinitions>
-                     <Label Content="Name: " Grid.Column="0" Grid.Row="0"/>
-                     <TextBox Text="{Binding SelectedItem.name, ElementName=lbBinariesSets, Mode=TwoWay}" Grid.Column="1" Grid.Row="0" Margin="5"/>
-                     <Label Content="Binaries pathes: " Grid.Column="0" Grid.Row="1"/>
-                     <ListBox ItemsSource="{Binding SelectedItem.exePathes, ElementName=lbBinariesSets, Mode=TwoWay}" Grid.Column="1" Grid.Row="1" Margin="5"/>
-                     <Label Content="Dll pathes: " Grid.Column="0" Grid.Row="2"/>
-                     <ListBox ItemsSource="{Binding SelectedItem.dllPathes, ElementName=lbBinariesSets, Mode=TwoWay}" Grid.Column="1" Grid.Row="2" Margin="5"/>
-                     <Label Content="CppDll pathes: " Grid.Column="0" Grid.Row="3"/>
-                     <ListBox ItemsSource="{Binding SelectedItem.cppdllPathes, ElementName=lbBinariesSets, Mode=TwoWay}" Grid.Column="1" Grid.Row="3" Margin="5"/>
+                     
+                     <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0"
+                        x:Name="lbBinariesSets"
+                        ItemsSource="{Binding SelectedItem.binariesSets, ElementName=lbEnvList, Mode=TwoWay}"
+                        SelectedIndex="0"
+                        DisplayMemberPath="name"
+                        MinWidth="120"
+                        MinHeight="200"
+                        Margin="5"/>
+                     <GridSplitter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" Background="IndianRed"/>
+                     <Grid Grid.Column="2">
+                        <Grid.ColumnDefinitions>
+                           <ColumnDefinition Width="Auto"/>
+                           <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                           <RowDefinition Height="Auto"/>
+                           <RowDefinition Height="*"/>
+                           <RowDefinition Height="*"/>
+                           <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Label Content="Name: " Grid.Column="0" Grid.Row="0"/>
+                        <TextBox Text="{Binding SelectedItem.name, ElementName=lbBinariesSets, Mode=TwoWay}" Grid.Column="1" Grid.Row="0" Margin="5"/>
+                        <Label Content="Binaries pathes: " Grid.Column="0" Grid.Row="1"/>
+                        <TextBox Text="{Binding SelectedItem.exePathes, ElementName=lbBinariesSets, Mode=TwoWay}" Grid.Column="1" Grid.Row="1" Margin="5"/>
+                        <Label Content="Dll pathes: " Grid.Column="0" Grid.Row="2"/>
+                        <TextBox Text="{Binding SelectedItem.dllPathes, ElementName=lbBinariesSets, Mode=TwoWay}" Grid.Column="1" Grid.Row="2" Margin="5"/>
+                        <Label Content="CppDll pathes: " Grid.Column="0" Grid.Row="3"/>
+                        <TextBox Text="{Binding SelectedItem.cppdllPathes, ElementName=lbBinariesSets, Mode=TwoWay}" Grid.Column="1" Grid.Row="3" Margin="5"/>
+                     </Grid>
                   </Grid>
                </DockPanel>
             </TabItem>
             <TabItem Header="Launchers ">
                <DockPanel>
-                  <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
-                     x:Name="lbLauncherList"
-                     ItemsSource="{Binding SelectedItem.launchers, ElementName=lbEnvList, Mode=TwoWay}"
-                     SelectedIndex="0"
-                     DisplayMemberPath="name"
-                     MinWidth="200"
-                     DockPanel.Dock="Left"
-                     Margin="5"/>
-
                   <WrapPanel Orientation="Horizontal" Margin="0,2" DockPanel.Dock="Bottom">
                      <Button Click="OnNewLauncher" Content="New" Margin="2,2"/>
                      <Button Click="OnDuplicateLauncher" Content="Duplicate" Margin="2,2"/>
@@ -137,30 +133,48 @@
                   </WrapPanel>
                   <Grid>
                      <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition/>
-                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="320" MinWidth="150"/>
+                        <ColumnDefinition Width="2"/>
+                        <ColumnDefinition Width="*"/>
                      </Grid.ColumnDefinitions>
-                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                     </Grid.RowDefinitions>
-                     <Label Content="Name: " Grid.Column="0" Grid.Row="0"/>
-                     <TextBox Text="{Binding SelectedItem.name, ElementName=lbLauncherList, Mode=TwoWay}" Grid.Column="1" Grid.Row="0" Margin="5"/>
-                     <Label Content="Program: " Grid.Column="0" Grid.Row="1"/>
-                     <TextBox Text="{Binding SelectedItem.program, ElementName=lbLauncherList, Mode=TwoWay}" Grid.Column="1" Grid.Row="1" Margin="5"/>
-                     <Label Content="Arguments: " Grid.Column="0" Grid.Row="2"/>
-                     <TextBox Text="{Binding SelectedItem.arguments, ElementName=lbLauncherList, Mode=TwoWay}" TextWrapping="Wrap" Grid.Column="1" Grid.Row="2" Margin="5"/>
-                     <Label Content="Binary set: " Grid.Column="0" Grid.Row="3"/>
-                     <ComboBox ItemsSource="{Binding SelectedItem.binariesSets, ElementName=lbEnvList}"
-                               DisplayMemberPath="name"
-                               SelectedValue="{Binding SelectedItem.binariesSet, ElementName=lbLauncherList}" 
-                               SelectedValuePath="name"
-                               Grid.Column="1" Grid.Row="3" Margin="5"/>
-                     <Button Content="Start" HorizontalAlignment="Left" Grid.Column="1" Grid.Row="4" Margin="5"/>
+                     
+                     <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0"
+                        x:Name="lbLauncherList"
+                        ItemsSource="{Binding SelectedItem.launchers, ElementName=lbEnvList, Mode=TwoWay}"
+                        SelectedIndex="0"
+                        DisplayMemberPath="name"
+                        MinWidth="120"
+                        MinHeight="200"
+                        Margin="5"/>
+                     <GridSplitter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" Background="IndianRed"/>
+                     <Grid Grid.Column="2">
+                        <Grid.ColumnDefinitions>
+                           <ColumnDefinition Width="Auto"/>
+                           <ColumnDefinition/>
+                           <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                           <RowDefinition Height="Auto"/>
+                           <RowDefinition Height="Auto"/>
+                           <RowDefinition Height="Auto"/>
+                           <RowDefinition Height="Auto"/>
+                           <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <Label Content="Name: " Grid.Column="0" Grid.Row="0"/>
+                        <TextBox Text="{Binding SelectedItem.name, ElementName=lbLauncherList, Mode=TwoWay}" Grid.Column="1" Grid.Row="0" Margin="5"/>
+                        <Label Content="Program: " Grid.Column="0" Grid.Row="1"/>
+                        <TextBox Text="{Binding SelectedItem.program, ElementName=lbLauncherList, Mode=TwoWay}" Grid.Column="1" Grid.Row="1" Margin="5"/>
+                        <Label Content="Arguments: " Grid.Column="0" Grid.Row="2"/>
+                        <TextBox Text="{Binding SelectedItem.arguments, ElementName=lbLauncherList, Mode=TwoWay}" TextWrapping="Wrap" Grid.Column="1" Grid.Row="2" Margin="5"/>
+                        <Label Content="Binary set: " Grid.Column="0" Grid.Row="3"/>
+                        <ComboBox ItemsSource="{Binding SelectedItem.binariesSets, ElementName=lbEnvList}"
+                                  DisplayMemberPath="name"
+                                  SelectedValue="{Binding SelectedItem.binariesSet, ElementName=lbLauncherList}" 
+                                  SelectedValuePath="name"
+                                  Grid.Column="1" Grid.Row="3" Margin="5"/>
+                        <Button Content="Start" HorizontalAlignment="Left" Grid.Column="1" Grid.Row="4" Margin="5"/>
+                     </Grid>
                   </Grid>
                </DockPanel>
             </TabItem>

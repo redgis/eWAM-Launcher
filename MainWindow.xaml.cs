@@ -26,6 +26,7 @@ namespace eWamLauncher
 
       [DataMember()] public string Settings { get; set; }
 
+      public string assemblyVersion { get; set; }
 
       public event PropertyChangedEventHandler PropertyChanged;
 
@@ -42,8 +43,8 @@ namespace eWamLauncher
 
       public MainWindow()
       {
-         Version version = Assembly.GetEntryAssembly().GetName().Version;
-         Assembly curAssembly = Assembly.GetEntryAssembly();
+         this.assemblyVersion = Assembly.GetEntryAssembly().GetName().Name + "\n" + Assembly.GetEntryAssembly().GetName().Version;
+         this.assemblyVersion += "\n(c) Mphasis Wyde";
 
          this.environments = new ObservableCollection<wEnvironment>();
 
@@ -85,7 +86,6 @@ namespace eWamLauncher
          catch (FileNotFoundException)
          {
          }
-
       }
 
       public void SaveToXML(string fileName)
@@ -98,7 +98,17 @@ namespace eWamLauncher
 
       public void LoadFromJSON(string fileName)
       {
-
+         try
+         {
+            FileStream reader = new FileStream(fileName, FileMode.Open);
+            DataContractJsonSerializer jsonDeserializer = new DataContractJsonSerializer(typeof(ObservableCollection<wEnvironment>));
+            this.environments =
+                (ObservableCollection<wEnvironment>)jsonDeserializer.ReadObject(reader);
+            reader.Close();
+         }
+         catch (FileNotFoundException)
+         {
+         }
       }
 
       public void SaveToJSON(string fileName)

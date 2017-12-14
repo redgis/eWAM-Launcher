@@ -17,14 +17,14 @@ namespace eWamLauncher
       [DataMember()] private string _name;
       public string name { get { return _name; } set { _name = value;  NotifyPropertyChanged(); } }
 
-      [DataMember()] private ObservableCollection<string> _exePathes;
-      public ObservableCollection<string> exePathes { get { return _exePathes; } set { _exePathes = value;  NotifyPropertyChanged(); } }
+      [DataMember()] private string _exePathes;
+      public string exePathes { get { return _exePathes; } set { _exePathes = value;  NotifyPropertyChanged(); } }
 
-      [DataMember()] private ObservableCollection<string> _dllPathes;
-      public ObservableCollection<string> dllPathes { get { return _dllPathes; } set { _dllPathes = value;  NotifyPropertyChanged(); } }
+      [DataMember()] private string _dllPathes;
+      public string dllPathes { get { return _dllPathes; } set { _dllPathes = value;  NotifyPropertyChanged(); } }
 
-      [DataMember()] private ObservableCollection<string> _cppdllPathes;
-      public ObservableCollection<string> cppdllPathes { get { return _cppdllPathes; } set { _cppdllPathes = value;  NotifyPropertyChanged(); } }
+      [DataMember()] private string _cppdllPathes;
+      public string cppdllPathes { get { return _cppdllPathes; } set { _cppdllPathes = value;  NotifyPropertyChanged(); } }
 
       public event PropertyChangedEventHandler PropertyChanged;
 
@@ -42,34 +42,14 @@ namespace eWamLauncher
       public wBinariesSet()
       {
          this.name = "";
-         this.exePathes = new ObservableCollection<string>();
-         this.dllPathes = new ObservableCollection<string>();
-         this.cppdllPathes = new ObservableCollection<string>();
+         this.exePathes = "";
+         this.dllPathes = "";
+         this.cppdllPathes = "";
       }
 
       public object Clone()
       {
-         wBinariesSet clone = (wBinariesSet)this.MemberwiseClone();
-         clone.exePathes = new ObservableCollection<string>();
-         clone.dllPathes = new ObservableCollection<string>();
-         clone.cppdllPathes = new ObservableCollection<string>();
-
-         foreach (string exePath in this.exePathes)
-         {
-            clone.exePathes.Add(exePath);
-         }
-
-         foreach (string dllPath in this.dllPathes)
-         {
-            clone.dllPathes.Add(dllPath);
-         }
-
-         foreach (string cppDllPath in this.cppdllPathes)
-         {
-            clone.cppdllPathes.Add(cppDllPath);
-         }
-
-         return clone;
+         return (wBinariesSet)this.MemberwiseClone();
       }
 
    }

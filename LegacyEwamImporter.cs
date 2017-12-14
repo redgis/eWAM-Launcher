@@ -200,21 +200,6 @@ namespace eWamLauncher
          return this.environment.launchers;
       }
 
-      private void appendPathIfFoundFiles(string path, string files, ICollection<string> list)
-      {
-         try
-         {
-            string[] foundFiles = Directory.GetFiles(path, files);
-
-            if (foundFiles.Length > 0)
-            {
-               list.Add(path);
-            }
-         }
-         catch (DirectoryNotFoundException)
-         { }
-      }
-
       public ObservableCollection<wBinariesSet> ImportBinaries(string path)
       {
          if (Directory.Exists(path))
@@ -224,13 +209,24 @@ namespace eWamLauncher
             wBinariesSet debugBinaries = new wBinariesSet();
             debugBinaries.name = "Debug";
 
-            this.appendPathIfFoundFiles(path + "\\bin", "*.exe", releaseBinaries.exePathes);
-            this.appendPathIfFoundFiles(path + "\\dll", "*.dll", releaseBinaries.dllPathes);
-            this.appendPathIfFoundFiles(path + "\\cppdll", "*.dll", releaseBinaries.cppdllPathes);
+            if (Directory.GetFiles(path + "\\bin", "*.exe").Length > 0)
+               releaseBinaries.exePathes += path + "\\bin" + "\n";
 
-            this.appendPathIfFoundFiles(path + "\\bin", "*.exe", debugBinaries.exePathes);
-            this.appendPathIfFoundFiles(path + "\\dll.debug", "*.dll", debugBinaries.dllPathes);
-            this.appendPathIfFoundFiles(path + "\\cppdll.debug", "*.dll", debugBinaries.cppdllPathes);
+            if (Directory.GetFiles(path + "\\dll", "*.dll").Length > 0)
+               releaseBinaries.dllPathes += path + "\\dll" + "\n";
+
+            if (Directory.GetFiles(path + "\\cppdll", "*.dll").Length > 0)
+               releaseBinaries.cppdllPathes += path + "\\cppdll" + "\n";
+
+
+            if (Directory.GetFiles(path + "\\bin", "*.exe").Length > 0)
+               debugBinaries.exePathes += path + "\\bin" + "\n";
+
+            if (Directory.GetFiles(path + "\\dll.debug", "*.dll").Length > 0)
+               debugBinaries.dllPathes += path + "\\dll.debug" + "\n";
+
+            if (Directory.GetFiles(path + "\\cppdll.debug", "*.dll").Length > 0)
+               debugBinaries.cppdllPathes += path + "\\cppdll.debug" + "\n";
 
             this.environment.binariesSets.Add(releaseBinaries);
             this.environment.binariesSets.Add(debugBinaries);
