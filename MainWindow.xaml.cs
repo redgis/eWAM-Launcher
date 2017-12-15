@@ -12,6 +12,7 @@ using System.Reflection;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using System.Runtime.Serialization.Formatters;
+using System.Diagnostics;
 
 namespace eWamLauncher
 {
@@ -119,7 +120,6 @@ namespace eWamLauncher
          jsonSerializer.WriteObject(writer, this.environments);
          writer.Close();
       }
-
 
       #region Environments actions
 
@@ -295,7 +295,90 @@ namespace eWamLauncher
          }
       }
 
+      public void OnExecuteLauncher(object sender, RoutedEventArgs e)
+      {
+         // Before anything, make sure all env. variable are up to date !
+         ((wEnvironment)lbEnvList.SelectedItem).ExpandAllEnvVariables();
+
+         wLauncher launcher = (wLauncher)lbLauncherList.SelectedItem;
+
+         ProcessStartInfo startInfo = new ProcessStartInfo();
+
+         // Get associated wBinariesSet
+         wBinariesSet binariesSet = null;
+         foreach (wBinariesSet bs in ((wEnvironment)lbEnvList.SelectedItem).binariesSets)
+         {
+            if(bs.name == launcher.binariesSet)
+            {
+               binariesSet = bs;
+               break;
+            }
+         }
+
+         // Set %PATH%
+         string pathVariable = "" + Environment.GetEnvironmentVariable("PATH");
+         pathVariable = binariesSet.exePathes.Replace('\n', ';') + ";" + 
+            binariesSet.dllPathes.Replace('\n', ';') + ";" +
+            binariesSet.cppdllPathes.Replace('\n', ';') + ";" + pathVariable;
+
+         if (startInfo.EnvironmentVariables.ContainsKey("PATH"))
+         {
+            startInfo.EnvironmentVariables["PATH"] = pathVariable;
+         }
+         else
+         {
+            startInfo.EnvironmentVariables.Add("PATH", pathVariable);
+         }
+
+         // Set all other environment variables
+         foreach (wEnvironmentVariable variable in 
+            ((wEnvironment)lbEnvList.SelectedItem).environmentVariables)
+         {
+            startInfo.EnvironmentVariables.Add(variable.name, variable.result);
+         }
+
+         // Find the path to our exe
+         string command = "";
+         foreach (string path in startInfo.EnvironmentVariables["PATH"].Split(';'))
+         {
+            if (File.Exists(path + "\\" + launcher.program))
+            {
+               command = path;
+               break;
+            }
+         }
+
+         // Set the command and arguments
+         startInfo.WorkingDirectory = command;
+         startInfo.FileName = command + "\\" + launcher.program;
+         startInfo.Arguments = launcher.arguments;
+
+         // We're all set, ready to launch.
+         startInfo.UseShellExecute = false;
+         try
+         {
+            Process newProcess = Process.Start(startInfo);
+         }
+         catch
+         {
+            // Display message showing the exception message
+         }
+      }
+
       #endregion
 
+      #region Environment variables actions
+
+      private void OnReevaluateEnvVariables(object sender, RoutedEventArgs e)
+      {
+         ((wEnvironment)lbEnvList.SelectedItem).ExpandAllEnvVariables();
+      }
+
+      private void OnReevaluateEnvVariables(object sender, EventArgs e)
+      {
+         ((wEnvironment)lbEnvList.SelectedItem).ExpandAllEnvVariables();
+      }
+
+      #endregion
    }
 }

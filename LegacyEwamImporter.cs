@@ -147,8 +147,11 @@ namespace eWamLauncher
                         }
 
                         // Add entries to environment variables list
-                        this.environment.environmentVariables.Add(
-                           new wEnvironmentVariable(newKey, match.Groups["value"].Value));
+                        if (newKey != "WYDE-DLL")
+                        {
+                           this.environment.environmentVariables.Add(
+                              new wEnvironmentVariable(newKey, match.Groups["value"].Value));
+                        }
                      }
                   }
                }

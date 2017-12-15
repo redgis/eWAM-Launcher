@@ -44,7 +44,7 @@
             <Image Source="pack://application:,,,/icon.ico" Width="64" Height="64" Margin="20" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
             <!-- <TextBlock Text="{Binding assemblyVersion}" HorizontalAlignment="Center" VerticalAlignment="Center" FontStyle="Italic" FontSize="15" Margin="50,0"/> -->
          </StackPanel>
-         <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5" HorizontalContentAlignment="Center" TabStripPlacement="Left">
+         <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5" HorizontalContentAlignment="Center" TabStripPlacement="Bottom">
             <TabItem Header="General ">
                <Grid>
                   <Grid.ColumnDefinitions>
@@ -68,13 +68,33 @@
                </Grid>
             </TabItem>
             <TabItem Header="Environment ">
-               <DataGrid ItemsSource="{Binding SelectedItem.environmentVariables, ElementName=lbEnvList, Mode=TwoWay}" AutoGenerateColumns="False">
-                  <DataGrid.Columns>
-                     <DataGridTextColumn Header="Name" Binding="{Binding name, Mode=TwoWay}" />
-                     <DataGridTextColumn Header="Value" Binding="{Binding value, Mode=TwoWay}" />
-                     <DataGridTextColumn Header="Interpreted" Binding="{Binding result, Mode=TwoWay}" />
-                  </DataGrid.Columns>
-               </DataGrid>
+               <DockPanel>
+                  <Button Click="OnReevaluateEnvVariables" Content="Re-Evaluate" DockPanel.Dock="Bottom" HorizontalAlignment="Center"/>
+                  <DataGrid ItemsSource="{Binding SelectedItem.environmentVariables, ElementName=lbEnvList, Mode=TwoWay}" 
+                     CurrentCellChanged="OnReevaluateEnvVariables"
+                     AutoGenerateColumns="False">
+                     <DataGrid.Columns>
+                        <DataGridTextColumn Header="Name" Binding="{Binding name, Mode=TwoWay}"/>
+                        <DataGridTextColumn Header="Value" Binding="{Binding value, Mode=TwoWay}">
+                           <DataGridTextColumn.ElementStyle>
+                              <Style>
+                                 <Setter Property="TextBlock.TextWrapping" Value="Wrap" />
+                                 <Setter Property="TextBlock.TextAlignment" Value="Left"/>
+                              </Style>
+                           </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="Interpreted" Binding="{Binding result, Mode=TwoWay}">
+                           <DataGridTextColumn.ElementStyle>
+                              <Style>
+                                 <Setter Property="TextBlock.TextWrapping" Value="Wrap" />
+                                 <Setter Property="TextBlock.TextAlignment" Value="Left"/>
+                              </Style>
+                           </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                     </DataGrid.Columns>
+                  </DataGrid>
+                  
+               </DockPanel>
             </TabItem>
             <TabItem Header="Binaries ">
                <DockPanel>
@@ -114,11 +134,11 @@
                         <Label Content="Name: " Grid.Column="0" Grid.Row="0"/>
                         <TextBox Text="{Binding SelectedItem.name, ElementName=lbBinariesSets, Mode=TwoWay}" Grid.Column="1" Grid.Row="0" Margin="5"/>
                         <Label Content="Binaries pathes: " Grid.Column="0" Grid.Row="1"/>
-                        <TextBox Text="{Binding SelectedItem.exePathes, ElementName=lbBinariesSets, Mode=TwoWay}" Grid.Column="1" Grid.Row="1" Margin="5"/>
+                        <TextBox Text="{Binding SelectedItem.exePathes, ElementName=lbBinariesSets, Mode=TwoWay}" ToolTip="One path per line. '\n' seperated pathes." Grid.Column="1" Grid.Row="1" Margin="5"/>
                         <Label Content="Dll pathes: " Grid.Column="0" Grid.Row="2"/>
-                        <TextBox Text="{Binding SelectedItem.dllPathes, ElementName=lbBinariesSets, Mode=TwoWay}" Grid.Column="1" Grid.Row="2" Margin="5"/>
+                        <TextBox Text="{Binding SelectedItem.dllPathes, ElementName=lbBinariesSets, Mode=TwoWay}" ToolTip="One path per line. '\n' seperated pathes." Grid.Column="1" Grid.Row="2" Margin="5"/>
                         <Label Content="CppDll pathes: " Grid.Column="0" Grid.Row="3"/>
-                        <TextBox Text="{Binding SelectedItem.cppdllPathes, ElementName=lbBinariesSets, Mode=TwoWay}" Grid.Column="1" Grid.Row="3" Margin="5"/>
+                        <TextBox Text="{Binding SelectedItem.cppdllPathes, ElementName=lbBinariesSets, Mode=TwoWay}" ToolTip="One path per line. '\n' seperated pathes." Grid.Column="1" Grid.Row="3" Margin="5"/>
                      </Grid>
                   </Grid>
                </DockPanel>
@@ -173,7 +193,7 @@
                                   SelectedValue="{Binding SelectedItem.binariesSet, ElementName=lbLauncherList}" 
                                   SelectedValuePath="name"
                                   Grid.Column="1" Grid.Row="3" Margin="5"/>
-                        <Button Content="Start" HorizontalAlignment="Left" Grid.Column="1" Grid.Row="4" Margin="5"/>
+                        <Button Click="OnExecuteLauncher" Content="Start" HorizontalAlignment="Left" Grid.Column="1" Grid.Row="4" Margin="5"/>
                      </Grid>
                   </Grid>
                </DockPanel>
