@@ -8,7 +8,7 @@
 	
 ## Ergonomy
 - [ ] Shouldn't we simply have a pool of eWAMs referenced by the various environments ?
-- [ ] Remove Wyde-DLL : this should not be editable, and be set from the binaries set
+- [x] Remove Wyde-DLL : this should not be editable, and be set from the binaries set
 	
 ## Code quality	
 - [ ] Document code
@@ -33,3 +33,11 @@
 - [ ] Give information about eWAM binaries versions / and if it is up to date
 - [ ] Allow binaries update from remote server
 - [ ] Allow pulling a new version of entire ewam binaries
+
+
+## XAML / WPF / .NET things to learn
+- [ ] How to create a UI for a specific type, and include it in another ? use pages ?
+
+## Bugs
+- [ ] eWAM import not importing its own environment correctly
+- [ ] Launcher Delete button not setting selection correctly after deleting last element of the list

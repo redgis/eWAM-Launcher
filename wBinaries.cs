@@ -39,9 +39,9 @@ namespace eWamLauncher
          }
       }
 
-      public wBinariesSet()
+      public wBinariesSet(string name = "")
       {
-         this.name = "";
+         this.name = name;
          this.exePathes = "";
          this.dllPathes = "";
          this.cppdllPathes = "";

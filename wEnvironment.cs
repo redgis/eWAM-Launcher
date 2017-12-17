@@ -21,19 +21,20 @@ namespace eWamLauncher
    public class wEnvironment : ICloneable, INotifyPropertyChanged
    {
       [DataMember()] private string _name;
-      public string name { get { return _name; }  set { _name = value;  NotifyPropertyChanged(); } }
+      public string name { get { return _name; } set { _name = value; NotifyPropertyChanged(); } }
 
       [DataMember()] private string _tgvPath;
-      public string tgvPath { get { return _tgvPath; } set { _tgvPath = value;  NotifyPropertyChanged(); } }
+      public string tgvPath { get { return _tgvPath; } set { _tgvPath = value; NotifyPropertyChanged(); } }
 
       [DataMember()] private ObservableCollection<wEnvironmentVariable> _environmentVariables;
-      public ObservableCollection<wEnvironmentVariable> environmentVariables { get { return _environmentVariables; } set { _environmentVariables = value;  NotifyPropertyChanged(); } }
-
-      [DataMember()] private ObservableCollection<wBinariesSet> _binariesSets;
-      public ObservableCollection<wBinariesSet> binariesSets { get { return _binariesSets; } set { _binariesSets = value;  NotifyPropertyChanged(); } }
+      public ObservableCollection<wEnvironmentVariable> environmentVariables { get { return _environmentVariables; } set { _environmentVariables = value; NotifyPropertyChanged(); } }
 
       [DataMember()] private ObservableCollection<wLauncher> _launchers;
-      public ObservableCollection<wLauncher> launchers { get { return _launchers; } set { _launchers = value;  NotifyPropertyChanged(); } }
+      public ObservableCollection<wLauncher> launchers { get { return _launchers; } set { _launchers = value; NotifyPropertyChanged(); } }
+
+      //TODO: add some validation in NotifyPropertyChanged : mainly change selected binariesSet in each launcher !
+      [DataMember()] private wEwam _ewam;
+      public wEwam ewam { get { return _ewam; } set { _ewam = value; this.NotifyPropertyChanged(); } }
 
       public ObservableCollection<Process> processes { get; set; }
 
@@ -54,25 +55,19 @@ namespace eWamLauncher
       public wEnvironment()
       {
          this.environmentVariables = new ObservableCollection<wEnvironmentVariable>();
-         this.binariesSets = new ObservableCollection<wBinariesSet>();
          this.launchers = new ObservableCollection<wLauncher>();
+         this.ewam = null;
       }
 
       public object Clone()
       {
          wEnvironment clone = (wEnvironment)this.MemberwiseClone();
          clone.environmentVariables = new ObservableCollection<wEnvironmentVariable>();
-         clone.binariesSets = new ObservableCollection<wBinariesSet>();
          clone.launchers = new ObservableCollection<wLauncher>();
 
          foreach (wEnvironmentVariable variable in this.environmentVariables)
          {
             clone.environmentVariables.Add((wEnvironmentVariable)variable.Clone());
-         }
-
-         foreach (wBinariesSet binariesSet in this.binariesSets)
-         {
-            clone.binariesSets.Add((wBinariesSet)binariesSet.Clone());
          }
 
          foreach (wLauncher launcher in this.launchers)
@@ -83,6 +78,25 @@ namespace eWamLauncher
          return clone;
       }
 
+
+      public void RestoreReferenceEwam(IEnumerable<wEwam> referenceEwams)
+      {
+         if (this.ewam == null)
+            return;
+
+         foreach (wEwam ew in referenceEwams)
+         {
+            if (ew.basePath == this.ewam.basePath)
+            {
+               this.ewam = ew;
+            }
+         }
+
+         foreach(wLauncher launcher in this.launchers)
+         {
+            launcher.RestoreReferenceBinariesSet(this.ewam);
+         }
+      }
 
       public wEnvironmentVariable GetEnvironmentVariable(string name)
       {
@@ -150,6 +164,22 @@ namespace eWamLauncher
 
       public void ExpandAllEnvVariables()
       {
+
+         //Get rid of WYDE-DLL variable : set up in binaries set !
+         List<wEnvironmentVariable> toRemove = new List<wEnvironmentVariable>();
+         foreach (wEnvironmentVariable envVariable in this.environmentVariables)
+         {
+            if (envVariable.name == "WYDE-DLL")
+            {
+               toRemove.Add(envVariable);
+            }
+         }
+         foreach (wEnvironmentVariable envVariable in toRemove)
+         {
+            this.environmentVariables.Remove(envVariable);
+         }
+
+
          // Expand all variables
          foreach (wEnvironmentVariable envVariable in this.environmentVariables)
          {

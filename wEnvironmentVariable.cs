@@ -34,12 +34,7 @@ namespace eWamLauncher
          }
       }
 
-      public wEnvironmentVariable()
-      {
-      }
-
-      public wEnvironmentVariable(string name, string value)
-         : this()
+      public wEnvironmentVariable(string name = "", string value = "")
       {
          this.name = name;
          this.value = value;

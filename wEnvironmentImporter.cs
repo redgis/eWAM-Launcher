@@ -8,61 +8,78 @@ using System.Collections.ObjectModel;
 
 namespace eWamLauncher
 {
-   public class LegacyEwamImporter : IEwamImporter
+   public class wEnvironmentImporter
    {
       private wEnvironment environment;
+      private ObservableCollection<wEwam> ewams;
+      private wWAMLauncherSettings settings;
 
 
-      public LegacyEwamImporter()
+      public wEnvironmentImporter(wWAMLauncherSettings settings, ObservableCollection<wEwam> ewams, wEnvironment environment = null)
       {
-         this.environment = new wEnvironment();
+         this.ewams = ewams;
+         this.settings = settings;
+
+         if (environment == null)
+         {
+            this.environment = new wEnvironment();
+         }
+         else
+         {
+            this.environment = environment;
+         }
       }
 
-      public LegacyEwamImporter(wEnvironment environment)
-      {
-         this.environment = environment;
-      }
-
-      public void SetInitialEnvironment(wEnvironment environment)
-      {
-         this.environment = environment;
-      }
+      public wEnvironmentImporter(wProfile profile, wEnvironment environment = null) : this(profile.settings, profile.ewams, environment)
+      { }
 
       public wEnvironment GetEnvironment()
       {
          return this.environment;
       }
 
-      public wEnvironment ImportFromPath(string path) 
+      public wEnvironment ImportFromPath(string path)
       {
          if (!Directory.Exists(path)) throw new DirectoryNotFoundException(path);
 
+         char[] delimiters = { ';', '\n' };
+
          // Look for TGVs
-         if (!File.Exists(path + "\\tgv\\W001001.TGV") || !File.Exists(path + "\\tgv\\W003001.TGV"))
+         if (this.environment.tgvPath == "")
          {
-            throw new FileNotFoundException("W001001.TGV or W003001.TGV");
+            foreach (string subPath in this.settings.tgvSearchPathes.Split(delimiters))
+            {
+               if (File.Exists(path + subPath + "\\W001001.TGV") && File.Exists(path + subPath + "\\W003001.TGV"))
+               {
+                  this.environment.tgvPath = path + "\\" + subPath;
+                  break;
+               }
+            }
          }
 
-         this.environment.tgvPath = path + "\\tgv";
-
-         if (File.Exists(path + "\\tgv\\Prevoyance.TGV") &&
-             File.Exists(path + "\\tgv\\WydePolicyAdminSolution.TGV"))
+         // Find out if it looks like a simple ewam environment or a wynsure environment
+         if (this.environment.tgvPath != "")
          {
-            this.environment.name = "Wynsure";
-         }
-         else
-         {
-            this.environment.name = "eWAM";
+            if (File.Exists(this.environment.tgvPath + "\\Prevoyance.TGV") && 
+               File.Exists(this.environment.tgvPath + "\\WydePolicyAdminSolution.TGV"))
+            {
+               this.environment.name = "Wynsure";
+            }
+            else
+            {
+               this.environment.name = "eWAM";
+            }
          }
 
          // Look for env vars
-         try
+         foreach (string subPath in this.settings.launcherSearchPathes.Split(delimiters))
          {
-            this.ImportEnvironmentVariables(path + "\\bin");
-         }
-         catch (IOException)
-         {
-            this.ImportEnvironmentVariables(path + "\\batches");
+            try
+            {
+               this.ImportEnvironmentVariables(path + "\\" + subPath);
+            }
+            catch (IOException)
+            { }
          }
 
          // Resolve env. vars
@@ -71,8 +88,33 @@ namespace eWamLauncher
          // Look for binaries
          try
          {
-            string wydeRoot = this.environment.GetEnvironmentVariable("WYDE-ROOT").value;
-            ImportBinaries(wydeRoot);
+            wEnvironmentVariable wydeRootEnvVar = this.environment.GetEnvironmentVariable("WYDE-ROOT");
+            string wydeRoot = "";
+            if (wydeRootEnvVar != null)
+               wydeRoot = wydeRootEnvVar.value;
+
+            // See if we can guess the corresponding eWAM environment, if any exists.
+            // If not, maybe try importing a new eWAM from the newly found WYDE-ROOT ... ?
+            foreach (wEwam ew in this.ewams)
+            {
+               if (ew.basePath == wydeRoot)
+               {
+                  this.environment.ewam = ew;
+                  break;
+               }
+            }
+
+            // if no corresponding ewam found, try to import it
+            if (this.environment.ewam == null)
+            {
+               wEwamImporter ewamImporter = new wEwamImporter(this.settings);
+               this.environment.ewam = ewamImporter.ImportFromPath(wydeRoot);
+            }
+
+            if (this.environment.ewam != null)
+            {
+               this.ewams.Add(this.environment.ewam);
+            }
          }
          catch (DirectoryNotFoundException)
          {
@@ -84,13 +126,15 @@ namespace eWamLauncher
          }
 
          // Look for launchers, load launcher-specific env. variables
-         try
-         {
-            this.ImportLaunchers(path + "\\bin");
-         }
-         catch (IOException)
-         {
-            this.ImportLaunchers(path + "\\batches");
+         foreach (string subPath in this.settings.launcherSearchPathes.Split(delimiters))
+         { 
+            try
+            {
+               this.ImportLaunchers(path + "\\" + subPath);
+            }
+            catch (IOException)
+            {
+            }
          }
 
          return this.environment;
@@ -189,9 +233,23 @@ namespace eWamLauncher
                         launcher.name = launcherName;
                         launcher.program = match.Groups["command"].Value;
                         launcher.arguments = match.Groups["value"].Value;
-                        if (this.environment.binariesSets.Count > 0)
+                        if (this.environment.ewam != null && this.environment.ewam.binariesSets.Count > 0)
                         {
-                           launcher.binariesSet = this.environment.binariesSets[0].name;
+                           if (launcherName.ToLower().Contains("debug"))
+                           {
+                              foreach(wBinariesSet bs in this.environment.ewam.binariesSets)
+                              {
+                                 if (bs.name.ToLower().Contains("debug"))
+                                 {
+                                    launcher.binariesSet = bs;
+                                    break;
+                                 }
+                              }
+                           }
+                           else
+                           {
+                              launcher.binariesSet = this.environment.ewam.binariesSets[0];
+                           }
                         }
                         this.environment.launchers.Add(launcher);
                      }
@@ -202,45 +260,5 @@ namespace eWamLauncher
 
          return this.environment.launchers;
       }
-
-      public ObservableCollection<wBinariesSet> ImportBinaries(string path)
-      {
-         if (Directory.Exists(path))
-         {
-            wBinariesSet releaseBinaries = new wBinariesSet();
-            releaseBinaries.name = "Release";
-            wBinariesSet debugBinaries = new wBinariesSet();
-            debugBinaries.name = "Debug";
-
-            if (Directory.GetFiles(path + "\\bin", "*.exe").Length > 0)
-               releaseBinaries.exePathes += path + "\\bin" + "\n";
-
-            if (Directory.GetFiles(path + "\\dll", "*.dll").Length > 0)
-               releaseBinaries.dllPathes += path + "\\dll" + "\n";
-
-            if (Directory.GetFiles(path + "\\cppdll", "*.dll").Length > 0)
-               releaseBinaries.cppdllPathes += path + "\\cppdll" + "\n";
-
-
-            if (Directory.GetFiles(path + "\\bin", "*.exe").Length > 0)
-               debugBinaries.exePathes += path + "\\bin" + "\n";
-
-            if (Directory.GetFiles(path + "\\dll.debug", "*.dll").Length > 0)
-               debugBinaries.dllPathes += path + "\\dll.debug" + "\n";
-
-            if (Directory.GetFiles(path + "\\cppdll.debug", "*.dll").Length > 0)
-               debugBinaries.cppdllPathes += path + "\\cppdll.debug" + "\n";
-
-            this.environment.binariesSets.Add(releaseBinaries);
-            this.environment.binariesSets.Add(debugBinaries);
-         }
-         else
-         {
-            throw new DirectoryNotFoundException("WYDE-ROOT : " + path);
-         }
-
-         return this.environment.binariesSets;
-      }
-
    }
 }

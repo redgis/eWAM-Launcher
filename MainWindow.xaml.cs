@@ -22,12 +22,11 @@ namespace eWamLauncher
    [DataContract(Name = "eWamLauncher", Namespace = "http://www.wyde.com")]
    public partial class MainWindow : MetroWindow, INotifyPropertyChanged
    {
-      [DataMember()] private ObservableCollection<wEnvironment> _environments;
-      public ObservableCollection<wEnvironment> environments { get { return _environments; } set { _environments = value;  this.NotifyPropertyChanged(); } }
-
-      [DataMember()] public string Settings { get; set; }
+      private wProfile _profile;
+      public wProfile profile{ get { return _profile; } set { _profile = value; this.NotifyPropertyChanged(); } }
 
       public string assemblyVersion { get; set; }
+
 
       public event PropertyChangedEventHandler PropertyChanged;
 
@@ -47,7 +46,7 @@ namespace eWamLauncher
          this.assemblyVersion = Assembly.GetEntryAssembly().GetName().Name + "\n" + Assembly.GetEntryAssembly().GetName().Version;
          this.assemblyVersion += "\n(c) Mphasis Wyde";
 
-         this.environments = new ObservableCollection<wEnvironment>();
+         this.profile = new wProfile();
 
          string defaultXMLSettings = Environment.ExpandEnvironmentVariables("%APPDATA%\\ewamLauncher.config.xml");
          string defaultJSONSettings = Environment.ExpandEnvironmentVariables("%APPDATA%\\ewamLauncher.config.json");
@@ -80,9 +79,14 @@ namespace eWamLauncher
          {
             FileStream reader = new FileStream(fileName, FileMode.Open);
             DataContractSerializer xmlDeserializer = new DataContractSerializer(typeof(ObservableCollection<wEnvironment>));
-            this.environments =
-                (ObservableCollection<wEnvironment>)xmlDeserializer.ReadObject(reader);
+            this.profile =
+                (wProfile)xmlDeserializer.ReadObject(reader);
             reader.Close();
+
+            foreach (wEnvironment env in this.profile.environments)
+            {
+               env.RestoreReferenceEwam(this.profile.ewams);
+            }
          }
          catch (FileNotFoundException)
          {
@@ -92,8 +96,8 @@ namespace eWamLauncher
       public void SaveToXML(string fileName)
       {
          FileStream writer = new FileStream(fileName, FileMode.Create);
-         DataContractSerializer xmlSerializer = new DataContractSerializer(typeof(ObservableCollection<wEnvironment>));
-         xmlSerializer.WriteObject(writer, this.environments);
+         DataContractSerializer xmlSerializer = new DataContractSerializer(typeof(wProfile));
+         xmlSerializer.WriteObject(writer, this.profile);
          writer.Close();
       }
 
@@ -102,10 +106,15 @@ namespace eWamLauncher
          try
          {
             FileStream reader = new FileStream(fileName, FileMode.Open);
-            DataContractJsonSerializer jsonDeserializer = new DataContractJsonSerializer(typeof(ObservableCollection<wEnvironment>));
-            this.environments =
-                (ObservableCollection<wEnvironment>)jsonDeserializer.ReadObject(reader);
+            DataContractJsonSerializer jsonDeserializer = new DataContractJsonSerializer(typeof(wProfile));
+            this.profile =
+                (wProfile)jsonDeserializer.ReadObject(reader);
             reader.Close();
+
+            foreach (wEnvironment env in this.profile.environments)
+            {
+               env.RestoreReferenceEwam(this.profile.ewams);
+            }
          }
          catch (FileNotFoundException)
          {
@@ -116,8 +125,8 @@ namespace eWamLauncher
       {
          FileStream writer = new FileStream(fileName, FileMode.Create);
          DataContractJsonSerializer jsonSerializer =
-             new DataContractJsonSerializer(typeof(ObservableCollection<wEnvironment>));
-         jsonSerializer.WriteObject(writer, this.environments);
+             new DataContractJsonSerializer(typeof(wProfile));
+         jsonSerializer.WriteObject(writer, this.profile);
          writer.Close();
       }
 
@@ -126,7 +135,7 @@ namespace eWamLauncher
       public void OnNewEnvironment(object sender, RoutedEventArgs e)
       {
          wEnvironment environment = new wEnvironment();
-         environment.name = "eWAM " + this.environments.Count().ToString();
+         environment.name = "eWAM " + this.profile.environments.Count().ToString();
          ((ObservableCollection<wEnvironment>)lbEnvList.ItemsSource).Add(environment);
          lbEnvList.SelectedItem = environment;
 
@@ -141,13 +150,14 @@ namespace eWamLauncher
 
          wEnvironment environment = (wEnvironment)((wEnvironment)lbEnvList.SelectedItem).Clone();
          environment.name += " (clone)";
-         this.environments.Add(environment);
+         this.profile.environments.Add(environment);
          lbEnvList.SelectedItem = environment;
       }
 
       public void OnDeleteEnvironment(object sender, RoutedEventArgs e)
       {
          int curSelection = lbEnvList.SelectedIndex;
+
          if (lbEnvList.SelectedItem == null)
          {
             return;
@@ -155,14 +165,15 @@ namespace eWamLauncher
 
          ((ObservableCollection<wEnvironment>)lbEnvList.ItemsSource).Remove((wEnvironment)lbEnvList.SelectedItem);
          lbEnvList.SelectedIndex = curSelection;
+         if (lbEnvList.SelectedIndex == -1)
+            lbEnvList.SelectedIndex = curSelection - 1;
       }
 
       public void OnImportEnvironment(object sender, RoutedEventArgs e)
       {
-         if (this.environments == null)
-         {
-            this.environments = new ObservableCollection<wEnvironment>();
-         }
+
+         //FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
+         //folderBrowser.Description = "Select root folder of your environment (i.e. the folder containing tgv/ "
 
          OpenFileDialog fileBrowser = new OpenFileDialog();
 
@@ -172,10 +183,11 @@ namespace eWamLauncher
 
          if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
          {
-            IEwamImporter importer = new LegacyEwamImporter();
-
+            wEnvironmentImporter importer = new wEnvironmentImporter(this.profile);
+            
             // Get Parent of Tgv/ folder containing W001001.TGV
             string envPath = Path.GetDirectoryName(Path.GetDirectoryName(fileBrowser.FileName));
+            importer.GetEnvironment().tgvPath = Path.GetDirectoryName(fileBrowser.FileName);
             wEnvironment environment = importer.ImportFromPath(envPath);
             ((ObservableCollection<wEnvironment>)lbEnvList.ItemsSource).Add(environment);
             lbEnvList.SelectedItem = environment;
@@ -184,66 +196,8 @@ namespace eWamLauncher
 
       #endregion
 
-
-      #region binariesSets actions
-
-      public void OnNewBinariesSet(object sender, RoutedEventArgs e)
-      {
-         wBinariesSet binariesSet = new wBinariesSet();
-         binariesSet.name = "new set of binaries " + ((ObservableCollection<wBinariesSet>)lbBinariesSets.ItemsSource).Count.ToString();
-         ((ObservableCollection<wBinariesSet>)lbBinariesSets.ItemsSource).Add(binariesSet);
-         lbBinariesSets.SelectedItem = binariesSet;
-      }
-
-      public void OnDuplicateBinariesSet(object sender, RoutedEventArgs e)
-      {
-         if (lbBinariesSets.SelectedItem == null)
-         {
-            return;
-         }
-
-         wBinariesSet binariesSet = (wBinariesSet)((wBinariesSet)lbBinariesSets.SelectedItem).Clone();
-         binariesSet.name += " (clone)";
-         ((ObservableCollection<wBinariesSet>)lbBinariesSets.ItemsSource).Add(binariesSet);
-         lbBinariesSets.SelectedItem = binariesSet;
-      }
-
-      public void OnDeleteBinariesSet(object sender, RoutedEventArgs e)
-      {
-         int curSelection = lbBinariesSets.SelectedIndex;
-         if (lbBinariesSets.SelectedItem == null)
-         {
-            return;
-         }
-
-         ((ObservableCollection<wBinariesSet>)lbBinariesSets.ItemsSource).Remove((wBinariesSet)lbBinariesSets.SelectedItem);
-         lbBinariesSets.SelectedIndex = curSelection;
-      }
-
-      public void OnImportBinariesSets(object sender, RoutedEventArgs e)
-      {
-         OpenFileDialog fileBrowser = new OpenFileDialog();
-
-         fileBrowser.Filter = "Any file|*.exe;*.dll";
-         fileBrowser.FilterIndex = 1;
-         fileBrowser.RestoreDirectory = true;
-
-         if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-         {
-
-            string envPath = Path.GetDirectoryName(Path.GetDirectoryName(fileBrowser.FileName));
-
-            IEwamImporter importer = new LegacyEwamImporter((wEnvironment)lbEnvList.SelectedItem);
-            importer.ImportBinaries(envPath);
-         }
-      }
-
-      #endregion
-
-
       #region launchers actions
-
-
+      
       public void OnNewLauncher(object sender, RoutedEventArgs e)
       {
          wLauncher launcher = new wLauncher();
@@ -288,10 +242,10 @@ namespace eWamLauncher
          if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
          {
 
-            string envPath = Path.GetDirectoryName(fileBrowser.FileName);
-
-            IEwamImporter importer = new LegacyEwamImporter((wEnvironment)lbEnvList.SelectedItem);
-            importer.ImportLaunchers(envPath);
+            string launchersPath = Path.GetDirectoryName(fileBrowser.FileName);
+            
+            wEnvironmentImporter importer = new wEnvironmentImporter((wProfile)this.profile, (wEnvironment)lbEnvList.SelectedItem);
+            importer.ImportLaunchers(launchersPath);
          }
       }
 
@@ -304,22 +258,11 @@ namespace eWamLauncher
 
          ProcessStartInfo startInfo = new ProcessStartInfo();
 
-         // Get associated wBinariesSet
-         wBinariesSet binariesSet = null;
-         foreach (wBinariesSet bs in ((wEnvironment)lbEnvList.SelectedItem).binariesSets)
-         {
-            if(bs.name == launcher.binariesSet)
-            {
-               binariesSet = bs;
-               break;
-            }
-         }
-
          // Set %PATH%
          string pathVariable = "" + Environment.GetEnvironmentVariable("PATH");
-         pathVariable = binariesSet.exePathes.Replace('\n', ';') + ";" + 
-            binariesSet.dllPathes.Replace('\n', ';') + ";" +
-            binariesSet.cppdllPathes.Replace('\n', ';') + ";" + pathVariable;
+         pathVariable = launcher.binariesSet.exePathes.Replace('\n', ';') + ";" +
+            launcher.binariesSet.dllPathes.Replace('\n', ';') + ";" +
+            launcher.binariesSet.cppdllPathes.Replace('\n', ';') + ";" + pathVariable;
 
          if (startInfo.EnvironmentVariables.ContainsKey("PATH"))
          {
@@ -329,6 +272,15 @@ namespace eWamLauncher
          {
             startInfo.EnvironmentVariables.Add("PATH", pathVariable);
          }
+
+         // Put CppDll Folders in WYDE-DLL
+         char[] delimiters = { '\n', ';' };
+         string[] cppdlls = launcher.binariesSet.cppdllPathes.Split(delimiters);
+         startInfo.EnvironmentVariables.Add("WYDE-DLL", cppdlls[0]);
+
+         // TODO : to use when WYDE-DLL support ';' seperated list of pathes.
+         //string cppdlls = launcher.binariesSet.cppdllPathes.Replace('\n', ';');
+         //startInfo.EnvironmentVariables.Add("WYDE-DLL", cppdlls);
 
          // Set all other environment variables
          foreach (wEnvironmentVariable variable in 
@@ -380,5 +332,134 @@ namespace eWamLauncher
       }
 
       #endregion
+
+      #region Ewam actions
+
+      public void OnNewEwam(object sender, RoutedEventArgs e)
+      {
+         wEwam ewam = new wEwam();
+         ewam.name = "eWAM " + this.profile.environments.Count().ToString();
+         ((ObservableCollection<wEwam>)lbEwamList.ItemsSource).Add(ewam);
+         lbEwamList.SelectedItem = ewam;
+      }
+
+      public void OnDuplicateEwam(object sender, RoutedEventArgs e)
+      {
+         if (lbEwamList.SelectedItem == null)
+         {
+            return;
+         }
+
+         wEwam ewam = (wEwam)((wEwam)lbEwamList.SelectedItem).Clone();
+         ewam.name += " (clone)";
+         this.profile.ewams.Add(ewam);
+         lbEwamList.SelectedItem = ewam;
+      }
+
+      public void OnDeleteEwam(object sender, RoutedEventArgs e)
+      {
+         int curSelection = lbEwamList.SelectedIndex;
+
+         if (lbEwamList.SelectedItem == null)
+         {
+            return;
+         }
+
+         ((ObservableCollection<wEwam>)lbEwamList.ItemsSource).Remove((wEwam)lbEwamList.SelectedItem);
+         
+         lbEwamList.SelectedIndex = curSelection;
+         if (lbEwamList.SelectedIndex == -1)
+            lbEwamList.SelectedIndex = curSelection - 1;
+      }
+
+      public void OnImportEwam(object sender, RoutedEventArgs e)
+      {
+         //FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
+         //folderBrowser.Description = "Select root folder of an eWAM installation.";
+
+         OpenFileDialog fileBrowser = new OpenFileDialog();
+
+         fileBrowser.Filter = "eWAM Maps Files|*.Map";
+         fileBrowser.FilterIndex = 1;
+         fileBrowser.RestoreDirectory = true;
+         fileBrowser.FileName = "Select a .map file in eWAM root folder.";
+
+         if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+         {
+            wEwamImporter wamImporter = new wEwamImporter(this.profile);
+
+            string envPath = Path.GetDirectoryName(fileBrowser.FileName);
+            wEwam ewam = wamImporter.ImportFromPath(envPath);
+            ((ObservableCollection<wEwam>)lbEwamList.ItemsSource).Add(ewam);
+            lbEwamList.SelectedItem = ewam;
+
+            //Import the environment associated with this new ewam
+            wEnvironmentImporter envImporter = new wEnvironmentImporter(this.profile);
+            wEnvironment newEnv = envImporter.ImportFromPath(ewam.basePath);
+            newEnv.name = ewam.name;
+            this.profile.environments.Add(newEnv);
+         }
+      }
+
+      #endregion
+
+      #region binariesSets actions
+
+      public void OnNewBinariesSet(object sender, RoutedEventArgs e)
+      {
+         wBinariesSet binariesSet = new wBinariesSet();
+         binariesSet.name = "new set of binaries " + ((ObservableCollection<wBinariesSet>)lbBinariesSets.ItemsSource).Count.ToString();
+         ((ObservableCollection<wBinariesSet>)lbBinariesSets.ItemsSource).Add(binariesSet);
+         lbBinariesSets.SelectedItem = binariesSet;
+      }
+
+      public void OnDuplicateBinariesSet(object sender, RoutedEventArgs e)
+      {
+         if (lbBinariesSets.SelectedItem == null)
+         {
+            return;
+         }
+
+         wBinariesSet binariesSet = (wBinariesSet)((wBinariesSet)lbBinariesSets.SelectedItem).Clone();
+         binariesSet.name += " (clone)";
+         ((ObservableCollection<wBinariesSet>)lbBinariesSets.ItemsSource).Add(binariesSet);
+         lbBinariesSets.SelectedItem = binariesSet;
+      }
+
+      public void OnDeleteBinariesSet(object sender, RoutedEventArgs e)
+      {
+         int curSelection = lbBinariesSets.SelectedIndex;
+         if (lbBinariesSets.SelectedItem == null)
+         {
+            return;
+         }
+
+         ((ObservableCollection<wBinariesSet>)lbBinariesSets.ItemsSource).Remove((wBinariesSet)lbBinariesSets.SelectedItem);
+         lbBinariesSets.SelectedIndex = curSelection;
+         if (lbBinariesSets.SelectedIndex == -1)
+            lbBinariesSets.SelectedIndex = curSelection - 1;
+      }
+
+      //public void OnImportBinariesSets(object sender, RoutedEventArgs e)
+      //{
+      //   OpenFileDialog fileBrowser = new OpenFileDialog();
+
+      //   fileBrowser.Filter = "Any file|*.exe;*.dll";
+      //   fileBrowser.FilterIndex = 1;
+      //   fileBrowser.RestoreDirectory = true;
+
+      //   if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+      //   {
+
+      //      string envPath = Path.GetDirectoryName(Path.GetDirectoryName(fileBrowser.FileName));
+
+      //      wEwamImporter importer = new wEwamImporter((wProfile)this.profile);
+      //      importer.ImportFromPath(envPath);
+      //   }
+      //}
+
+      #endregion
+
+
    }
 }

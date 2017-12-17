@@ -22,8 +22,11 @@ namespace eWamLauncher
       [DataMember()] private string _arguments;
       [DataMember()] public string arguments { get { return _arguments; } set { _arguments = value;  NotifyPropertyChanged(); } }
 
-      [DataMember()] private string _binariesSet;
-      [DataMember()] public string binariesSet { get { return _binariesSet; } set { _binariesSet = value;  NotifyPropertyChanged(); } }
+      //[DataMember()] private string _binariesSet;
+      //[DataMember()] public string binariesSet { get { return _binariesSet; } set { _binariesSet = value;  NotifyPropertyChanged(); } }
+
+      [DataMember()] private wBinariesSet _binariesSet;
+      [DataMember()] public wBinariesSet binariesSet { get { return _binariesSet; } set { _binariesSet = value; NotifyPropertyChanged(); } }
 
       public event PropertyChangedEventHandler PropertyChanged;
 
@@ -43,12 +46,28 @@ namespace eWamLauncher
          this.name = "";
          this.program = "";
          this.arguments = "";
-         this.binariesSet = "";
+         this.binariesSet = null;
       }
 
       public object Clone()
       {
+         wLauncher clone = (wLauncher)this.MemberwiseClone();
+
+         //No need to clone binariesSet because it is a reference!
+         //clone.binariesSet = this.binariesSet.Clone();
+
          return this.MemberwiseClone();
+      }
+
+      public void RestoreReferenceBinariesSet(wEwam ewam)
+      {
+         foreach (wBinariesSet binariesSet in ewam.binariesSets)
+         {
+            if (binariesSet.name == this.binariesSet.name)
+            {
+               this.binariesSet = binariesSet;
+            }
+         }
       }
    }
 }
