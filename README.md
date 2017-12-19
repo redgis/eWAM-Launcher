@@ -25,6 +25,7 @@
 - [ ] Also clean up environment variables at import : remove WYDE-DLL (which will be set at launch)
 - [ ] have a list of predefined subfolders in settings, to lookup into, for each type of thing to import
 	e.g., for binaries : bin/, bin/win32/debug/, bin/win32/release, bin/release/op, etc... or just recursively lookup for binaries and dlls ?
+- [ ] eWAM import : detect if 64 or 32 bits : https://superuser.com/questions/358434/how-to-check-if-a-binary-is-32-or-64-bit-on-windows
 	
 ## General settings
 - [ ] Implement application settings class, make it serializable
@@ -35,9 +36,7 @@
 ## Auto update
 - [x] Auto updater using Squirrel
    Need to build package before publishing on website :
-      nuget pack Squirrel\Ewam.Launcher.1.0.33.nuspec
-      packages\squirrel.windows.1.7.8\tools\Squirrel.exe --releasify .\Ewam.Launcher.1.0.33.nupkg
-      
+      nuget pack -OutputDirectory Squirrel\ Squirrel\Ewam.Launcher.1.0.33.nuspec && packages\squirrel.windows.1.7.8\tools\Squirrel.exe --releasify Squirrel\Ewam.Launcher.1.0.33.nupkg --releaseDir=Squirrel\Release\ --packagesDir=packages\
 - [ ] Give information about eWAM binaries versions / and if it is up to date
 - [ ] Allow binaries update from remote server
 - [ ] Allow pulling a new version of entire ewam binaries

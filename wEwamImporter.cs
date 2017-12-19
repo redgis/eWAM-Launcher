@@ -41,6 +41,8 @@ namespace eWamLauncher
       {
          if (!Directory.Exists(path)) throw new DirectoryNotFoundException("WYDE-ROOT : " + path);
 
+         path = MainWindow.NormalizePath(path);
+         
          this.ewam = new wEwam(path);
 
          // dictionaries to store (key:binaries set name) => (value:pathes)
@@ -112,6 +114,8 @@ namespace eWamLauncher
       private void FindPathes(string basePath, string[] subPathes, string fileType,
          Dictionary<string, string> foundPathes)
       {
+         basePath = MainWindow.NormalizePath(basePath);
+
          foreach (string subSearchPath in subPathes)
          {
             string defaultBinariesSetName = "release";
@@ -121,7 +125,7 @@ namespace eWamLauncher
                defaultBinariesSetName = "debug";
             }
 
-            string searchPath = basePath + "\\" + subSearchPath;
+            string searchPath = MainWindow.NormalizePath(basePath + "\\" + subSearchPath);
 
             try
             {

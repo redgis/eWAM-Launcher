@@ -16,9 +16,11 @@ using System.Diagnostics;
 using Squirrel;
 using System.Threading.Tasks;
 
-
 namespace eWamLauncher
 {
+
+
+
    /// <summary>
    /// Interaction logic for MainWindow.xaml
    /// </summary>
@@ -178,6 +180,13 @@ namespace eWamLauncher
              new DataContractJsonSerializer(typeof(wProfile));
          jsonSerializer.WriteObject(writer, this.profile);
          writer.Close();
+      }
+
+      public static string NormalizePath(string path)
+      {
+         return Path.GetFullPath(new Uri(path).LocalPath)
+                  .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                  .ToUpperInvariant();
       }
 
       #region Environments actions
@@ -438,7 +447,7 @@ namespace eWamLauncher
          {
             wEwamImporter wamImporter = new wEwamImporter(this.profile);
 
-            string envPath = Path.GetDirectoryName(fileBrowser.FileName);
+            string envPath = MainWindow.NormalizePath(Path.GetDirectoryName(fileBrowser.FileName));
             wEwam ewam = wamImporter.ImportFromPath(envPath);
             ((ObservableCollection<wEwam>)lbEwamList.ItemsSource).Add(ewam);
             lbEwamList.SelectedItem = ewam;

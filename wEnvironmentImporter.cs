@@ -42,6 +42,8 @@ namespace eWamLauncher
       {
          if (!Directory.Exists(path)) throw new DirectoryNotFoundException(path);
 
+         path = MainWindow.NormalizePath(path);
+
          char[] delimiters = { ';', '\n' };
 
          // Look for TGVs
@@ -51,10 +53,14 @@ namespace eWamLauncher
             {
                if (File.Exists(path + "\\" + subPath + "\\W001001.TGV") && File.Exists(path + "\\" + subPath + "\\W003001.TGV"))
                {
-                  this.environment.tgvPath = path + "\\" + subPath;
+                  this.environment.tgvPath = MainWindow.NormalizePath(path + "\\" + subPath);
                   break;
                }
             }
+         }
+         else
+         {
+            this.environment.tgvPath = MainWindow.NormalizePath(this.environment.tgvPath);
          }
 
          // Find out if it looks like a simple ewam environment or a wynsure environment
@@ -91,13 +97,13 @@ namespace eWamLauncher
             wEnvironmentVariable wydeRootEnvVar = this.environment.GetEnvironmentVariable("WYDE-ROOT");
             string wydeRoot = "";
             if (wydeRootEnvVar != null)
-               wydeRoot = wydeRootEnvVar.value;
+               wydeRoot = MainWindow.NormalizePath(wydeRootEnvVar.value);
 
             // See if we can guess the corresponding eWAM environment, if any exists.
             // If not, maybe try importing a new eWAM from the newly found WYDE-ROOT ... ?
             foreach (wEwam ew in this.ewams)
             {
-               if (ew.basePath == wydeRoot)
+               if (ew.basePath ==  wydeRoot)
                {
                   this.environment.ewam = ew;
                   break;
@@ -109,12 +115,14 @@ namespace eWamLauncher
             {
                wEwamImporter ewamImporter = new wEwamImporter(this.settings);
                this.environment.ewam = ewamImporter.ImportFromPath(wydeRoot);
+
+               if (this.environment.ewam != null)
+               {
+                  this.ewams.Add(this.environment.ewam);
+               }
             }
 
-            if (this.environment.ewam != null)
-            {
-               this.ewams.Add(this.environment.ewam);
-            }
+
          }
          catch (DirectoryNotFoundException)
          {
@@ -143,6 +151,8 @@ namespace eWamLauncher
       public ObservableCollection<wEnvironmentVariable> ImportEnvironmentVariables(string path)
       {
          if (!Directory.Exists(path)) throw new DirectoryNotFoundException(path);
+
+         path = MainWindow.NormalizePath(path);
 
          //Try importing env variables
          string[] batches = Directory.GetFiles(path, "*Set Env.bat");
@@ -208,6 +218,8 @@ namespace eWamLauncher
       {
          if (!Directory.Exists(path)) throw new DirectoryNotFoundException(path);
 
+         path = MainWindow.NormalizePath(path);
+         
          // Try importing launchers
          string[] batches = Directory.GetFiles(path, "*.bat");
          if (batches.Length <= 0) throw new FileNotFoundException(path + "*.bat");
