@@ -528,7 +528,10 @@ namespace eWamLauncher
             using (var mgr = new UpdateManager(this.profile.settings.launcherUpdateServerURL))
             {
                UpdateInfo updateInfo = await mgr.CheckForUpdate();
-               if (updateInfo.CurrentlyInstalledVersion.SHA1 != updateInfo.FutureReleaseEntry.SHA1)
+
+               this.assemblyUpdateInfo = "Latest version: " + updateInfo.FutureReleaseEntry.Version;
+
+               if (updateInfo.CurrentlyInstalledVersion.Version != updateInfo.FutureReleaseEntry.Version)
                {
                   //this.assemblyUpdateInfo = "New version available, downloading...";
 
