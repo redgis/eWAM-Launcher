@@ -45,11 +45,11 @@ namespace eWamLauncher
          char[] delimiters = { ';', '\n' };
 
          // Look for TGVs
-         if (this.environment.tgvPath == "")
+         if (this.environment.tgvPath == null || this.environment.tgvPath == "")
          {
             foreach (string subPath in this.settings.tgvSearchPathes.Split(delimiters))
             {
-               if (File.Exists(path + subPath + "\\W001001.TGV") && File.Exists(path + subPath + "\\W003001.TGV"))
+               if (File.Exists(path + "\\" + subPath + "\\W001001.TGV") && File.Exists(path + "\\" + subPath + "\\W003001.TGV"))
                {
                   this.environment.tgvPath = path + "\\" + subPath;
                   break;
@@ -58,7 +58,7 @@ namespace eWamLauncher
          }
 
          // Find out if it looks like a simple ewam environment or a wynsure environment
-         if (this.environment.tgvPath != "")
+         if (this.environment.tgvPath != null && this.environment.tgvPath != "")
          {
             if (File.Exists(this.environment.tgvPath + "\\Prevoyance.TGV") && 
                File.Exists(this.environment.tgvPath + "\\WydePolicyAdminSolution.TGV"))

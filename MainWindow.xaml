@@ -11,7 +11,10 @@
    <DockPanel>
       <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" HorizontalAlignment="Center">
          <Image Source="pack://application:,,,/icon.ico" Width="32" Height="32" Margin="10" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
-         <!-- <TextBlock Text="{Binding assemblyVersion}" HorizontalAlignment="Center" VerticalAlignment="Center" FontStyle="Italic" FontSize="15" Margin="50,0"/> -->
+         <TextBlock Text="{Binding assemblyVersion}" HorizontalAlignment="Center" VerticalAlignment="Center" FontStyle="Italic" FontSize="15" Margin="50,0"/>
+         <TextBlock Text="{Binding assemblyUpdateInfo}" HorizontalAlignment="Center" VerticalAlignment="Center" FontStyle="Italic" FontSize="15" Margin="50,0"/>
+         <Button x:Name="btUpdate" Click="OnCheckUpdate" Content="Check for update" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+         <!--<Button x:Name="btRestart" Click="OnApplyUpdate" Content="Update &amp; Restart" Visibility="Hidden" VerticalAlignment="Center" HorizontalAlignment="Center"/>-->
       </StackPanel>
 
       <TabControl TabStripPlacement="Left">

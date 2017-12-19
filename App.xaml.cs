@@ -4,18 +4,19 @@ using System.Data;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-
+using Squirrel;
 
 namespace eWamLauncher
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
-    public partial class App : Application
-    {
-        public App()
-        {
-        }
-    }
+   /// <summary>
+   /// Interaction logic for App.xaml
+   /// </summary>
+   public partial class App : Application
+   {
+      public App()
+      {
+      }
+
+   }
 
 }

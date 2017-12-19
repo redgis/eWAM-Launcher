@@ -13,6 +13,9 @@ using System.ComponentModel;
 using System.Xml.Serialization;
 using System.Runtime.Serialization.Formatters;
 using System.Diagnostics;
+using Squirrel;
+using System.Threading.Tasks;
+
 
 namespace eWamLauncher
 {
@@ -23,9 +26,14 @@ namespace eWamLauncher
    public partial class MainWindow : MetroWindow, INotifyPropertyChanged
    {
       private wProfile _profile;
-      public wProfile profile{ get { return _profile; } set { _profile = value; this.NotifyPropertyChanged(); } }
+      public wProfile profile { get { return _profile; } set { _profile = value; this.NotifyPropertyChanged(); } }
 
-      public string assemblyVersion { get; set; }
+      private string _assemblyVersion { get; set; }
+      public string assemblyVersion { get { return _assemblyVersion; } set { _assemblyVersion = value; this.NotifyPropertyChanged(); } }
+
+      private string _assemblyUpdateInfo { get; set; }
+      public string assemblyUpdateInfo { get { return _assemblyUpdateInfo; } set { _assemblyUpdateInfo = value; this.NotifyPropertyChanged(); } }
+
 
 
       public event PropertyChangedEventHandler PropertyChanged;
@@ -43,8 +51,10 @@ namespace eWamLauncher
 
       public MainWindow()
       {
-         this.assemblyVersion = Assembly.GetEntryAssembly().GetName().Name + "\n" + Assembly.GetEntryAssembly().GetName().Version;
-         this.assemblyVersion += "\n(c) Mphasis Wyde";
+         this.assemblyVersion = Assembly.GetEntryAssembly().GetName().Name;
+         this.assemblyVersion += " - " + Assembly.GetEntryAssembly().GetName().Version;
+         this.assemblyVersion += " - (c) Mphasis Wyde";
+         this.assemblyUpdateInfo = "";
 
          this.profile = new wProfile();
 
@@ -63,6 +73,39 @@ namespace eWamLauncher
 
          InitializeComponent();
          this.DataContext = this;
+
+         StartUpdater();
+      }
+
+      private void StartUpdater()
+      {
+         Task.Run(async () =>
+         {
+            using (var mgr = new UpdateManager(this.profile.settings.launcherUpdateServerURL))
+            {
+              // Note, in most of these scenarios, the app exits after this method
+              // completes!
+              //SquirrelAwareApp.HandleEvents(
+              //   onInitialInstall: v => mgr.CreateShortcutForThisExe(),
+              //   onAppUpdate: v =>
+              //   {
+              //      mgr.CreateShortcutForThisExe();
+              //      System.Windows.MessageBox.Show("Updated", "Update detected!", System.Windows.MessageBoxButton.OK);
+              //   },
+              //   onAppUninstall: v => mgr.RemoveShortcutForThisExe(),
+              //   onFirstRun: () =>
+              //   {
+              //      System.Windows.MessageBox.Show("First run", "First run!", System.Windows.MessageBoxButton.OK);
+              //   },
+              //   onAppObsoleted: v =>
+              //   {
+              //      System.Windows.MessageBox.Show("Obsoleted", "App obsolete!", System.Windows.MessageBoxButton.OK);
+              //   }
+              //);
+
+               await mgr.UpdateApp();
+            }
+         });
       }
 
       protected override void OnClosing(CancelEventArgs e)
@@ -79,9 +122,12 @@ namespace eWamLauncher
          {
             FileStream reader = new FileStream(fileName, FileMode.Open);
             DataContractSerializer xmlDeserializer = new DataContractSerializer(typeof(ObservableCollection<wEnvironment>));
-            this.profile =
+            wProfile tmpProfile =
                 (wProfile)xmlDeserializer.ReadObject(reader);
             reader.Close();
+
+            if (tmpProfile != null)
+               this.profile = tmpProfile;
 
             foreach (wEnvironment env in this.profile.environments)
             {
@@ -107,9 +153,13 @@ namespace eWamLauncher
          {
             FileStream reader = new FileStream(fileName, FileMode.Open);
             DataContractJsonSerializer jsonDeserializer = new DataContractJsonSerializer(typeof(wProfile));
-            this.profile =
+            wProfile tmpProfile =
                 (wProfile)jsonDeserializer.ReadObject(reader);
             reader.Close();
+
+            if (tmpProfile != null)
+               this.profile = tmpProfile;
+
 
             foreach (wEnvironment env in this.profile.environments)
             {
@@ -184,7 +234,7 @@ namespace eWamLauncher
          if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
          {
             wEnvironmentImporter importer = new wEnvironmentImporter(this.profile);
-            
+
             // Get Parent of Tgv/ folder containing W001001.TGV
             string envPath = Path.GetDirectoryName(Path.GetDirectoryName(fileBrowser.FileName));
             importer.GetEnvironment().tgvPath = Path.GetDirectoryName(fileBrowser.FileName);
@@ -196,8 +246,8 @@ namespace eWamLauncher
 
       #endregion
 
-      #region launchers actions
-      
+      #region Launchers actions
+
       public void OnNewLauncher(object sender, RoutedEventArgs e)
       {
          wLauncher launcher = new wLauncher();
@@ -243,7 +293,7 @@ namespace eWamLauncher
          {
 
             string launchersPath = Path.GetDirectoryName(fileBrowser.FileName);
-            
+
             wEnvironmentImporter importer = new wEnvironmentImporter((wProfile)this.profile, (wEnvironment)lbEnvList.SelectedItem);
             importer.ImportLaunchers(launchersPath);
          }
@@ -283,7 +333,7 @@ namespace eWamLauncher
          //startInfo.EnvironmentVariables.Add("WYDE-DLL", cppdlls);
 
          // Set all other environment variables
-         foreach (wEnvironmentVariable variable in 
+         foreach (wEnvironmentVariable variable in
             ((wEnvironment)lbEnvList.SelectedItem).environmentVariables)
          {
             startInfo.EnvironmentVariables.Add(variable.name, variable.result);
@@ -366,7 +416,7 @@ namespace eWamLauncher
          }
 
          ((ObservableCollection<wEwam>)lbEwamList.ItemsSource).Remove((wEwam)lbEwamList.SelectedItem);
-         
+
          lbEwamList.SelectedIndex = curSelection;
          if (lbEwamList.SelectedIndex == -1)
             lbEwamList.SelectedIndex = curSelection - 1;
@@ -460,6 +510,40 @@ namespace eWamLauncher
 
       #endregion
 
+      #region Update actions
 
+      public void OnCheckUpdate(object sender, RoutedEventArgs e)
+      {
+         Task.Run( async () =>
+         {
+            using (var mgr = new UpdateManager(this.profile.settings.launcherUpdateServerURL))
+            {
+               UpdateInfo updateInfo = await mgr.CheckForUpdate();
+               if (updateInfo.CurrentlyInstalledVersion.SHA1 != updateInfo.FutureReleaseEntry.SHA1)
+               {
+                  //this.assemblyUpdateInfo = "New version available, downloading...";
+
+                  //await mgr.DownloadReleases(updateInfo.ReleasesToApply);
+
+                  //this.assemblyUpdateInfo = "Download finished, Ready to apply the update.";
+
+                  //string resultPath = await mgr.ApplyReleases(updateInfo);
+
+                  //this.assemblyUpdateInfo = "Update applied. You now need to restart !";
+
+                  //mgr.KillAllExecutablesBelongingToPackage();
+
+                  await mgr.UpdateApp();
+                  this.assemblyUpdateInfo = "Update installed, please restart the app !";
+               }
+               else
+               {
+                  this.assemblyUpdateInfo = "You are up to date.";
+               }
+            }
+         });
+      }
+
+      #endregion
    }
 }
