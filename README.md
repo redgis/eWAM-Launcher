@@ -19,6 +19,7 @@
 
 ## Process management
 - [ ] Process monitor looking up possible launchers working
+- [ ] Retrieve launch status with standard output / error output
 	=> use WYDE-TGV env var to find matches
 	
 ## Improve importing

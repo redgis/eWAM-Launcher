@@ -18,9 +18,6 @@ using System.Threading.Tasks;
 
 namespace eWamLauncher
 {
-
-
-
    /// <summary>
    /// Interaction logic for MainWindow.xaml
    /// </summary>
@@ -374,6 +371,11 @@ namespace eWamLauncher
          {
             // Display message showing the exception message
          }
+      }
+
+      private void processExited(object sender, EventArgs e)
+      {
+         throw new NotImplementedException();
       }
 
       #endregion
