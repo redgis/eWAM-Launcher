@@ -63,7 +63,7 @@ namespace eWamLauncher
       {
          foreach (wBinariesSet binariesSet in ewam.binariesSets)
          {
-            if (binariesSet.name == this.binariesSet.name)
+            if (this.binariesSet != null && binariesSet.name == this.binariesSet.name)
             {
                this.binariesSet = binariesSet;
             }

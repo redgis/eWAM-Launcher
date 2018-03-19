@@ -241,12 +241,18 @@ namespace eWamLauncher
          {
             wEnvironmentImporter importer = new wEnvironmentImporter(this.profile);
 
-            // Get Parent of Tgv/ folder containing W001001.TGV
+            //Get Parent of Tgv/ folder containing W001001.TGV
             string envPath = Path.GetDirectoryName(Path.GetDirectoryName(fileBrowser.FileName));
             importer.GetEnvironment().tgvPath = Path.GetDirectoryName(fileBrowser.FileName);
             wEnvironment environment = importer.ImportFromPath(envPath);
             ((ObservableCollection<wEnvironment>)lbEnvList.ItemsSource).Add(environment);
             lbEnvList.SelectedItem = environment;
+
+            //Import the environment associated with this new ewam
+            importer = new wEnvironmentImporter(this.profile);
+            wEnvironment newEnv = importer.ImportFromPath(environment.ewam.basePath);
+            newEnv.name = environment.ewam.name;
+            this.profile.environments.Add(newEnv);
          }
       }
 
