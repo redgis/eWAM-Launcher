@@ -14,7 +14,8 @@
 ## Ergonomy
 - [x] Shouldn't we simply have a pool of eWAMs referenced by the various environments ?
 - [x] Remove Wyde-DLL : this should not be editable, and be set from the binaries set
-- [ ] Allow item reordering by drag&drop in listboxes and datagrids : 
+- [x] Allow item reordering using buttons
+- [ ] Impprovement : Allow item reordering by drag&drop in listboxes and datagrids : 
    https://stackoverflow.com/questions/3350187/wpf-c-rearrange-items-in-listbox-via-drag-and-drop
    http://www.hardcodet.net/2009/03/moving-data-grid-rows-using-drag-and-drop
    http://www.eidias.com/blog/2014/8/15/movable-rows-in-wpf-datagrid
@@ -34,10 +35,10 @@
 - [ ] eWAM import : detect if 64 or 32 bits : https://superuser.com/questions/358434/how-to-check-if-a-binary-is-32-or-64-bit-on-windows
 	
 ## General settings
-- [ ] Implement application settings class, make it serializable
-- [ ] have a list of folder in which to lookup when importing a new environment
-- [ ] reload last session (based on last session file opened, default is in %appdata%)
-- [ ] address of update server
+- [x] Implement application settings class, make it serializable
+- [x] have a list of folder in which to lookup when importing a new environment
+- [x] reload last session (based on last session file opened, default is in %appdata%)
+- [x] address of update server
 		
 ## Auto update
 - [x] Auto updater using Squirrel
@@ -50,6 +51,20 @@
 ## XAML / WPF / .NET things to learn
 - [ ] How to create a UI for a specific type, and include it in another ? use pages ?
 
+## Visual Studio environment
+- [ ] Add Section with VS2010, VS2012 path to be called if needed
+
+## Binaries deployment from Web repository
+- [ ] Have a repository index online with all eWAM binaries
+- [ ] Allow comparing local environment and suggest update binaries
+
+## Environment from scratch
+- [ ] Allow download of entire environment binaries, from scratch
+- [ ] Set of basic launchers for eWam (wEwam class in embeded xml file resource, ready to be deserialized into a new object)
+
 ## Bugs
 - [x] eWAM import not importing its own environment correctly
 - [ ] Launcher Delete button not setting selection correctly after deleting last element of the list
+
+
+https://youtu.be/rDjrOaoHz9s

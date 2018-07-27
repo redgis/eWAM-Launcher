@@ -70,8 +70,8 @@ namespace eWamLauncher
 
          this.ewamexes = "ewam.exe;ewamconsole.exe;wyseman.exe;wydeweb.exe;remoteewam.exe;wedrpcserver.exe;wsmadmin.exe;RemoteWAM.exe";
 
-         this.launcherUpdateServerURL = @"http://regismt440p.wyde.paris.local/wLauncherUpdate/";
-         this.ewamUpdateServerURL = @"http://regismt440p.wyde.paris.local/eWamUpdate/";
+         this.launcherUpdateServerURL = @"http://regismt470p.wyde.paris.local/wLauncherUpdate/";
+         this.ewamUpdateServerURL = @"http://regismt470p.wyde.paris.local/eWamUpdate/";
       }
    }
 }

@@ -126,7 +126,9 @@ namespace eWamLauncher
             reader.Close();
 
             if (tmpProfile != null)
+            {
                this.profile = tmpProfile;
+            }
 
             foreach (wEnvironment env in this.profile.environments)
             {
@@ -227,7 +229,6 @@ namespace eWamLauncher
 
       public void OnImportEnvironment(object sender, RoutedEventArgs e)
       {
-
          //FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
          //folderBrowser.Description = "Select root folder of your environment (i.e. the folder containing tgv/ "
 
@@ -254,6 +255,128 @@ namespace eWamLauncher
             newEnv.name = environment.ewam.name;
             this.profile.environments.Add(newEnv);
          }
+      }
+
+      public void OnMoveUpEnvironment(object sender, RoutedEventArgs e)
+      {
+         if (lbEnvList.SelectedItem == null)
+         {
+            return;
+         }
+
+         int envIndex = this.profile.environments.IndexOf((wEnvironment)lbEnvList.SelectedItem);
+
+         if (envIndex > 0)
+         {
+            this.profile.environments.Move(envIndex, envIndex - 1);
+         }
+      }
+
+      public void OnMoveDownEnvironment(object sender, RoutedEventArgs e)
+      {
+         if (lbEnvList.SelectedItem == null)
+         {
+            return;
+         }
+
+         int envIndex = this.profile.environments.IndexOf((wEnvironment)lbEnvList.SelectedItem);
+
+         if (envIndex < this.profile.environments.Count() - 1)
+         {
+            this.profile.environments.Move(envIndex, envIndex + 1);
+         }
+      }
+
+      #endregion
+
+      #region Environment variables actions
+
+      private void OnReevaluateEnvVariables(object sender, RoutedEventArgs e)
+      {
+         ((wEnvironment)lbEnvList.SelectedItem).ExpandAllEnvVariables();
+      }
+
+      private void OnReevaluateEnvVariables(object sender, EventArgs e)
+      {
+         ((wEnvironment)lbEnvList.SelectedItem).ExpandAllEnvVariables();
+      }
+
+      public void OnMoveUpVariable(object sender, RoutedEventArgs e)
+      {
+         if (lbEnvList.SelectedItem == null || dgVarList.SelectedItem == null)
+         {
+            return;
+         }
+
+         int varIndex = ((wEnvironment)lbEnvList.SelectedItem).environmentVariables.IndexOf(
+            (wEnvironmentVariable)dgVarList.SelectedItem);
+
+         if (varIndex > 0)
+         {
+            ((wEnvironment)lbEnvList.SelectedItem).environmentVariables.Move(varIndex, varIndex - 1);
+         }
+      }
+
+      public void OnMoveDownVariable(object sender, RoutedEventArgs e)
+      {
+         if (lbEnvList.SelectedItem == null || dgVarList.SelectedItem == null)
+         {
+            return;
+         }
+
+         int varIndex = ((wEnvironment)lbEnvList.SelectedItem).environmentVariables.IndexOf(
+            (wEnvironmentVariable)dgVarList.SelectedItem);
+
+         if (varIndex < ((wEnvironment)lbEnvList.SelectedItem).environmentVariables.Count() - 1)
+         {
+            ((wEnvironment)lbEnvList.SelectedItem).environmentVariables.Move(varIndex, varIndex + 1);
+         }
+      }
+
+
+      #endregion
+
+      #region Environment general setting
+
+      private void OnEnvChangePath(object sender, RoutedEventArgs e)
+      {
+         if (lbEnvList.SelectedItem == null)
+         {
+            return;
+         }
+         //OpenFileDialog fileBrowser = new OpenFileDialog();
+
+         //fileBrowser.Filter = "eWAM TGV Files|*.tgv";
+         //fileBrowser.FilterIndex = 1;
+         //fileBrowser.RestoreDirectory = true;
+         //fileBrowser.FileName = "Select a .tgv from the environment.";
+
+         //if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+         //{
+         //   wEwamImporter wamImporter = new wEwamImporter(this.profile);
+
+         //   ((wEnvironment)lbEnvList.SelectedItem).tgvPath = MainWindow.NormalizePath(Path.GetDirectoryName(fileBrowser.FileName));
+         //}
+
+         FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
+         folderBrowser.Description = "Select TGV folder for your environment (i.e. the folder containing tgv/)";
+         //folderBrowser.RootFolder = ((wEnvironment)lbEnvList.SelectedItem).tgvPath;
+         folderBrowser.SelectedPath = ((wEnvironment)lbEnvList.SelectedItem).tgvPath;
+         if (folderBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+         {
+            ((wEnvironment)lbEnvList.SelectedItem).tgvPath = folderBrowser.SelectedPath;
+         }
+
+      }
+
+      private void OnEnvExplorePath(object sender, RoutedEventArgs e)
+      {
+         if (lbEnvList.SelectedItem == null)
+         {
+            return;
+         }
+
+         Process.Start("explorer.exe", ((wEnvironment)lbEnvList.SelectedItem).tgvPath);
       }
 
       #endregion
@@ -384,19 +507,38 @@ namespace eWamLauncher
          throw new NotImplementedException();
       }
 
-      #endregion
-
-      #region Environment variables actions
-
-      private void OnReevaluateEnvVariables(object sender, RoutedEventArgs e)
+      public void OnMoveUpLauncher(object sender, RoutedEventArgs e)
       {
-         ((wEnvironment)lbEnvList.SelectedItem).ExpandAllEnvVariables();
+         if (lbLauncherList.SelectedItem == null)
+         {
+            return;
+         }
+
+         int launcherIndex = ((wEnvironment)lbEnvList.SelectedItem).launchers.IndexOf(
+            (wLauncher)lbLauncherList.SelectedItem);
+
+         if (launcherIndex > 0)
+         {
+            ((wEnvironment)lbEnvList.SelectedItem).launchers.Move(launcherIndex, launcherIndex - 1);
+         }
       }
 
-      private void OnReevaluateEnvVariables(object sender, EventArgs e)
+      public void OnMoveDownLauncher(object sender, RoutedEventArgs e)
       {
-         ((wEnvironment)lbEnvList.SelectedItem).ExpandAllEnvVariables();
+         if (lbLauncherList.SelectedItem == null)
+         {
+            return;
+         }
+
+         int launcherIndex = ((wEnvironment)lbEnvList.SelectedItem).launchers.IndexOf(
+            (wLauncher)lbLauncherList.SelectedItem);
+
+         if (launcherIndex < ((wEnvironment)lbEnvList.SelectedItem).launchers.Count() - 1)
+         {
+            ((wEnvironment)lbEnvList.SelectedItem).launchers.Move(launcherIndex, launcherIndex + 1);
+         }
       }
+
 
       #endregion
 
@@ -465,6 +607,36 @@ namespace eWamLauncher
             wEnvironment newEnv = envImporter.ImportFromPath(ewam.basePath);
             newEnv.name = ewam.name;
             this.profile.environments.Add(newEnv);
+         }
+      }
+
+      public void OnMoveUpEwam(object sender, RoutedEventArgs e)
+      {
+         if (lbEwamList.SelectedItem == null)
+         {
+            return;
+         }
+
+         int wamIndex = this.profile.ewams.IndexOf((wEwam)lbEwamList.SelectedItem);
+
+         if (wamIndex > 0)
+         {
+            this.profile.ewams.Move(wamIndex, wamIndex - 1);
+         }
+      }
+
+      public void OnMoveDownEwam(object sender, RoutedEventArgs e)
+      {
+         if (lbEwamList.SelectedItem == null)
+         {
+            return;
+         }
+
+         int wamIndex = this.profile.ewams.IndexOf((wEwam)lbEwamList.SelectedItem);
+
+         if (wamIndex < this.profile.ewams.Count() - 1)
+         {
+            this.profile.ewams.Move(wamIndex, wamIndex + 1);
          }
       }
 

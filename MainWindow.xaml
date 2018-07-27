@@ -38,6 +38,8 @@
                      <Button Click="OnDuplicateEnvironment" Content="Duplicate" Margin="2,2"/>
                      <Button Click="OnDeleteEnvironment" Content="Delete" Margin="2,2"/>
                      <Button Click="OnImportEnvironment" Content="Import" Margin="2,2"/>
+                     <Button Click="OnMoveUpEnvironment" Content="Move Up" Margin="2,2"/>
+                     <Button Click="OnMoveDownEnvironment" Content="Move Down" Margin="2,2"/>
                   </WrapPanel>
                </StackPanel>
                <GridSplitter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" Background="IndianRed"/>
@@ -61,8 +63,12 @@
                            <Label Content="Path: " Grid.Column="0" Grid.Row="1"/>
                            <TextBox Text="{Binding SelectedItem.tgvPath, ElementName=lbEnvList, Mode=TwoWay}" Grid.Column="1" Grid.Row="1" Margin="5"/>
                            <StackPanel Orientation="Horizontal" Grid.Column="2" Grid.Row="1">
-                              <Button Content="Change" Margin="5"/>
-                              <Button Content="Explore" Margin="5"/>
+                              <!-- use WPF Command pattern instead of corrupting "tag" attribute 
+                              Tag="{Binding SelectedItem.tgvPath, ElementName=lbEnvList, Mode=TwoWays}" -->
+                              <Button Click="OnEnvChangePath" Content="Change" Margin="5"/>
+                              <!-- use WPF Command pattern instead of corrupting "tag" attribute 
+                              Tag="{Binding SelectedItem.tgvPath, ElementName=lbEnvList}"-->
+                              <Button Click="OnEnvExplorePath" Content="Explore" Margin="5"/>
                            </StackPanel>
                            <Label Content="eWAM: " Grid.Column="0" Grid.Row="2"/>
                            <ComboBox x:Name="cbEwam" ItemsSource="{Binding profile.ewams}"
@@ -73,8 +79,14 @@
                      </TabItem>
                      <TabItem Header="Env. Variables ">
                         <DockPanel>
-                           <Button Click="OnReevaluateEnvVariables" Content="Re-Evaluate" DockPanel.Dock="Bottom" HorizontalAlignment="Center"/>
-                           <DataGrid ItemsSource="{Binding SelectedItem.environmentVariables, ElementName=lbEnvList, Mode=TwoWay}" 
+                           <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" HorizontalAlignment="Center">
+                              <Button Click="OnReevaluateEnvVariables" Content="Re-Evaluate" Margin="5"/>
+                              <Button Click="OnMoveUpVariable" Content="Move Up" Margin="5"/>
+                              <Button Click="OnMoveDownVariable" Content="Move Down" Margin="5"/>
+                           </StackPanel>
+                           <DataGrid 
+                              x:Name="dgVarList"
+                              ItemsSource="{Binding SelectedItem.environmentVariables, ElementName=lbEnvList, Mode=TwoWay}" 
                               CurrentCellChanged="OnReevaluateEnvVariables"
                               AutoGenerateColumns="False"
                               ToolTip="WYDE-DLL should not be added : it is automatically generated from binaries settings CppDll. Use SUPPR to remove a line. Double-click to modify.">
@@ -108,6 +120,8 @@
                               <Button Click="OnDuplicateLauncher" Content="Duplicate" Margin="2,2"/>
                               <Button Click="OnDeleteLauncher" Content="Delete" Margin="2,2"/>
                               <Button Click="OnImportLaunchers" Content="Import" Margin="2,2"/>
+                              <Button Click="OnMoveUpLauncher" Content="Move Up" Margin="2,2"/>
+                              <Button Click="OnMoveDownLauncher" Content="Move Down" Margin="2,2"/>
                            </WrapPanel>
                            <Grid>
                               <Grid.ColumnDefinitions>
@@ -187,6 +201,8 @@
                      <Button Click="OnDuplicateEwam" Content="Duplicate" Margin="2,2"/>
                      <Button Click="OnDeleteEwam" Content="Delete" Margin="2,2"/>
                      <Button Click="OnImportEwam" Content="Import" Margin="2,2"/>
+                     <Button Click="OnMoveUpEwam" Content="Move Up" Margin="2,2"/>
+                     <Button Click="OnMoveDownEwam" Content="Move Down" Margin="2,2"/>
                   </WrapPanel>
                </StackPanel>
                <GridSplitter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" Background="IndianRed"/>
@@ -220,6 +236,8 @@
                               <Button Click="OnNewBinariesSet" Content="New" Margin="2,2"/>
                               <Button Click="OnDuplicateBinariesSet" Content="Duplicate" Margin="2,2"/>
                               <Button Click="OnDeleteBinariesSet" Content="Delete" Margin="2,2"/>
+                              <Button Click="OnMoveUpEnvironment" Content="Move Up" Margin="2,2"/>
+                              <Button Click="OnMoveDownEnvironment" Content="Move Down" Margin="2,2"/>
                               <!--<Button Click="OnImportBinariesSets" Content="Import" Margin="2,2"/>-->
                            </WrapPanel>
                            <Grid>
@@ -266,7 +284,59 @@
          </TabItem>
 
          <TabItem Header="Settings  ">
-            <!--<DataGrid ItemsSource="{Binding profile.settings}"/>-->
+            <!-- <DataGrid ItemsSource="{Binding profile.settings}" /> -->
+
+
+            <Grid Grid.Column="2">
+               <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition/>
+               </Grid.ColumnDefinitions>
+               <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="*"/>
+                  <RowDefinition Height="*"/>
+                  <RowDefinition Height="*"/>
+                  <RowDefinition Height="*"/>
+                  <RowDefinition Height="*"/>
+                  <RowDefinition Height="*"/>
+                  <RowDefinition Height="*"/>
+                  <RowDefinition Height="*"/>
+               </Grid.RowDefinitions>
+               <Label Content="exe Search Pathes: " Grid.Column="0" Grid.Row="0"/>
+               <TextBox Text="{Binding profile.settings.exeSearchPathes, Mode=TwoWay}" Grid.Column="1" Grid.Row="0" Margin="5"/>
+               <Label Content="dllSearchPathes: " Grid.Column="0" Grid.Row="1"/>
+               <TextBox Text="{Binding profile.settings.dllSearchPathes, Mode=TwoWay}" Grid.Column="1" Grid.Row="1" Margin="5"/>
+               <Label Content="cppdll Search Pathes: " Grid.Column="0" Grid.Row="2"/>
+               <TextBox Text="{Binding profile.settings.cppdllSearchPathes, Mode=TwoWay}" Grid.Column="1" Grid.Row="2" Margin="5"/>
+               <Label Content="launcher Search Pathes: " Grid.Column="0" Grid.Row="3"/>
+               <TextBox Text="{Binding profile.settings.launcherSearchPathes, Mode=TwoWay}" Grid.Column="1" Grid.Row="3" Margin="5"/>
+               <Label Content="batch Search Pathes: " Grid.Column="0" Grid.Row="4"/>
+               <TextBox Text="{Binding profile.settings.batchSearchPathes, Mode=TwoWay}" Grid.Column="1" Grid.Row="4" Margin="5"/>
+               <Label Content="tgv Search Pathes: " Grid.Column="0" Grid.Row="5"/>
+               <TextBox Text="{Binding profile.settings.tgvSearchPathes, Mode=TwoWay}" Grid.Column="1" Grid.Row="5" Margin="5"/>
+               <Label Content="ewam executables: " Grid.Column="0" Grid.Row="6"/>
+               <TextBox Text="{Binding profile.settings.ewamexes, Mode=TwoWay}" Grid.Column="1" Grid.Row="6" Margin="5"/>
+               <Label Content="eWamLauncher Update Server URL: " Grid.Column="0" Grid.Row="7"/>
+               <TextBox Text="{Binding profile.settings.launcherUpdateServerURL, Mode=TwoWay}" Grid.Column="1" Grid.Row="7" Margin="5"/>
+               <Label Content="ewam binasires Update Server URL: " Grid.Column="0" Grid.Row="8"/>
+               <TextBox Text="{Binding profile.settings.ewamUpdateServerURL, Mode=TwoWay}" Grid.Column="1" Grid.Row="8" Margin="5"/>
+            </Grid>
+            
+            <!--
+               this.exeSearchPathes = @"bin";
+               this.dllSearchPathes = @"dll;dll.debug";
+               this.cppdllSearchPathes = @"cppdll;cppdll.debug";
+               this.launcherSearchPathes = @"bin";
+               this.batchSearchPathes = @"batches";
+               this.tgvSearchPathes = @"tgv";
+
+               this.ewamexes = "ewam.exe;ewamconsole.exe;wyseman.exe;wydeweb.exe;remoteewam.exe;wedrpcserver.exe;wsmadmin.exe;RemoteWAM.exe";
+
+               this.launcherUpdateServerURL = @"http://regismt470p.wyde.paris.local/wLauncherUpdate/";
+               this.ewamUpdateServerURL = @"http://regismt470p.wyde.paris.local/eWamUpdate/";
+            -->
+            
          </TabItem>
       </TabControl>
    </DockPanel>
