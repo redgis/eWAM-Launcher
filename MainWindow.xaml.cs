@@ -15,6 +15,7 @@ using System.Runtime.Serialization.Formatters;
 using System.Diagnostics;
 using Squirrel;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace eWamLauncher
 {
@@ -57,8 +58,8 @@ namespace eWamLauncher
 
          this.profile = new wProfile();
 
-         string defaultXMLSettings = Environment.ExpandEnvironmentVariables("%APPDATA%\\ewamLauncher.config.xml");
-         string defaultJSONSettings = Environment.ExpandEnvironmentVariables("%APPDATA%\\ewamLauncher.config.json");
+         string defaultXMLSettings = Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%\\ewamLauncher\\ewamLauncher.config.xml");
+         string defaultJSONSettings = Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%\\ewamLauncher\\ewamLauncher.config.json");
 
          try
          { LoadFromXML(defaultXMLSettings); }
@@ -107,13 +108,90 @@ namespace eWamLauncher
          });
       }
 
+      private void CloseCommandHandler(object sender, ExecutedRoutedEventArgs e)
+      {
+         this.Close();
+      }
+
       protected override void OnClosing(CancelEventArgs e)
       {
-         string defaultXMLSettings = Environment.ExpandEnvironmentVariables("%APPDATA%\\ewamLauncher.config.xml");
-         string defaultJSONSettings = Environment.ExpandEnvironmentVariables("%APPDATA%\\ewamLauncher.config.json");
+         string defaultXMLSettings = Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%\\ewamLauncher\\ewamLauncher.config.xml");
+         string defaultJSONSettings = Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%\\ewamLauncher\\ewamLauncher.config.json");
          SaveToXML(defaultXMLSettings);
          SaveToJSON(defaultJSONSettings);
       }
+
+      #region Configuration commands
+
+      private void OpenConfiguration_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+      {
+         e.CanExecute = true;
+      }
+
+      private void OpenConfiguration_Executed(object sender, ExecutedRoutedEventArgs e)
+      {
+         OpenFileDialog fileBrowser = new OpenFileDialog();
+
+         fileBrowser.Filter = "XML configuration file|*.xml|JSON configuration file|*.json";
+         fileBrowser.FilterIndex = 1;
+         fileBrowser.RestoreDirectory = true;
+
+         if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+         {
+            try
+            {
+               if (Path.GetExtension(fileBrowser.FileName).ToLower() == ".xml")
+               {
+                  LoadFromXML(fileBrowser.FileName);
+               }
+               else if (Path.GetExtension(fileBrowser.FileName).ToLower() == ".json")
+               {
+                  LoadFromJSON(fileBrowser.FileName);
+               }
+            } catch (Exception)
+            {
+
+            }
+         }
+      }
+
+      private void SaveConfiguration_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+      {
+         e.CanExecute = true;
+      }
+
+      private void SaveConfiguration_Executed(object sender, ExecutedRoutedEventArgs e)
+      {
+         OpenFileDialog fileBrowser = new OpenFileDialog();
+
+         fileBrowser.Filter = "XML configuration file|*.xml|JSON configuration file|*.json";
+         fileBrowser.FilterIndex = 1;
+         fileBrowser.RestoreDirectory = true;
+         fileBrowser.CheckFileExists = false;
+
+         if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+         {
+            try
+            {
+               if (Path.GetExtension(fileBrowser.FileName).ToLower() == ".xml")
+               {
+                  SaveToXML(fileBrowser.FileName);
+               }
+               else if (Path.GetExtension(fileBrowser.FileName).ToLower() == ".json")
+               {
+                  SaveToJSON(fileBrowser.FileName);
+               }
+            }
+            catch (Exception)
+            {
+
+            }
+         }
+      }
+      
+      #endregion
+
+      #region Configuration actions
 
       public void LoadFromXML(string fileName)
       {
@@ -181,12 +259,49 @@ namespace eWamLauncher
          writer.Close();
       }
 
+      #endregion
+
+      #region Path actions
+
       public static string NormalizePath(string path)
       {
          return Path.GetFullPath(new Uri(path).LocalPath)
                   .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
                   .ToUpperInvariant();
       }
+
+      private void OnChangePath(object sender, RoutedEventArgs e)
+      {
+         //OpenFileDialog fileBrowser = new OpenFileDialog();
+
+         //fileBrowser.Filter = "eWAM TGV Files|*.tgv";
+         //fileBrowser.FilterIndex = 1;
+         //fileBrowser.RestoreDirectory = true;
+         //fileBrowser.FileName = "Select a .tgv from the environment.";
+
+         //if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+         //{
+         //   wEwamImporter wamImporter = new wEwamImporter(this.profile);
+
+         //   ((wEnvironment)lbEnvList.SelectedItem).tgvPath = MainWindow.NormalizePath(Path.GetDirectoryName(fileBrowser.FileName));
+         //}
+
+         FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
+         folderBrowser.Description = "Select TGV folder for your environment (i.e. the folder containing tgv/)";
+         folderBrowser.SelectedPath = (string)((System.Windows.Controls.Button)sender).Tag;
+         if (folderBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+         {
+            ((System.Windows.Controls.Button)sender).Tag = folderBrowser.SelectedPath;
+         }
+
+      }
+
+      private void OnExplorePath(object sender, RoutedEventArgs e)
+      {
+         Process.Start("explorer.exe", (string)((System.Windows.Controls.Button)sender).Tag);
+      }
+
+      #endregion
 
       #region Environments actions
 
@@ -246,14 +361,70 @@ namespace eWamLauncher
             string envPath = Path.GetDirectoryName(Path.GetDirectoryName(fileBrowser.FileName));
             importer.GetEnvironment().tgvPath = Path.GetDirectoryName(fileBrowser.FileName);
             wEnvironment environment = importer.ImportFromPath(envPath);
-            ((ObservableCollection<wEnvironment>)lbEnvList.ItemsSource).Add(environment);
-            lbEnvList.SelectedItem = environment;
 
-            //Import the environment associated with this new ewam
-            importer = new wEnvironmentImporter(this.profile);
-            wEnvironment newEnv = importer.ImportFromPath(environment.ewam.basePath);
-            newEnv.name = environment.ewam.name;
-            this.profile.environments.Add(newEnv);
+
+            Boolean addEnvironment = true;
+            foreach (wEnvironment env in this.profile.environments)
+            {
+               if (env.tgvPath == environment.tgvPath)
+               {
+                  addEnvironment = false;
+
+                  if (System.Windows.MessageBox.Show(
+                        "An environment with same TGV path already exists : \"" +
+                           env.name + "\"\nAdd anyway ?",
+                        "Environment already exists",
+                        MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                  {
+                     addEnvironment = true;
+                  }
+                  break;
+               }
+            }
+
+            if (addEnvironment)
+            {
+               ((ObservableCollection<wEnvironment>)lbEnvList.ItemsSource).Add(environment);
+               lbEnvList.SelectedItem = environment;
+            }
+
+            //Import the environment associated with this new ewam, if it doesn't already exist !
+            if (environment.ewam == null)
+            {
+               System.Windows.MessageBox.Show(
+                  "Warning no corresponding eWAM binaries were found associated with this environment. You will need to set it manualy.",
+                  "No corresponding binaies found !",
+                  MessageBoxButton.OK);
+            }
+            else
+            {
+               importer = new wEnvironmentImporter(this.profile);
+               wEnvironment newEnv = importer.ImportFromPath(environment.ewam.basePath);
+               newEnv.name = environment.ewam.name;
+
+               foreach (wEnvironment env in this.profile.environments)
+               {
+                  if (env.tgvPath == newEnv.tgvPath)
+                  {
+                     addEnvironment = false;
+
+                     //if (System.Windows.MessageBox.Show(
+                     //      "An environment with same TGV path already exists : \"" + 
+                     //         env.name + "\"\nAdd anyway ?",
+                     //      "Environment already exists",
+                     //      MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                     //{
+                     //   addEnvironment = true;
+                     //}
+                     break;
+                  }
+               }
+
+               if (addEnvironment)
+               {
+                  this.profile.environments.Add(newEnv);
+               }
+            }
          }
       }
 
@@ -336,51 +507,6 @@ namespace eWamLauncher
 
       #endregion
 
-      #region Environment general setting
-
-      private void OnEnvChangePath(object sender, RoutedEventArgs e)
-      {
-         if (lbEnvList.SelectedItem == null)
-         {
-            return;
-         }
-         //OpenFileDialog fileBrowser = new OpenFileDialog();
-
-         //fileBrowser.Filter = "eWAM TGV Files|*.tgv";
-         //fileBrowser.FilterIndex = 1;
-         //fileBrowser.RestoreDirectory = true;
-         //fileBrowser.FileName = "Select a .tgv from the environment.";
-
-         //if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-         //{
-         //   wEwamImporter wamImporter = new wEwamImporter(this.profile);
-
-         //   ((wEnvironment)lbEnvList.SelectedItem).tgvPath = MainWindow.NormalizePath(Path.GetDirectoryName(fileBrowser.FileName));
-         //}
-
-         FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
-         folderBrowser.Description = "Select TGV folder for your environment (i.e. the folder containing tgv/)";
-         //folderBrowser.RootFolder = ((wEnvironment)lbEnvList.SelectedItem).tgvPath;
-         folderBrowser.SelectedPath = ((wEnvironment)lbEnvList.SelectedItem).tgvPath;
-         if (folderBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-         {
-            ((wEnvironment)lbEnvList.SelectedItem).tgvPath = folderBrowser.SelectedPath;
-         }
-
-      }
-
-      private void OnEnvExplorePath(object sender, RoutedEventArgs e)
-      {
-         if (lbEnvList.SelectedItem == null)
-         {
-            return;
-         }
-
-         Process.Start("explorer.exe", ((wEnvironment)lbEnvList.SelectedItem).tgvPath);
-      }
-
-      #endregion
-
       #region Launchers actions
 
       public void OnNewLauncher(object sender, RoutedEventArgs e)
@@ -414,6 +540,8 @@ namespace eWamLauncher
 
          ((ObservableCollection<wLauncher>)lbLauncherList.ItemsSource).Remove((wLauncher)lbLauncherList.SelectedItem);
          lbLauncherList.SelectedIndex = curSelection;
+         if (lbLauncherList.SelectedIndex == -1)
+            lbLauncherList.SelectedIndex = curSelection - 1;
       }
 
       public void OnImportLaunchers(object sender, RoutedEventArgs e)
@@ -434,10 +562,11 @@ namespace eWamLauncher
          }
       }
 
-      public void OnExecuteLauncher(object sender, RoutedEventArgs e)
+      public void OnConsoleExecuteLauncher(object sender, RoutedEventArgs e)
       {
          // Before anything, make sure all env. variable are up to date !
-         ((wEnvironment)lbEnvList.SelectedItem).ExpandAllEnvVariables();
+         wEnvironment environment = (wEnvironment)lbEnvList.SelectedItem;
+         environment.ExpandAllEnvVariables();
 
          wLauncher launcher = (wLauncher)lbLauncherList.SelectedItem;
 
@@ -471,24 +600,108 @@ namespace eWamLauncher
          foreach (wEnvironmentVariable variable in
             ((wEnvironment)lbEnvList.SelectedItem).environmentVariables)
          {
-            startInfo.EnvironmentVariables.Add(variable.name, variable.result);
+            if (startInfo.EnvironmentVariables.ContainsKey(variable.name))
+            {
+               startInfo.EnvironmentVariables[variable.name] += variable.result;
+            }
+            else
+            {
+               startInfo.EnvironmentVariables.Add(variable.name, variable.result);
+            }
          }
 
          // Find the path to our exe
-         string command = "";
+         string commandPath = "";
          foreach (string path in startInfo.EnvironmentVariables["PATH"].Split(';'))
          {
-            if (File.Exists(path + "\\" + launcher.program))
+            if (File.Exists(path + "\\cmd.exe"))
             {
-               command = path;
+               commandPath = path;
                break;
             }
          }
 
          // Set the command and arguments
-         startInfo.WorkingDirectory = command;
-         startInfo.FileName = command + "\\" + launcher.program;
-         startInfo.Arguments = launcher.arguments;
+         startInfo.WorkingDirectory = environment.ewam.basePath;
+         startInfo.FileName = commandPath + "\\cmd.exe";
+         startInfo.Arguments = "/K \"" + launcher.program + " " + environment.ExpandString(launcher.arguments) + "\"";
+
+         // We're all set, ready to launch.
+         startInfo.UseShellExecute = false;
+         try
+         {
+            Process newProcess = Process.Start(startInfo);
+         }
+         catch
+         {
+            // Display message showing the exception message
+         }
+
+      }
+
+      public void OnExecuteLauncher(object sender, RoutedEventArgs e)
+      {
+         // Before anything, make sure all env. variable are up to date !
+         wEnvironment environment = (wEnvironment)lbEnvList.SelectedItem;
+         environment.ExpandAllEnvVariables();
+
+         wLauncher launcher = (wLauncher)lbLauncherList.SelectedItem;
+
+         ProcessStartInfo startInfo = new ProcessStartInfo();
+
+         // Set %PATH%
+         string pathVariable = "" + Environment.GetEnvironmentVariable("PATH");
+         pathVariable = launcher.binariesSet.exePathes.Replace('\n', ';') + ";" +
+            launcher.binariesSet.dllPathes.Replace('\n', ';') + ";" +
+            launcher.binariesSet.cppdllPathes.Replace('\n', ';') + ";" + pathVariable;
+
+         if (startInfo.EnvironmentVariables.ContainsKey("PATH"))
+         {
+            startInfo.EnvironmentVariables["PATH"] = pathVariable;
+         }
+         else
+         {
+            startInfo.EnvironmentVariables.Add("PATH", pathVariable);
+         }
+
+         // Put CppDll Folders in WYDE-DLL
+         char[] delimiters = { '\n', ';' };
+         string[] cppdlls = launcher.binariesSet.cppdllPathes.Split(delimiters);
+         startInfo.EnvironmentVariables.Add("WYDE-DLL", cppdlls[0]);
+
+         // TODO : to use when WYDE-DLL support ';' seperated list of pathes.
+         //string cppdlls = launcher.binariesSet.cppdllPathes.Replace('\n', ';');
+         //startInfo.EnvironmentVariables.Add("WYDE-DLL", cppdlls);
+
+         // Set all other environment variables
+         foreach (wEnvironmentVariable variable in
+            ((wEnvironment)lbEnvList.SelectedItem).environmentVariables)
+         {
+            if (startInfo.EnvironmentVariables.ContainsKey(variable.name))
+            {
+               startInfo.EnvironmentVariables[variable.name] += variable.result;
+            }
+            else
+            {
+               startInfo.EnvironmentVariables.Add(variable.name, variable.result);
+            }
+         }
+
+         // Find the path to our exe
+         string commandPath = "";
+         foreach (string path in startInfo.EnvironmentVariables["PATH"].Split(';'))
+         {
+            if (File.Exists(path + "\\" + launcher.program))
+            {
+               commandPath = path;
+               break;
+            }
+         }
+
+         // Set the command and arguments
+         startInfo.WorkingDirectory = commandPath;
+         startInfo.FileName = commandPath + "\\" + launcher.program;
+         startInfo.Arguments = environment.ExpandString(launcher.arguments);
 
          // We're all set, ready to launch.
          startInfo.UseShellExecute = false;

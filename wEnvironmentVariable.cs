@@ -13,13 +13,15 @@ namespace eWamLauncher
    public class wEnvironmentVariable : ICloneable, INotifyPropertyChanged
    {
       [DataMember()] private string _name;
-      public string name { get { return _name; } set { _name = value;  NotifyPropertyChanged(); } }
+      public string name { get { return _name.ToUpper(); } set { _name = value.ToUpper();  NotifyPropertyChanged(); } }
 
       [DataMember()] private string _value;
       public string value { get { return _value; } set { _value = value;  NotifyPropertyChanged(); } }
 
       [DataMember()] private string _result;
       public string result { get { return _result; } set { _result = value;  NotifyPropertyChanged(); } }
+
+      public Boolean isBeingResolved;
 
       public event PropertyChangedEventHandler PropertyChanged;
 
@@ -34,10 +36,20 @@ namespace eWamLauncher
          }
       }
 
+      //Needed to be able to add lines in the Env Variables datagrid
+
+      public wEnvironmentVariable()
+      {
+         this.name = "WYDE-DUMMY";
+         this.value = "";
+         this.isBeingResolved = false;
+   }
+
       public wEnvironmentVariable(string name = "", string value = "")
       {
          this.name = name;
          this.value = value;
+         this.isBeingResolved = false;
       }
 
       public object Clone()

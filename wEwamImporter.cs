@@ -13,8 +13,7 @@ namespace eWamLauncher
    {
       private wEwam ewam;
       private wWAMLauncherSettings settings;
-
-
+      
       public wEwamImporter(wWAMLauncherSettings settings, wEwam ewam = null)
       {
          this.settings = settings;

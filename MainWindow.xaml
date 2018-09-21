@@ -8,7 +8,34 @@
         mc:Ignorable="d"
         Title="eWAM Launcher" Height="600" Width="1200" ResizeMode="CanResizeWithGrip">
 
+   <Window.CommandBindings>
+      <CommandBinding Command="Open" CanExecute="OpenConfiguration_CanExecute" Executed="OpenConfiguration_Executed" />
+      <CommandBinding Command="Save" CanExecute="SaveConfiguration_CanExecute" Executed="SaveConfiguration_Executed" />
+      <CommandBinding Command="ApplicationCommands.Close" Executed="CloseCommandHandler"/>
+   </Window.CommandBindings>
+   
+   <!--<Window.InputBindings>
+      <KeyBinding Command="{Binding OpenConfiguration}" Key="O"/>
+      <KeyBinding Command="{Binding SaveConfiguration}" Key="S"/>
+   </Window.InputBindings>-->
+      
    <DockPanel>
+      <Menu DockPanel.Dock="Top">
+         <MenuItem Header="_File">
+            <MenuItem Header="_Open" Command="Open"/>
+            <MenuItem Header="_Save" Command="Save"/>
+            <MenuItem Header="_Close" Command="ApplicationCommands.Close"/>
+         </MenuItem>
+         <!--<MenuItem Header="_Environment">
+            <MenuItem Header="_Import" Command="ImportEnvironment"/>
+            <MenuItem Header="_New" Command="NewEnvironment"/>
+         </MenuItem>
+         <MenuItem Header="_Ewam">
+            <MenuItem Header="_Import" Command="ImportEwam"/>
+            <MenuItem Header="_New" Command="NewEwam"/>
+         </MenuItem>-->
+      </Menu>
+        
       <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" HorizontalAlignment="Center">
          <Image Source="pack://application:,,,/icon.ico" Width="32" Height="32" Margin="10" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
          <TextBlock Text="{Binding assemblyVersion}" HorizontalAlignment="Center" VerticalAlignment="Center" FontStyle="Italic" FontSize="15" Margin="50,0"/>
@@ -65,10 +92,10 @@
                            <StackPanel Orientation="Horizontal" Grid.Column="2" Grid.Row="1">
                               <!-- use WPF Command pattern instead of corrupting "tag" attribute 
                               Tag="{Binding SelectedItem.tgvPath, ElementName=lbEnvList, Mode=TwoWays}" -->
-                              <Button Click="OnEnvChangePath" Content="Change" Margin="5"/>
+                              <Button Click="OnChangePath" Tag="{Binding SelectedItem.tgvPath, ElementName=lbEnvList, Mode=TwoWay}" Content="Change" Margin="5"/>
                               <!-- use WPF Command pattern instead of corrupting "tag" attribute 
                               Tag="{Binding SelectedItem.tgvPath, ElementName=lbEnvList}"-->
-                              <Button Click="OnEnvExplorePath" Content="Explore" Margin="5"/>
+                              <Button Click="OnExplorePath" Tag="{Binding SelectedItem.tgvPath, ElementName=lbEnvList, Mode=TwoWay}" Content="Explore" Margin="5"/>
                            </StackPanel>
                            <Label Content="eWAM: " Grid.Column="0" Grid.Row="2"/>
                            <ComboBox x:Name="cbEwam" ItemsSource="{Binding profile.ewams}"
@@ -169,7 +196,10 @@
                                      DisplayMemberPath="name"
                                      SelectedItem="{Binding SelectedItem.binariesSet, ElementName=lbLauncherList, Mode=TwoWay}"
                                      Grid.Column="1" Grid.Row="3" Margin="5"/>
-                                 <Button Click="OnExecuteLauncher" Content="Start" HorizontalAlignment="Left" Grid.Column="1" Grid.Row="4" Margin="5"/>
+                                 <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="4">
+                                    <Button Click="OnExecuteLauncher" Content="Start" HorizontalAlignment="Left" Margin="5"/>
+                                    <Button Click="OnConsoleExecuteLauncher" Content="Console start" HorizontalAlignment="Left" Margin="5"/>                                    
+                                 </StackPanel>
                               </Grid>
                            </Grid>
                         </DockPanel>
@@ -225,8 +255,8 @@
                            <Label Content="Path: " Grid.Column="0" Grid.Row="1"/>
                            <TextBox Text="{Binding SelectedItem.basePath, ElementName=lbEwamList, Mode=TwoWay}" Grid.Column="1" Grid.Row="1" Margin="5"/>
                            <StackPanel Orientation="Horizontal" Grid.Column="2" Grid.Row="1">
-                              <Button Content="Change" Margin="5"/>
-                              <Button Content="Explore" Margin="5"/>
+                              <Button Click="OnChangePath" Tag="{Binding SelectedItem.basePath, ElementName=lbEwamList, Mode=TwoWay}" Content="Change" Margin="5"/>
+                              <Button Click="OnExplorePath" Tag="{Binding SelectedItem.basePath, ElementName=lbEwamList, Mode=TwoWay}" Content="Explore" Margin="5"/>
                            </StackPanel>
                         </Grid>
                      </TabItem>

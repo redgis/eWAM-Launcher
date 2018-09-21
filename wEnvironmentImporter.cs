@@ -148,6 +148,20 @@ namespace eWamLauncher
          return this.environment;
       }
 
+      private string ReplaceDPandCDwithPath(string value, string path)
+      {
+         value = value.Replace("%~dp0", path);
+         value = value.Replace("%~Dp0", path);
+         value = value.Replace("%~dP0", path);
+         value = value.Replace("%~DP0", path);
+         value = value.Replace("%cd%", path);
+         value = value.Replace("%Cd%", path);
+         value = value.Replace("%cD%", path);
+         value = value.Replace("%CD%", path);
+
+         return value;
+      }
+
       public ObservableCollection<wEnvironmentVariable> ImportEnvironmentVariables(string path)
       {
          if (!Directory.Exists(path)) throw new DirectoryNotFoundException(path);
@@ -155,13 +169,14 @@ namespace eWamLauncher
          path = MainWindow.NormalizePath(path);
 
          //Try importing env variables
-         string[] batches = Directory.GetFiles(path, "*Set Env.bat");
-         if (batches.Length <= 0) throw new FileNotFoundException(path + "*Set Env.bat");
+         string[] batches = Directory.GetFiles(path, "*Set Env*.bat");
+         if (batches.Length <= 0) throw new FileNotFoundException(path + "*Set Env*.bat");
 
          foreach (string batch in batches)
          {
             StreamReader sr = new StreamReader(batch);
-            string pattern = @"(?<comment>^[\@\t\s]*(?:REM|:)+)?.*set[\t\s]+(?<key>[^=%]+)[\t\s]*=[\t\s]*(?<value>.+)";
+
+            string pattern = @"(?<comment>^[\@\t\s]*(?:[rR][eE][mM]|:)+)?.*set[\t\s]+[""]?(?<key>[^=%]+)[\t\s]*=[\t\s]*(?<value>[^""]+)";
             while (sr.Peek() >= 0)
             {
                string input = sr.ReadLine();
@@ -211,6 +226,12 @@ namespace eWamLauncher
                }
             }
          }
+
+         foreach(wEnvironmentVariable envVar in this.environment.environmentVariables)
+         {
+            envVar.value = this.ReplaceDPandCDwithPath(envVar.value, path);
+         }
+
          return this.environment.environmentVariables;
       }
 

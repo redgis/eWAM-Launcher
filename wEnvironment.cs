@@ -104,7 +104,7 @@ namespace eWamLauncher
 
          foreach (wEnvironmentVariable variable in this.environmentVariables)
          {
-            if (variable.name == name)
+            if (variable.name.ToUpper() == name.ToUpper())
             {
                result = variable;
                break;
@@ -129,6 +129,7 @@ namespace eWamLauncher
 
          // Look for variable in current wEnvironment (i.e. this)
          wEnvironmentVariable localEnvVar = this.GetEnvironmentVariable(name);
+
          if (localEnvVar != null)
          {
             variableValue = localEnvVar.value;
@@ -147,18 +148,36 @@ namespace eWamLauncher
          }
          else
          {
-            // Expand env variable value by looking up all %....% and expanding each of these matches
-            Regex rgx = new Regex(@"%(?<variable>[^=%\s\t]+)%");
-            result = rgx.Replace(
-               variableValue,
-               new MatchEvaluator(this.ExpandEnvVariableMatch));
-
-            if (variableIsInEnvironment)
+            if (!localEnvVar.isBeingResolved)
             {
-               localEnvVar.result = result;
+               localEnvVar.isBeingResolved = true;
+               {
+                  // Expand env variable value by looking up all %....% and expanding each of these matches
+                  Regex rgx = new Regex(@"%(?<variable>[^=%\s\t]+)%");
+                  result = rgx.Replace(
+                     variableValue,
+                     new MatchEvaluator(this.ExpandEnvVariableMatch));
+               }
+               localEnvVar.isBeingResolved = false;
+
+               if (variableIsInEnvironment)
+               {
+                  localEnvVar.result = result;
+               }
+               
             }
          }
 
+         return result;
+      }
+
+      public string ExpandString(string str)
+      {
+         // Expand env variable value by looking up all %....% and expanding each of these matches
+         Regex rgx = new Regex(@"%(?<variable>[^=%\s\t]+)%");
+         string result = rgx.Replace(
+            str,
+            new MatchEvaluator(this.ExpandEnvVariableMatch));
          return result;
       }
 
@@ -169,7 +188,7 @@ namespace eWamLauncher
          List<wEnvironmentVariable> toRemove = new List<wEnvironmentVariable>();
          foreach (wEnvironmentVariable envVariable in this.environmentVariables)
          {
-            if (envVariable.name == "WYDE-DLL")
+            if (envVariable.name.ToUpper() == "WYDE-DLL")
             {
                toRemove.Add(envVariable);
             }
