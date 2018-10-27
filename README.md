@@ -3,6 +3,7 @@
 
 ![screen01](doc/screenshot-01.png)
 ![screen02](doc/screenshot-02.png)
+![screen03](doc/screenshot-03.png)
 
 
 ## Basic features
