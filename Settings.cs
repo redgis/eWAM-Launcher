@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace eWamLauncher
 {
-   [DataContract(Name = "wWAMLauncherSettings", Namespace = "http://www.wyde.com")]
-   public class wWAMLauncherSettings : ICloneable, INotifyPropertyChanged
+   [DataContract(Name = "Settings", Namespace = "http://www.wyde.com")]
+   public class Settings : ICloneable, INotifyPropertyChanged
    {
       // TODO : when setting or getting, transform "\n" seperated list to ";" seperated list, and vice versa.
       [DataMember()] private string _exeSearchPathes;
@@ -53,25 +53,25 @@ namespace eWamLauncher
 
       public object Clone()
       {
-         wWAMLauncherSettings clone = (wWAMLauncherSettings)this.MemberwiseClone();
+         Settings clone = (Settings)this.MemberwiseClone();
 
          return clone;
       }
 
 
-      public wWAMLauncherSettings()
+      public Settings()
       {
-         this.exeSearchPathes = @"bin";
+         this.exeSearchPathes = @"bin;WydeServer\wsmServer;WydeServer\wwClient";
          this.dllSearchPathes = @"dll;dll.debug";
          this.cppdllSearchPathes = @"cppdll;cppdll.debug";
-         this.launcherSearchPathes = @"bin";
-         this.batchSearchPathes = @"batches";
+         this.launcherSearchPathes = @"bin;batch;batches;launchers;environments";
+         this.batchSearchPathes = @"bin;batch;batches";
          this.tgvSearchPathes = @"tgv";
 
          this.ewamexes = "ewam.exe;ewamconsole.exe;wyseman.exe;wydeweb.exe;remoteewam.exe;wedrpcserver.exe;wsmadmin.exe;RemoteWAM.exe";
 
-         this.launcherUpdateServerURL = @"http://regismt470p.wyde.paris.local/wLauncherUpdate/";
-         this.ewamUpdateServerURL = @"http://regismt470p.wyde.paris.local/eWamUpdate/package-index.xml";
+         this.launcherUpdateServerURL = @"http://regismt470p.wyde.paris.local/LauncherUpdate/";
+         this.ewamUpdateServerURL = @"http://regismt470p.wyde.paris.local/eWamUpdate/";
       }
    }
 }

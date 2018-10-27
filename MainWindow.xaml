@@ -28,7 +28,7 @@
          </MenuItem>
          <!--<MenuItem Header="_Environment">
             <MenuItem Header="_Import" Command="ImportEnvironment"/>
-            <MenuItem Header="_New" Command="NewEnvironment"/>
+            <MenuItem Header="_New" Command="NeEnvironment"/>
          </MenuItem>
          <MenuItem Header="_Ewam">
             <MenuItem Header="_Import" Command="ImportEwam"/>
@@ -45,31 +45,34 @@
       </StackPanel>
 
       <TabControl TabStripPlacement="Left">
-         <TabItem Header="Environments  ">
-            <Grid HorizontalAlignment="Stretch">
+         <TabItem Header="Environments  " VerticalContentAlignment="Stretch" VerticalAlignment="Stretch">
+            <Grid>
                <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="210" MinWidth="150"/>
                   <ColumnDefinition Width="5"/>
                   <ColumnDefinition Width="*"/>
                </Grid.ColumnDefinitions>
 
-               <StackPanel Orientation="Vertical" Grid.Column="0" Margin="5">
-                  <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                  x:Name="lbEnvList"
-                  ItemsSource="{Binding profile.environments, Mode=TwoWay}"
-                  SelectedIndex="0"
-                  DisplayMemberPath="name"
-                  MinHeight="200"/>
-                  <WrapPanel Orientation="Horizontal" Margin="0,2">
-                     <Button Click="OnNewEnvironment" Content="New" Margin="2,2"/>
+               <DockPanel Grid.Column="0" Margin="5" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+                  <WrapPanel Orientation="Horizontal" Margin="0,2" Grid.Column="0" DockPanel.Dock="Bottom">
+                     <Button Click="OnNeEnvironment" Content="New" Margin="2,2"/>
                      <Button Click="OnDuplicateEnvironment" Content="Duplicate" Margin="2,2"/>
                      <Button Click="OnDeleteEnvironment" Content="Delete" Margin="2,2"/>
                      <Button Click="OnImportEnvironment" Content="Import" Margin="2,2"/>
                      <Button Click="OnMoveUpEnvironment" Content="Move Up" Margin="2,2"/>
                      <Button Click="OnMoveDownEnvironment" Content="Move Down" Margin="2,2"/>
+                     <Button Click="OnFileExportEnvironment" Content="Export to File" Margin="2,2"/>
+                     <Button Click="OnFileImportEnvironment" Content="Import from File" Margin="2,2"/>
                   </WrapPanel>
-               </StackPanel>
-               <GridSplitter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" Background="IndianRed"/>
+                  <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" DockPanel.Dock="Top"
+                     Margin="5"
+                     x:Name="lbEnvList"
+                     ItemsSource="{Binding profile.environments, Mode=TwoWay}"
+                     SelectedIndex="0"
+                     DisplayMemberPath="name"
+                     MinHeight="200" />
+               </DockPanel>
+               <GridSplitter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" Grid.Column="1" Background="IndianRed"/>
                <DockPanel Grid.Column="2" VerticalAlignment="Stretch">
                   <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5" HorizontalContentAlignment="Center" TabStripPlacement="Top">
                      <TabItem Header="General ">
@@ -83,25 +86,67 @@
                               <RowDefinition Height="Auto"/>
                               <RowDefinition Height="Auto"/>
                               <RowDefinition Height="Auto"/>
+                              <RowDefinition Height="Auto"/>
+                              <RowDefinition Height="Auto"/>
                               <RowDefinition />
                            </Grid.RowDefinitions>
-                           <Label Content="Name: " Grid.Column="0" Grid.Row="0"/>
-                           <TextBox Text="{Binding SelectedItem.name, ElementName=lbEnvList, Mode=TwoWay}" Grid.Column="1" Grid.Row="0" Margin="5"/>
-                           <Label Content="Path: " Grid.Column="0" Grid.Row="1"/>
-                           <TextBox Text="{Binding SelectedItem.tgvPath, ElementName=lbEnvList, Mode=TwoWay}" Grid.Column="1" Grid.Row="1" Margin="5"/>
+                           <Label Content="Name : " Grid.Column="0" Grid.Row="0" VerticalAlignment="Center"/>
+                           <TextBox Text="{Binding SelectedItem.name, ElementName=lbEnvList, Mode=TwoWay}" 
+                                    Grid.Column="1" Grid.Row="0" Margin="5"/>
+
+                           <Label Content="Environment root path : " Grid.Column="0" Grid.Row="1" VerticalAlignment="Center"/>
+                           <TextBox Text="{Binding SelectedItem.envRoot, ElementName=lbEnvList, Mode=TwoWay}" 
+                                    Grid.Column="1" Grid.Row="1" Margin="5"/>
                            <StackPanel Orientation="Horizontal" Grid.Column="2" Grid.Row="1">
                               <!-- use WPF Command pattern instead of corrupting "tag" attribute 
-                              Tag="{Binding SelectedItem.tgvPath, ElementName=lbEnvList, Mode=TwoWays}" -->
-                              <Button Click="OnChangePath" Tag="{Binding SelectedItem.tgvPath, ElementName=lbEnvList, Mode=TwoWay}" Content="Change" Margin="5"/>
+                              Tag="{Binding SelectedItem.envRoot, ElementName=lbEnvList, Mode=TwoWays}" -->
+                              <Button Click="OnChangePath" 
+                                      Tag="{Binding SelectedItem.envRoot, ElementName=lbEnvList, Mode=TwoWay}" 
+                                      Content="Change" Margin="5"/>
                               <!-- use WPF Command pattern instead of corrupting "tag" attribute 
-                              Tag="{Binding SelectedItem.tgvPath, ElementName=lbEnvList}"-->
-                              <Button Click="OnExplorePath" Tag="{Binding SelectedItem.tgvPath, ElementName=lbEnvList, Mode=TwoWay}" Content="Explore" Margin="5"/>
+                              Tag="{Binding SelectedItem.envRoot, ElementName=lbEnvList}"-->
+                              <Button Click="OnExplorePath" 
+                                      Tag="{Binding SelectedItem.envRoot, ElementName=lbEnvList, Mode=TwoWay}" 
+                                      Content="Explore" Margin="5"/>
                            </StackPanel>
-                           <Label Content="eWAM: " Grid.Column="0" Grid.Row="2"/>
+
+                           <Label Content="Wynsure resource path (WF-ROOT) : " Grid.Column="0" Grid.Row="2" VerticalAlignment="Center"/>
+                           <TextBox Text="{Binding SelectedItem.wfRoot, ElementName=lbEnvList, Mode=TwoWay}" 
+                                    Grid.Column="1" Grid.Row="2" Margin="5"/>
+                           <StackPanel Orientation="Horizontal" Grid.Column="2" Grid.Row="2">
+                              <!-- use WPF Command pattern instead of corrupting "tag" attribute 
+                              Tag="{Binding SelectedItem.wfRoot, ElementName=lbEnvList, Mode=TwoWays}" -->
+                              <Button Click="OnChangePath" 
+                                      Tag="{Binding SelectedItem.wfRoot, ElementName=lbEnvList, Mode=TwoWay}" 
+                                      Content="Change" Margin="5"/>
+                              <!-- use WPF Command pattern instead of corrupting "tag" attribute 
+                              Tag="{Binding SelectedItem.wfRoot, ElementName=lbEnvList}"-->
+                              <Button Click="OnExplorePath" 
+                                      Tag="{Binding SelectedItem.wfRoot, ElementName=lbEnvList, Mode=TwoWay}" 
+                                      Content="Explore" Margin="5"/>
+                           </StackPanel>
+
+                           <Label Content="TGV sub path : " Grid.Column="0" Grid.Row="3" VerticalAlignment="Center"/>
+                           <TextBox Text="{Binding SelectedItem.tgvSubPath, ElementName=lbEnvList, Mode=TwoWay}" 
+                                    Grid.Column="1" Grid.Row="3" Margin="5"/>
+                           <StackPanel Orientation="Horizontal" Grid.Column="2" Grid.Row="3">
+                              <!-- use WPF Command pattern instead of corrupting "tag" attribute 
+                              Tag="{Binding SelectedItem.tgvSubPath, ElementName=lbEnvList, Mode=TwoWays}" -->
+                              <!--<Button Click="OnChangePath" 
+                                      Tag="{Binding SelectedItem.tgvSubPath, ElementName=lbEnvList, Mode=TwoWay}" 
+                                      Content="Change" Margin="5"/>-->
+                              <!-- use WPF Command pattern instead of corrupting "tag" attribute 
+                              Tag="{Binding SelectedItem.tgvSubPath, ElementName=lbEnvList}"-->
+                              <!--<Button Click="OnExplorePath" 
+                                      Tag="{Binding SelectedItem.envRoot + "\\" +  SelectedItem.tgvSubPath, ElementName=lbEnvList, Mode=TwoWay}" 
+                                      Content="Explore" Margin="5"/>-->
+                           </StackPanel>
+
+                           <Label Content="eWAM : " Grid.Column="0" Grid.Row="4" VerticalAlignment="Center"/>
                            <ComboBox x:Name="cbEwam" ItemsSource="{Binding profile.ewams}"
                               DisplayMemberPath="name"
                               SelectedValue="{Binding SelectedItem.ewam, ElementName=lbEnvList}"
-                              Grid.Column="1" Grid.Row="2" Margin="5"/>
+                              Grid.Column="1" Grid.Row="4" Margin="5"/>
                         </Grid>
                      </TabItem>
                      <TabItem Header="Env. Variables ">
@@ -111,6 +156,11 @@
                               <Button Click="OnMoveUpVariable" Content="Move Up" Margin="5"/>
                               <Button Click="OnMoveDownVariable" Content="Move Down" Margin="5"/>
                            </StackPanel>
+                           <TextBlock DockPanel.Dock="Top" TextWrapping="WrapWithOverflow" Margin="20">
+                              WARNING: PATH VARIABLE MUST ONLY CONTAIN ADDITIONAL PATHES. DON'T ADD
+                              bin/ dll/ cppdll/ PATHES. THOSE ARE AUTOMATICALLY ADDED FROM SELECTED
+                              EWAM BINARIES.
+                           </TextBlock>
                            <DataGrid 
                               x:Name="dgVarList"
                               ItemsSource="{Binding SelectedItem.environmentVariables, ElementName=lbEnvList, Mode=TwoWay}" 
@@ -150,6 +200,20 @@
                               <Button Click="OnMoveUpLauncher" Content="Move Up" Margin="2,2"/>
                               <Button Click="OnMoveDownLauncher" Content="Move Down" Margin="2,2"/>
                            </WrapPanel>
+                           <WrapPanel Orientation="Horizontal" Margin="20,5" DockPanel.Dock="Top">
+                              <Label Content="Launch using: " VerticalAlignment="Center" />
+                              <ComboBox ItemsSource="{Binding profile.ewams, Mode=TwoWay}"
+                                       DisplayMemberPath="name"
+                                       SelectedItem="{Binding SelectedItem.ewam, ElementName=lbEnvList, Mode=TwoWay}"
+                                       Margin="5"
+                                       MinWidth="150" />
+                              <Label Content="Binary set: " VerticalAlignment="Center" Margin="10,0,0,0"/>
+                              <ComboBox ItemsSource="{Binding SelectedItem.ewam.binariesSets, ElementName=lbEnvList, Mode=TwoWay}"
+                                       DisplayMemberPath="name"
+                                       SelectedItem="{Binding SelectedItem.binariesSet, ElementName=lbEnvList, Mode=TwoWay}"
+                                       Margin="5"
+                                        MinWidth="150"/>
+                           </WrapPanel>
                            <Grid>
                               <Grid.ColumnDefinitions>
                                  <ColumnDefinition Width="320" MinWidth="150"/>
@@ -186,19 +250,14 @@
                                  <TextBox Text="{Binding SelectedItem.program, ElementName=lbLauncherList, Mode=TwoWay}" Grid.Column="1" Grid.Row="1" Margin="5"/>
                                  <Label Content="Arguments: " Grid.Column="0" Grid.Row="2"/>
                                  <TextBox Text="{Binding SelectedItem.arguments, ElementName=lbLauncherList, Mode=TwoWay}" TextWrapping="Wrap" Grid.Column="1" Grid.Row="2" Margin="5"/>
-                                 <Label Content="Binary set: " Grid.Column="0" Grid.Row="3"/>
-                                 <!--<ComboBox ItemsSource="{Binding SelectedItem.binariesSets, ElementName=lbEnvList}"
-                                     DisplayMemberPath="name"
-                                     SelectedValue="{Binding SelectedItem.binariesSet, ElementName=lbLauncherList}" 
-                                     SelectedValuePath="name"
-                                     Grid.Column="1" Grid.Row="3" Margin="5"/>-->
+                                 <!--<Label Content="Binary set: " Grid.Column="0" Grid.Row="3"/>
                                  <ComboBox ItemsSource="{Binding SelectedItem.binariesSets, ElementName=cbEwam, Mode=TwoWay}"
                                      DisplayMemberPath="name"
                                      SelectedItem="{Binding SelectedItem.binariesSet, ElementName=lbLauncherList, Mode=TwoWay}"
-                                     Grid.Column="1" Grid.Row="3" Margin="5"/>
+                                     Grid.Column="1" Grid.Row="3" Margin="5"/>-->
                                  <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="4">
                                     <Button Click="OnExecuteLauncher" Content="Start" HorizontalAlignment="Left" Margin="5"/>
-                                    <Button Click="OnConsoleExecuteLauncher" Content="Console start" HorizontalAlignment="Left" Margin="5"/>                                    
+                                    <Button Click="OnConsoleExecuteLauncher" Content="Start in a Console" HorizontalAlignment="Left" Margin="5"/>
                                  </StackPanel>
                               </Grid>
                            </Grid>
@@ -218,23 +277,26 @@
                   <ColumnDefinition Width="*"/>
                </Grid.ColumnDefinitions>
 
-               <StackPanel Orientation="Vertical" Grid.Column="0" Margin="5">
-                  <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+               <DockPanel Grid.Column="0" Margin="5" VerticalAlignment="Stretch">
+                  <WrapPanel Orientation="Horizontal" Margin="0,2" DockPanel.Dock="Bottom">
+                     <Button Click="OnNewEwam" Content="New" Margin="2,2"/>
+                     <Button Click="OnDuplicateEwam" Content="Duplicate" Margin="2,2"/>
+                     <Button Click="OnDeleteEwam" Content="Delete" Margin="2,2"/>
+                     <Button Click="OnImportEwam" Content="Import" Margin="2,2"/>
+                     <Button Click="OnFileImportEwam" Content="Import from File" Margin="2,2"/>
+                     <Button Click="OnFileExportEwam" Content="Export to File" Margin="2,2"/>
+                     <Button Click="OnMoveUpEwam" Content="Move Up" Margin="2,2"/>
+                     <Button Click="OnMoveDownEwam" Content="Move Down" Margin="2,2"/>
+                  </WrapPanel>
+                  
+                  <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch" DockPanel.Dock="Top"
                      x:Name="lbEwamList"
                      ItemsSource="{Binding profile.ewams, Mode=TwoWay}"
                      SelectedIndex="0"
                      DisplayMemberPath="name"
                      MinHeight="200"/>
 
-                  <WrapPanel Orientation="Horizontal" Margin="0,2">
-                     <Button Click="OnNewEwam" Content="New" Margin="2,2"/>
-                     <Button Click="OnDuplicateEwam" Content="Duplicate" Margin="2,2"/>
-                     <Button Click="OnDeleteEwam" Content="Delete" Margin="2,2"/>
-                     <Button Click="OnImportEwam" Content="Import" Margin="2,2"/>
-                     <Button Click="OnMoveUpEwam" Content="Move Up" Margin="2,2"/>
-                     <Button Click="OnMoveDownEwam" Content="Move Down" Margin="2,2"/>
-                  </WrapPanel>
-               </StackPanel>
+               </DockPanel>
                <GridSplitter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" Background="IndianRed"/>
                <DockPanel Grid.Column="2" VerticalAlignment="Stretch">
                   <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5" HorizontalContentAlignment="Center" TabStripPlacement="Top">
@@ -297,13 +359,24 @@
                                     <RowDefinition Height="*"/>
                                  </Grid.RowDefinitions>
                                  <Label Content="Name: " Grid.Column="0" Grid.Row="0"/>
-                                 <TextBox Text="{Binding SelectedItem.name, ElementName=lbBinariesSets, Mode=TwoWay}" Grid.Column="1" Grid.Row="0" Margin="5"/>
+                                 <TextBox Text="{Binding SelectedItem.name, ElementName=lbBinariesSets, Mode=TwoWay}" 
+                                          AcceptsReturn="True"
+                                          Grid.Column="1" Grid.Row="0" Margin="5"/>
                                  <Label Content="Binaries pathes: " Grid.Column="0" Grid.Row="1"/>
-                                 <TextBox Text="{Binding SelectedItem.exePathes, ElementName=lbBinariesSets, Mode=TwoWay}" ToolTip="One path per line. '\n' seperated pathes." Grid.Column="1" Grid.Row="1" Margin="5"/>
+                                 <TextBox Text="{Binding SelectedItem.exePathes, ElementName=lbBinariesSets, Mode=TwoWay}"
+                                          AcceptsReturn="True"
+                                          ToolTip="One path per line. '\n' seperated pathes."
+                                          Grid.Column="1" Grid.Row="1" Margin="5"/>
                                  <Label Content="Dll pathes: " Grid.Column="0" Grid.Row="2"/>
-                                 <TextBox Text="{Binding SelectedItem.dllPathes, ElementName=lbBinariesSets, Mode=TwoWay}" ToolTip="One path per line. '\n' seperated pathes." Grid.Column="1" Grid.Row="2" Margin="5"/>
+                                 <TextBox Text="{Binding SelectedItem.dllPathes, ElementName=lbBinariesSets, Mode=TwoWay}"
+                                          AcceptsReturn="True"
+                                          ToolTip="One path per line. '\n' seperated pathes."
+                                          Grid.Column="1" Grid.Row="2" Margin="5"/>
                                  <Label Content="CppDll pathes: " Grid.Column="0" Grid.Row="3"/>
-                                 <TextBox Text="{Binding SelectedItem.cppdllPathes, ElementName=lbBinariesSets, Mode=TwoWay}" ToolTip="One path per line. '\n' seperated pathes." Grid.Column="1" Grid.Row="3" Margin="5"/>
+                                 <TextBox Text="{Binding SelectedItem.cppdllPathes, ElementName=lbBinariesSets, Mode=TwoWay}"
+                                          AcceptsReturn="True"
+                                          ToolTip="One path per line. '\n' seperated pathes."
+                                          Grid.Column="1" Grid.Row="3" Margin="5"/>
                               </Grid>
                            </Grid>
                         </DockPanel>
@@ -363,11 +436,107 @@
 
                this.ewamexes = "ewam.exe;ewamconsole.exe;wyseman.exe;wydeweb.exe;remoteewam.exe;wedrpcserver.exe;wsmadmin.exe;RemoteWAM.exe";
 
-               this.launcherUpdateServerURL = @"http://regismt470p.wyde.paris.local/wLauncherUpdate/";
+               this.launcherUpdateServerURL = @"http://regismt470p.wyde.paris.local/LauncherUpdate/";
                this.ewamUpdateServerURL = @"http://regismt470p.wyde.paris.local/eWamUpdate/";
             -->
             
          </TabItem>
+
+         <TabItem Header="Packages  ">
+            <Grid HorizontalAlignment="Stretch">
+               <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="210" MinWidth="150"/>
+                  <ColumnDefinition Width="5"/>
+                  <ColumnDefinition Width="*"/>
+               </Grid.ColumnDefinitions>
+
+               <DockPanel Grid.Column="0" Margin="5" VerticalAlignment="Stretch">
+                  
+                  <WrapPanel Orientation="Horizontal" Margin="0,2" DockPanel.Dock="Bottom">
+                     <Button Click="OnRefreshPackages" Content="Refresh Package List" Margin="2,2"/>
+                     <Button Click="OnImportSelectedPackage" Content="Import Selected Package" Margin="2,2"/>
+                  </WrapPanel>
+
+                  <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch" DockPanel.Dock="Top"
+                     x:Name="lbPackageList"
+                     ItemsSource="{Binding packages, Mode=TwoWay}"
+                     SelectedIndex="0"
+                     DisplayMemberPath="Id"
+                     MinHeight="200"/>
+
+               </DockPanel>
+               <GridSplitter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" Background="IndianRed"/>
+               <DockPanel Grid.Column="2" VerticalAlignment="Stretch">
+                  <WrapPanel Orientation="Horizontal" Margin="0,2" DockPanel.Dock="Bottom">
+                  </WrapPanel>
+                  <Grid>
+                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200" MinWidth="150"/>
+                        <ColumnDefinition Width="2"/>
+                        <ColumnDefinition Width="*"/>
+                     </Grid.ColumnDefinitions>
+
+                     <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0"
+                                 x:Name="lbComponentList"
+                                 ItemsSource="{Binding SelectedItem.Components, ElementName=lbPackageList, Mode=TwoWay}"
+                                 SelectedIndex="0"
+                                 DisplayMemberPath="Name"
+                                 MinWidth="120"
+                                 MinHeight="200"
+                                 Margin="5"
+                                 SelectionMode="Single" />
+                                 <!--SelectionMode="Multiple"-->
+
+                     <GridSplitter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" Background="IndianRed"/>
+                     <Grid Grid.Column="2">
+                        <Grid.ColumnDefinitions>
+                           <ColumnDefinition Width="*"/>
+                           <ColumnDefinition Width="250"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                           <RowDefinition Height="*"/>
+                           <!--<RowDefinition Height="Auto"/>
+                           <RowDefinition Height="Auto"/>
+                           <RowDefinition Height="Auto"/>
+                           <RowDefinition Height="Auto"/>-->
+                        </Grid.RowDefinitions>
+
+                        <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" Grid.Row="0"
+                                 x:Name="lbFileList"
+                                 ItemsSource="{Binding SelectedItem.Files, ElementName=lbComponentList, Mode=TwoWay}"
+                                 SelectedIndex="0"
+                                 DisplayMemberPath="Path"
+                                 MinWidth="120"
+                                 MinHeight="200"
+                                 Margin="5" />
+
+                        <StackPanel Orientation="Vertical" x:Name="stkpProgressBars" Grid.Column="1" 
+                                    HorizontalAlignment="Stretch" Margin="5" />
+
+                        <!--<Label Content="Name: " Grid.Column="0" Grid.Row="0"/>
+                        <TextBox Text="{Binding SelectedItem.name, ElementName=lbLauncherList, Mode=TwoWay}" Grid.Column="1" Grid.Row="0" Margin="5"/>
+                        <Label Content="Program: " Grid.Column="0" Grid.Row="1"/>
+                        <TextBox Text="{Binding SelectedItem.program, ElementName=lbLauncherList, Mode=TwoWay}" Grid.Column="1" Grid.Row="1" Margin="5"/>
+                        <Label Content="Arguments: " Grid.Column="0" Grid.Row="2"/>
+                        <TextBox Text="{Binding SelectedItem.arguments, ElementName=lbLauncherList, Mode=TwoWay}" TextWrapping="Wrap" Grid.Column="1" Grid.Row="2" Margin="5"/>
+                        <Label Content="Binary set: " Grid.Column="0" Grid.Row="3"/>
+
+                        <ComboBox ItemsSource="{Binding SelectedItem.binariesSets, ElementName=cbEwam, Mode=TwoWay}"
+                                       DisplayMemberPath="name"
+                                       SelectedItem="{Binding SelectedItem.binariesSet, ElementName=lbLauncherList, Mode=TwoWay}"
+                                       Grid.Column="1" Grid.Row="3" Margin="5"/>
+                        <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="4">
+                           <Button Click="OnExecuteLauncher" Content="Start" HorizontalAlignment="Left" Margin="5"/>
+                           <Button Click="OnConsoleExecuteLauncher" Content="Console start" HorizontalAlignment="Left" Margin="5"/>
+                        </StackPanel>-->
+                     </Grid>
+                     
+                  </Grid>
+               </DockPanel>
+               
+            </Grid>
+         </TabItem>
+         
       </TabControl>
    </DockPanel>
 </controls:MetroWindow>

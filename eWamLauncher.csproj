@@ -78,6 +78,8 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -101,15 +103,16 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="wEwamImporter.cs" />
+    <Compile Include="EwamImporter.cs" />
     <Compile Include="ObservableDictionary.cs" />
-    <Compile Include="wBinaries.cs" />
-    <Compile Include="wEnvironment.cs" />
-    <Compile Include="wEnvironmentVariable.cs" />
-    <Compile Include="wEwam.cs" />
-    <Compile Include="wLauncher.cs" />
-    <Compile Include="wProfile.cs" />
-    <Compile Include="wWAMLauncherSettings.cs" />
+    <Compile Include="BinariesSet.cs" />
+    <Compile Include="Environment.cs" />
+    <Compile Include="EnvironmentVariable.cs" />
+    <Compile Include="Ewam.cs" />
+    <Compile Include="Launcher.cs" />
+    <Compile Include="Profile.cs" />
+    <Compile Include="Settings.cs" />
+    <Compile Include="WideIndexImporter.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -118,7 +121,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="wEnvironmentImporter.cs" />
+    <Compile Include="EnvironmentImporter.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

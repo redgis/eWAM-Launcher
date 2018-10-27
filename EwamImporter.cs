@@ -9,12 +9,12 @@ using System.Diagnostics;
 
 namespace eWamLauncher
 {
-   public class wEwamImporter
+   public class EwamImporter
    {
-      private wEwam ewam;
-      private wWAMLauncherSettings settings;
+      private Ewam ewam;
+      private Settings settings;
       
-      public wEwamImporter(wWAMLauncherSettings settings, wEwam ewam = null)
+      public EwamImporter(Settings settings, Ewam ewam = null)
       {
          this.settings = settings;
 
@@ -24,25 +24,25 @@ namespace eWamLauncher
          }
          else
          {
-            this.ewam = new wEwam();
+            this.ewam = new Ewam();
          }
       }
 
-      public wEwamImporter(wProfile profile, wEwam ewam = null) : this(profile.settings, ewam)
+      public EwamImporter(Profile profile, Ewam ewam = null) : this(profile.settings, ewam)
       { }
 
-      public wEwam GetEwam()
+      public Ewam GetEwam()
       {
          return this.ewam;
       }
 
-      public wEwam ImportFromPath(string path)
+      public Ewam ImportFromPath(string path)
       {
          if (!Directory.Exists(path)) throw new DirectoryNotFoundException("WYDE-ROOT : " + path);
 
          path = MainWindow.NormalizePath(path);
          
-         this.ewam = new wEwam(path);
+         this.ewam = new Ewam(path);
 
          // dictionaries to store (key:binaries set name) => (value:pathes)
          Dictionary<string, string> exePathes = new Dictionary<string, string>();
@@ -55,16 +55,15 @@ namespace eWamLauncher
          this.FindPathes(path, this.settings.exeSearchPathes.Split(delimiters), "*.exe", exePathes);
          this.FindPathes(path, this.settings.dllSearchPathes.Split(delimiters), "*.dll", dllPathes);
          this.FindPathes(path, this.settings.cppdllSearchPathes.Split(delimiters), "*.dll", cppdllPathes);
-
-
-         //Recombine the binaries sets collected pathes into a single wBinariesSet object.
-         Dictionary<string, wBinariesSet> binariesSets = new Dictionary<string, wBinariesSet>();
+         
+         //Recombine the binaries sets collected pathes into a single BinariesSet object.
+         Dictionary<string, BinariesSet> binariesSets = new Dictionary<string, BinariesSet>();
 
          foreach (KeyValuePair<string, string> binSetPathes in exePathes)
          {
             if (!binariesSets.ContainsKey(binSetPathes.Key))
             {
-               binariesSets.Add(binSetPathes.Key, new wBinariesSet());
+               binariesSets.Add(binSetPathes.Key, new BinariesSet());
             }
 
             binariesSets[binSetPathes.Key].name = binSetPathes.Key;
@@ -75,7 +74,7 @@ namespace eWamLauncher
          {
             if (!binariesSets.ContainsKey(binSetPathes.Key))
             {
-               binariesSets.Add(binSetPathes.Key, new wBinariesSet());
+               binariesSets.Add(binSetPathes.Key, new BinariesSet());
             }
 
             binariesSets[binSetPathes.Key].name = binSetPathes.Key;
@@ -86,7 +85,7 @@ namespace eWamLauncher
          {
             if (!binariesSets.ContainsKey(binSetPathes.Key))
             {
-               binariesSets.Add(binSetPathes.Key, new wBinariesSet());
+               binariesSets.Add(binSetPathes.Key, new BinariesSet());
             }
 
             binariesSets[binSetPathes.Key].name = binSetPathes.Key;
@@ -94,7 +93,7 @@ namespace eWamLauncher
          }
 
          // store binaries sets in current ewam
-         foreach (KeyValuePair<string, wBinariesSet> binariesSet in binariesSets)
+         foreach (KeyValuePair<string, BinariesSet> binariesSet in binariesSets)
          {
             this.ewam.binariesSets.Add(binariesSet.Value);
          }
@@ -145,9 +144,19 @@ namespace eWamLauncher
                      foundPathes.Add(setName, "");
                   }
 
-                  if (!foundPathes[setName].Contains(fullPath))
+                  string normalizedFullPath = Path.GetFullPath(new Uri(fullPath).LocalPath)
+                     .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+                  //Remove prefix base path
+                  string foundSubPath = normalizedFullPath.Substring(basePath.Length + 1)
+                     .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+                  if (!foundPathes[setName].Contains(foundSubPath))
                   {
-                     foundPathes[setName] += fullPath + "\n";
+                     if (normalizedFullPath.StartsWith(basePath))
+                     {
+                        foundPathes[setName] += foundSubPath + "\n";
+                     }
                   }
                }
             }

@@ -9,8 +9,8 @@ using System.ComponentModel;
 
 namespace eWamLauncher
 {
-   [DataContract(Name = "wEnvironmentVariable", Namespace = "http://www.wyde.com")]
-   public class wEnvironmentVariable : ICloneable, INotifyPropertyChanged
+   [DataContract(Name = "EnvironmentVariable", Namespace = "http://www.wyde.com")]
+   public class EnvironmentVariable : ICloneable, INotifyPropertyChanged
    {
       [DataMember()] private string _name;
       public string name { get { return _name.ToUpper(); } set { _name = value.ToUpper();  NotifyPropertyChanged(); } }
@@ -38,14 +38,14 @@ namespace eWamLauncher
 
       //Needed to be able to add lines in the Env Variables datagrid
 
-      public wEnvironmentVariable()
+      public EnvironmentVariable()
       {
          this.name = "WYDE-DUMMY";
          this.value = "";
          this.isBeingResolved = false;
    }
 
-      public wEnvironmentVariable(string name = "", string value = "")
+      public EnvironmentVariable(string name = "", string value = "")
       {
          this.name = name;
          this.value = value;

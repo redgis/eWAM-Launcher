@@ -11,8 +11,8 @@ using System.ComponentModel;
 
 namespace eWamLauncher
 {
-   [DataContract(Name = "wBinariesSet", Namespace = "http://www.wyde.com")]
-   public class wBinariesSet : ICloneable, INotifyPropertyChanged
+   [DataContract(Name = "BinariesSet", Namespace = "http://www.wyde.com")]
+   public class BinariesSet : ICloneable, INotifyPropertyChanged
    {
       [DataMember()] private string _name;
       public string name { get { return _name; } set { _name = value;  NotifyPropertyChanged(); } }
@@ -39,7 +39,7 @@ namespace eWamLauncher
          }
       }
 
-      public wBinariesSet(string name = "")
+      public BinariesSet(string name = "")
       {
          this.name = name;
          this.exePathes = "";
@@ -49,7 +49,7 @@ namespace eWamLauncher
 
       public object Clone()
       {
-         return (wBinariesSet)this.MemberwiseClone();
+         return (BinariesSet)this.MemberwiseClone();
       }
 
    }

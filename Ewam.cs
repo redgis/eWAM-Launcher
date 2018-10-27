@@ -10,8 +10,8 @@ using System.Threading.Tasks;
 namespace eWamLauncher
 {
 
-   [DataContract(Name = "wEwam", Namespace = "http://www.wyde.com")]
-   public class wEwam : ICloneable, INotifyPropertyChanged
+   [DataContract(Name = "Ewam", Namespace = "http://www.wyde.com")]
+   public class Ewam : ICloneable, INotifyPropertyChanged
    {
       [DataMember()] private string _name;
       public string name { get { return _name; } set { _name = value; NotifyPropertyChanged(); } }
@@ -19,8 +19,8 @@ namespace eWamLauncher
       [DataMember()] private string _basePath;
       public string basePath { get { return _basePath; } set { _basePath = value; NotifyPropertyChanged(); } }
 
-      [DataMember()] private ObservableCollection<wBinariesSet> _binariesSets;
-      public ObservableCollection<wBinariesSet> binariesSets { get { return _binariesSets; } set { _binariesSets = value; NotifyPropertyChanged(); } }
+      [DataMember()] private ObservableCollection<BinariesSet> _binariesSets;
+      public ObservableCollection<BinariesSet> binariesSets { get { return _binariesSets; } set { _binariesSets = value; NotifyPropertyChanged(); } }
 
       public event PropertyChangedEventHandler PropertyChanged;
 
@@ -35,20 +35,20 @@ namespace eWamLauncher
          }
       }
 
-      public wEwam(string basePath = "")
+      public Ewam(string basePath = "")
       {
-         this.binariesSets = new ObservableCollection<wBinariesSet>();
+         this.binariesSets = new ObservableCollection<BinariesSet>();
          this.basePath = basePath;
       }
 
       public object Clone()
       {
-         wEwam clone = (wEwam)this.MemberwiseClone();
-         clone.binariesSets = new ObservableCollection<wBinariesSet>();
+         Ewam clone = (Ewam)this.MemberwiseClone();
+         clone.binariesSets = new ObservableCollection<BinariesSet>();
 
-         foreach (wBinariesSet binariesSet in this.binariesSets)
+         foreach (BinariesSet binariesSet in this.binariesSets)
          {
-            clone.binariesSets.Add((wBinariesSet)binariesSet.Clone());
+            clone.binariesSets.Add((BinariesSet)binariesSet.Clone());
          }
 
          return clone;
