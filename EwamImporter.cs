@@ -6,6 +6,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using log4net;
 
 namespace eWamLauncher
 {
@@ -13,7 +14,9 @@ namespace eWamLauncher
    {
       private Ewam ewam;
       private Settings settings;
-      
+
+      private static readonly ILog log = LogManager.GetLogger(typeof(EwamImporter));
+
       public EwamImporter(Settings settings, Ewam ewam = null)
       {
          this.settings = settings;
@@ -160,9 +163,9 @@ namespace eWamLauncher
                   }
                }
             }
-            catch (DirectoryNotFoundException)
+            catch (DirectoryNotFoundException exception)
             {
-
+               log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
             }
          }
       }

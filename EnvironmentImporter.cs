@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Collections.ObjectModel;
+using log4net;
 
 namespace eWamLauncher
 {
@@ -15,6 +16,8 @@ namespace eWamLauncher
       private Settings settings;
 
       private String wydeRoot;
+
+      private static readonly ILog log = LogManager.GetLogger(typeof(EnvironmentImporter));
 
       public EnvironmentImporter(Settings settings, ObservableCollection<Ewam> ewams, Environment environment = null)
       {
@@ -84,8 +87,10 @@ namespace eWamLauncher
             {
                this.ImportEnvironmentVariables(path + "\\" + subPath);
             }
-            catch (IOException e)
-            { }
+            catch (IOException exception)
+            {
+               log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+            }
          }
 
          // Resolve env. vars
@@ -130,13 +135,13 @@ namespace eWamLauncher
 
 
             }
-            catch (DirectoryNotFoundException)
+            catch (DirectoryNotFoundException exception)
             {
-
+               log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
             }
-            catch (FileNotFoundException)
+            catch (FileNotFoundException exception)
             {
-
+               log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
             }
          }
 
@@ -147,8 +152,9 @@ namespace eWamLauncher
             {
                this.ImportLaunchers(path + "\\" + subPath);
             }
-            catch (IOException)
+            catch (IOException exception)
             {
+               log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
             }
          }
 

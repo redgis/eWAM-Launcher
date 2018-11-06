@@ -23,8 +23,8 @@
    https://stackoverflow.com/questions/3350187/wpf-c-rearrange-items-in-listbox-via-drag-and-drop
    http://www.hardcodet.net/2009/03/moving-data-grid-rows-using-drag-and-drop
    http://www.eidias.com/blog/2014/8/15/movable-rows-in-wpf-datagrid
-- [ ] Add link to confluence commandline options in launchers page
-- [ ] Don't die on any exception : have global try/catch for each feature (launch, import, explore, change path, etc). Show dialog box with exception message.
+- [x] Add link to confluence commandline options in launchers page
+- [x] Don't die on any exception : have global try/catch for each feature (launch, import, explore, change path, etc). Show dialog box with exception message.
 
 ## Code quality
 - [ ] Document code
@@ -58,6 +58,8 @@
 ## Binaries/environment deployment from Web repository
 - [x] Have a repository index online with all eWAM binaries
 - [x] Add a progress bar for each package pull started
+- [x] Zip-Compress packages using any compression method available (store, deflate, lzma, bzip2)
+- [ ] Add ability to cancel an on-going download
 - [ ] Allow comparing local environment and suggest update binaries
 - [ ] Use nuget packaging ?
       

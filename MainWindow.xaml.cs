@@ -13,11 +13,14 @@ using System.ComponentModel;
 using System.Xml.Serialization;
 using System.Runtime.Serialization.Formatters;
 using System.Diagnostics;
+using System.Windows.Navigation;
 using Squirrel;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Controls;
 using System.IO.Compression;
+using SharpCompress.Archives;
+using log4net;
 
 namespace eWamLauncher
 {
@@ -53,8 +56,14 @@ namespace eWamLauncher
          }
       }
 
+      //Initialize logging system
+      private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
       public MainWindow()
       {
+         //Initialize logging system
+         log4net.Config.XmlConfigurator.Configure();
+
          this.assemblyVersion = Assembly.GetEntryAssembly().GetName().Name;
          this.assemblyVersion += " - " + Assembly.GetEntryAssembly().GetName().Version;
          this.assemblyVersion += " - (c) Mphasis Wyde";
@@ -72,8 +81,10 @@ namespace eWamLauncher
          {
             try
             { LoadCfgFromJSON(defaultJSONSettings); }
-            catch
-            { }
+            catch (Exception exception)
+            {
+               log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+            }
          }
 
          InitializeComponent();
@@ -115,6 +126,8 @@ namespace eWamLauncher
 
       private void CloseCommandHandler(object sender, ExecutedRoutedEventArgs e)
       {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
          this.Close();
       }
 
@@ -135,16 +148,18 @@ namespace eWamLauncher
 
       private void OpenConfiguration_Executed(object sender, ExecutedRoutedEventArgs e)
       {
-         OpenFileDialog fileBrowser = new OpenFileDialog();
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
-         fileBrowser.Filter = "XML configuration file|*.xml|JSON configuration file|*.json";
-         fileBrowser.FilterIndex = 1;
-         fileBrowser.RestoreDirectory = true;
-         fileBrowser.Title = "Open Configuration file";
-
-         if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+         try
          {
-            try
+            OpenFileDialog fileBrowser = new OpenFileDialog();
+
+            fileBrowser.Filter = "XML configuration file|*.xml|JSON configuration file|*.json";
+            fileBrowser.FilterIndex = 1;
+            fileBrowser.RestoreDirectory = true;
+            fileBrowser.Title = "Open Configuration file";
+
+            if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                if (Path.GetExtension(fileBrowser.FileName).ToLower() == ".xml")
                {
@@ -154,10 +169,17 @@ namespace eWamLauncher
                {
                   LoadCfgFromJSON(fileBrowser.FileName);
                }
-            } catch (Exception)
-            {
-
             }
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
          }
       }
 
@@ -168,17 +190,19 @@ namespace eWamLauncher
 
       private void SaveConfiguration_Executed(object sender, ExecutedRoutedEventArgs e)
       {
-         OpenFileDialog fileBrowser = new OpenFileDialog();
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
-         fileBrowser.Filter = "XML configuration file|*.xml|JSON configuration file|*.json";
-         fileBrowser.FilterIndex = 1;
-         fileBrowser.RestoreDirectory = true;
-         fileBrowser.CheckFileExists = false;
-         fileBrowser.Title = "Save Configuration file";
-
-         if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+         try
          {
-            try
+            OpenFileDialog fileBrowser = new OpenFileDialog();
+
+            fileBrowser.Filter = "XML configuration file|*.xml|JSON configuration file|*.json";
+            fileBrowser.FilterIndex = 1;
+            fileBrowser.RestoreDirectory = true;
+            fileBrowser.CheckFileExists = false;
+            fileBrowser.Title = "Save Configuration file";
+
+            if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                if (Path.GetExtension(fileBrowser.FileName).ToLower() == ".xml")
                {
@@ -189,10 +213,16 @@ namespace eWamLauncher
                   SaveCfgToJSON(fileBrowser.FileName);
                }
             }
-            catch (Exception)
-            {
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
 
-            }
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
          }
       }
       
@@ -202,10 +232,12 @@ namespace eWamLauncher
 
       public void LoadCfgFromXML(string fileName)
       {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
          try
          {
             FileStream reader = new FileStream(fileName, FileMode.Open);
-            DataContractSerializer xmlDeserializer = new DataContractSerializer(typeof(ObservableCollection<Environment>));
+            DataContractSerializer xmlDeserializer = new DataContractSerializer(typeof(Profile));
             Profile tmpProfile =
                 (Profile)xmlDeserializer.ReadObject(reader);
             reader.Close();
@@ -220,13 +252,18 @@ namespace eWamLauncher
                env.RestoreReferenceEwam(this.profile.ewams);
             }
          }
-         catch (FileNotFoundException)
+         catch (FileNotFoundException exception)
          {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
          }
       }
 
       public void SaveCfgToXML(string fileName)
       {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         Directory.CreateDirectory(Path.GetDirectoryName(fileName));
+
          FileStream writer = new FileStream(fileName, FileMode.Create);
          DataContractSerializer xmlSerializer = new DataContractSerializer(typeof(Profile));
          xmlSerializer.WriteObject(writer, this.profile);
@@ -235,6 +272,8 @@ namespace eWamLauncher
 
       public void LoadCfgFromJSON(string fileName)
       {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
          try
          {
             FileStream reader = new FileStream(fileName, FileMode.Open);
@@ -252,13 +291,18 @@ namespace eWamLauncher
                env.RestoreReferenceEwam(this.profile.ewams);
             }
          }
-         catch (FileNotFoundException)
+         catch (FileNotFoundException exception)
          {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
          }
       }
 
       public void SaveCfgToJSON(string fileName)
       {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         Directory.CreateDirectory(Path.GetDirectoryName(fileName));
+
          FileStream writer = new FileStream(fileName, FileMode.Create);
          DataContractJsonSerializer jsonSerializer =
              new DataContractJsonSerializer(typeof(Profile));
@@ -280,8 +324,9 @@ namespace eWamLauncher
                      .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
                //.ToUpperInvariant();
             }
-            catch (Exception e)
+            catch (Exception exception)
             {
+               log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
                return path;
             }
          }
@@ -293,6 +338,8 @@ namespace eWamLauncher
 
       private void OnChangePath(object sender, RoutedEventArgs e)
       {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
          //OpenFileDialog fileBrowser = new OpenFileDialog();
 
          //fileBrowser.Filter = "eWAM TGV Files|*.tgv";
@@ -307,19 +354,46 @@ namespace eWamLauncher
          //   ((Environment)lbEnvList.SelectedItem).tgvPath = MainWindow.NormalizePath(Path.GetDirectoryName(fileBrowser.FileName));
          //}
 
-         FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
-         folderBrowser.Description = "Select TGV folder for your environment (i.e. the folder containing tgv/)";
-         folderBrowser.SelectedPath = (string)((System.Windows.Controls.Button)sender).Tag;
-         if (folderBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+         try
          {
-            ((System.Windows.Controls.Button)sender).Tag = folderBrowser.SelectedPath;
+            FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
+            folderBrowser.Description = "Select TGV folder for your environment (i.e. the folder containing tgv/)";
+            folderBrowser.SelectedPath = (string)((System.Windows.Controls.Button)sender).Tag;
+            if (folderBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+               ((System.Windows.Controls.Button)sender).Tag = folderBrowser.SelectedPath;
+            }
          }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
 
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
       }
 
       private void OnExplorePath(object sender, RoutedEventArgs e)
       {
-         Process.Start("explorer.exe", (string)((System.Windows.Controls.Button)sender).Tag);
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
+         {
+            Process.Start("explorer.exe", (string)((System.Windows.Controls.Button)sender).Tag);
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
       }
 
       #endregion
@@ -328,174 +402,265 @@ namespace eWamLauncher
 
       public void OnNeEnvironment(object sender, RoutedEventArgs e)
       {
-         Environment environment = new Environment();
-         environment.name = "eWAM " + this.profile.environments.Count().ToString();
-         ((ObservableCollection<Environment>)lbEnvList.ItemsSource).Add(environment);
-         lbEnvList.SelectedItem = environment;
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
+         try
+         {
+            Environment environment = new Environment();
+            environment.name = "eWAM " + this.profile.environments.Count().ToString();
+            ((ObservableCollection<Environment>)lbEnvList.ItemsSource).Add(environment);
+            lbEnvList.SelectedItem = environment;
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
       }
 
       public void OnDuplicateEnvironment(object sender, RoutedEventArgs e)
       {
-         if (lbEnvList.SelectedItem == null)
-         {
-            return;
-         }
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
-         Environment environment = (Environment)((Environment)lbEnvList.SelectedItem).Clone();
-         environment.name += " (clone)";
-         this.profile.environments.Add(environment);
-         lbEnvList.SelectedItem = environment;
+         try
+         {
+            if (lbEnvList.SelectedItem == null)
+            {
+               return;
+            }
+
+            Environment environment = (Environment)((Environment)lbEnvList.SelectedItem).Clone();
+            environment.name += " (clone)";
+            this.profile.environments.Add(environment);
+            lbEnvList.SelectedItem = environment;
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
       }
 
       public void OnDeleteEnvironment(object sender, RoutedEventArgs e)
       {
-         int curSelection = lbEnvList.SelectedIndex;
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
-         if (lbEnvList.SelectedItem == null)
+         try
          {
-            return;
-         }
+            int curSelection = lbEnvList.SelectedIndex;
 
-         ((ObservableCollection<Environment>)lbEnvList.ItemsSource).Remove((Environment)lbEnvList.SelectedItem);
-         lbEnvList.SelectedIndex = curSelection;
-         if (lbEnvList.SelectedIndex == -1)
-            lbEnvList.SelectedIndex = curSelection - 1;
+            if (lbEnvList.SelectedItem == null)
+            {
+               return;
+            }
+
+            ((ObservableCollection<Environment>)lbEnvList.ItemsSource).Remove((Environment)lbEnvList.SelectedItem);
+            lbEnvList.SelectedIndex = curSelection;
+            if (lbEnvList.SelectedIndex == -1)
+               lbEnvList.SelectedIndex = curSelection - 1;
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
       }
 
       public void OnImportEnvironment(object sender, RoutedEventArgs e)
       {
-         FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
-         folderBrowser.Description = "Select root folder of your environment";
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
-         //OpenFileDialog fileBrowser = new OpenFileDialog();
-
-         //fileBrowser.Filter = "TGV Base1|W001001.tgv|Any TGV|*.tgv";
-         //fileBrowser.FilterIndex = 1;
-         //fileBrowser.RestoreDirectory = true;
-
-         //if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-         if (folderBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+         try
          {
-            EnvironmentImporter importer = new EnvironmentImporter(this.profile);
-            Environment environment = importer.ImportFromPath(folderBrowser.SelectedPath);
+            FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
+            folderBrowser.Description = "Select root folder of your environment";
 
-            Boolean addEnvironment = true;
-            foreach (Environment env in this.profile.environments)
+            //OpenFileDialog fileBrowser = new OpenFileDialog();
+
+            //fileBrowser.Filter = "TGV Base1|W001001.tgv|Any TGV|*.tgv";
+            //fileBrowser.FilterIndex = 1;
+            //fileBrowser.RestoreDirectory = true;
+
+            //if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            if (folderBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-               if (MainWindow.NormalizePath(env.envRoot) == MainWindow.NormalizePath(environment.envRoot))
-               {
-                  addEnvironment = false;
+               EnvironmentImporter importer = new EnvironmentImporter(this.profile);
+               Environment environment = importer.ImportFromPath(folderBrowser.SelectedPath);
 
-                  if (System.Windows.MessageBox.Show(
-                        "An environment with same path already exists : \"" +
-                           env.name + "\"\nAdd anyway ?",
-                        "Environment already exists",
-                        MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-                  {
-                     addEnvironment = true;
-                  }
-                  break;
-               }
-            }
-
-            if (addEnvironment)
-            {
-               ((ObservableCollection<Environment>)lbEnvList.ItemsSource).Add(environment);
-               lbEnvList.SelectedItem = environment;
-            }
-
-            //Import the environment associated with this new ewam, if it doesn't already exist !
-            if (environment.ewam == null)
-            {
-               System.Windows.MessageBox.Show(
-                  "Warning no corresponding eWAM binaries were found associated with this environment. You will need to set it manualy.",
-                  "No corresponding binaies found !",
-                  MessageBoxButton.OK);
-            }
-            else if (System.Windows.MessageBox.Show(
-               "Associated eWAM don't have an environment. \n" + 
-               "Do you want to import the environment corresponding the eWAM binaries ? \n\n" +
-               environment.ewam.name + " : " + environment.ewam.basePath,
-               "Corresponding eWAM binaies found !",
-               MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-            {
-               importer = new EnvironmentImporter(this.profile);
-               Environment newEnv = importer.ImportFromPath(environment.ewam.basePath);
-               newEnv.name = environment.ewam.name;
-
+               Boolean addEnvironment = true;
                foreach (Environment env in this.profile.environments)
                {
-                  if (MainWindow.NormalizePath(env.envRoot) == MainWindow.NormalizePath(newEnv.envRoot))
+                  if (MainWindow.NormalizePath(env.envRoot) == MainWindow.NormalizePath(environment.envRoot))
                   {
                      addEnvironment = false;
 
-                     //if (System.Windows.MessageBox.Show(
-                     //      "An environment with same path already exists : \"" + 
-                     //         env.name + "\"\nAdd anyway ?",
-                     //      "Environment already exists",
-                     //      MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-                     //{
-                     //   addEnvironment = true;
-                     //}
+                     if (System.Windows.MessageBox.Show(
+                           "An environment with same path already exists : \"" +
+                              env.name + "\"\nAdd anyway ?",
+                           "Environment already exists",
+                           MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                     {
+                        addEnvironment = true;
+                     }
                      break;
                   }
                }
 
                if (addEnvironment)
                {
-                  this.profile.environments.Add(newEnv);
+                  ((ObservableCollection<Environment>)lbEnvList.ItemsSource).Add(environment);
+                  lbEnvList.SelectedItem = environment;
+               }
+
+               //Import the environment associated with this new ewam, if it doesn't already exist !
+               if (environment.ewam == null)
+               {
+                  System.Windows.MessageBox.Show(
+                     "Warning no corresponding eWAM binaries were found associated with this environment. You will need to set it manualy.",
+                     "No corresponding binaies found !",
+                     MessageBoxButton.OK);
+               }
+               else if (System.Windows.MessageBox.Show(
+                  "Associated eWAM don't have an environment. \n" +
+                  "Do you want to import the environment corresponding the eWAM binaries ? \n\n" +
+                  environment.ewam.name + " : " + environment.ewam.basePath,
+                  "Corresponding eWAM binaies found !",
+                  MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+               {
+                  importer = new EnvironmentImporter(this.profile);
+                  Environment newEnv = importer.ImportFromPath(environment.ewam.basePath);
+                  newEnv.name = environment.ewam.name;
+
+                  foreach (Environment env in this.profile.environments)
+                  {
+                     if (MainWindow.NormalizePath(env.envRoot) == MainWindow.NormalizePath(newEnv.envRoot))
+                     {
+                        addEnvironment = false;
+
+                        //if (System.Windows.MessageBox.Show(
+                        //      "An environment with same path already exists : \"" + 
+                        //         env.name + "\"\nAdd anyway ?",
+                        //      "Environment already exists",
+                        //      MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                        //{
+                        //   addEnvironment = true;
+                        //}
+                        break;
+                     }
+                  }
+
+                  if (addEnvironment)
+                  {
+                     this.profile.environments.Add(newEnv);
+                  }
                }
             }
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
          }
       }
 
       public void OnMoveUpEnvironment(object sender, RoutedEventArgs e)
       {
-         if (lbEnvList.SelectedItem == null)
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
          {
-            return;
+            if (lbEnvList.SelectedItem == null)
+            {
+               return;
+            }
+
+            int envIndex = this.profile.environments.IndexOf((Environment)lbEnvList.SelectedItem);
+
+            if (envIndex > 0)
+            {
+               this.profile.environments.Move(envIndex, envIndex - 1);
+            }
          }
-
-         int envIndex = this.profile.environments.IndexOf((Environment)lbEnvList.SelectedItem);
-
-         if (envIndex > 0)
+         catch (Exception exception)
          {
-            this.profile.environments.Move(envIndex, envIndex - 1);
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
          }
       }
 
       public void OnMoveDownEnvironment(object sender, RoutedEventArgs e)
       {
-         if (lbEnvList.SelectedItem == null)
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
          {
-            return;
+            if (lbEnvList.SelectedItem == null)
+            {
+               return;
+            }
+
+            int envIndex = this.profile.environments.IndexOf((Environment)lbEnvList.SelectedItem);
+
+            if (envIndex < this.profile.environments.Count() - 1)
+            {
+               this.profile.environments.Move(envIndex, envIndex + 1);
+            }
          }
-
-         int envIndex = this.profile.environments.IndexOf((Environment)lbEnvList.SelectedItem);
-
-         if (envIndex < this.profile.environments.Count() - 1)
+         catch (Exception exception)
          {
-            this.profile.environments.Move(envIndex, envIndex + 1);
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
          }
       }
 
       public void OnFileExportEnvironment(object sender, RoutedEventArgs e)
       {
-         OpenFileDialog fileBrowser = new OpenFileDialog();
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
-         fileBrowser.Filter = "XML environment file|*.xenv|JSON environment file|*.jsenv";
-         fileBrowser.FilterIndex = 1;
-         fileBrowser.RestoreDirectory = true;
-         fileBrowser.CheckFileExists = false;
-         fileBrowser.Title = "Save";
-         fileBrowser.InitialDirectory = ((Environment)lbEnvList.SelectedItem).envRoot;
-
-         fileBrowser.FileName = ((Environment)lbEnvList.SelectedItem).name;
-
-         if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+         try
          {
-            try
+            OpenFileDialog fileBrowser = new OpenFileDialog();
+
+            fileBrowser.Filter = "XML environment file|*.xenv|JSON environment file|*.jsenv";
+            fileBrowser.FilterIndex = 1;
+            fileBrowser.RestoreDirectory = true;
+            fileBrowser.CheckFileExists = false;
+            fileBrowser.Title = "Save";
+            fileBrowser.InitialDirectory = ((Environment)lbEnvList.SelectedItem).envRoot;
+
+            fileBrowser.FileName = ((Environment)lbEnvList.SelectedItem).name;
+
+            if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                if (Path.GetExtension(fileBrowser.FileName).ToLower() == ".xenv")
                {
@@ -506,28 +671,36 @@ namespace eWamLauncher
                   this.SaveEnvironmentToJSON(fileBrowser.FileName);
                }
             }
-            catch (Exception)
-            {
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
 
-            }
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
          }
       }
 
       public void OnFileImportEnvironment(object sender, RoutedEventArgs e)
       {
-         OpenFileDialog fileBrowser = new OpenFileDialog();
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
-         fileBrowser.Filter = "XML environment file|*.xenv|JSON environment file|*.jsenv";
-         fileBrowser.FilterIndex = 1;
-         fileBrowser.RestoreDirectory = true;
-         fileBrowser.CheckFileExists = false;
-         fileBrowser.Title = "Open";
-
-         Environment importedEnv = null;
-
-         if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+         try
          {
-            try
+            OpenFileDialog fileBrowser = new OpenFileDialog();
+
+            fileBrowser.Filter = "XML environment file|*.xenv|JSON environment file|*.jsenv";
+            fileBrowser.FilterIndex = 1;
+            fileBrowser.RestoreDirectory = true;
+            fileBrowser.CheckFileExists = false;
+            fileBrowser.Title = "Open";
+
+            Environment importedEnv = null;
+
+            if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                if (Path.GetExtension(fileBrowser.FileName).ToLower() == ".xenv")
                {
@@ -558,10 +731,16 @@ namespace eWamLauncher
 
                this.profile.environments.Add(importedEnv);
             }
-            catch (Exception execption)
-            {
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
 
-            }
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
          }
       }
 
@@ -582,18 +761,22 @@ namespace eWamLauncher
             //   env.RestoreReferenceEwam(this.profile.ewams);
             //}
          }
-         catch (FileNotFoundException)
+         catch (FileNotFoundException exception)
          {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
             return null;
          }
-         catch (Exception e)
+         catch (Exception exception)
          {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
             return null;
          }
       }
 
       public void SaveEnvironmentToXML(string fileName)
       {
+         Directory.CreateDirectory(Path.GetDirectoryName(fileName));
+
          Environment envCopy = (Environment) ((Environment)lbEnvList.SelectedItem).Clone();
          envCopy.binariesSet = null;
          envCopy.ewam = null;
@@ -623,18 +806,22 @@ namespace eWamLauncher
             //   env.RestoreReferenceEwam(this.profile.ewams);
             //}
          }
-         catch (FileNotFoundException)
+         catch (FileNotFoundException exception)
          {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
             return null;
          }
-         catch (Exception e)
+         catch (Exception exception)
          {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
             return null;
          }
       }
 
       public void SaveEnvironmentToJSON(string fileName)
       {
+         Directory.CreateDirectory(Path.GetDirectoryName(fileName));
+
          Environment envCopy = (Environment)((Environment)lbEnvList.SelectedItem).Clone();
          envCopy.binariesSet = null;
          envCopy.ewam = null;
@@ -653,43 +840,103 @@ namespace eWamLauncher
 
       private void OnReevaluateEnvVariables(object sender, RoutedEventArgs e)
       {
-         ((Environment)lbEnvList.SelectedItem).ExpandAllEnvVariables();
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
+         {
+            ((Environment)lbEnvList.SelectedItem).ExpandAllEnvVariables();
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
       }
 
       private void OnReevaluateEnvVariables(object sender, EventArgs e)
       {
-         ((Environment)lbEnvList.SelectedItem).ExpandAllEnvVariables();
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
+         {
+            ((Environment)lbEnvList.SelectedItem).ExpandAllEnvVariables();
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
       }
 
       public void OnMoveUpVariable(object sender, RoutedEventArgs e)
       {
-         if (lbEnvList.SelectedItem == null || dgVarList.SelectedItem == null)
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
          {
-            return;
+            if (lbEnvList.SelectedItem == null || dgVarList.SelectedItem == null)
+            {
+               return;
+            }
+
+            int varIndex = ((Environment)lbEnvList.SelectedItem).environmentVariables.IndexOf(
+               (EnvironmentVariable)dgVarList.SelectedItem);
+
+            if (varIndex > 0)
+            {
+               ((Environment)lbEnvList.SelectedItem).environmentVariables.Move(varIndex, varIndex - 1);
+            }
          }
-
-         int varIndex = ((Environment)lbEnvList.SelectedItem).environmentVariables.IndexOf(
-            (EnvironmentVariable)dgVarList.SelectedItem);
-
-         if (varIndex > 0)
+         catch (Exception exception)
          {
-            ((Environment)lbEnvList.SelectedItem).environmentVariables.Move(varIndex, varIndex - 1);
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
          }
       }
 
       public void OnMoveDownVariable(object sender, RoutedEventArgs e)
       {
-         if (lbEnvList.SelectedItem == null || dgVarList.SelectedItem == null)
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
          {
-            return;
+            if (lbEnvList.SelectedItem == null || dgVarList.SelectedItem == null)
+            {
+               return;
+            }
+
+            int varIndex = ((Environment)lbEnvList.SelectedItem).environmentVariables.IndexOf(
+               (EnvironmentVariable)dgVarList.SelectedItem);
+
+            if (varIndex < ((Environment)lbEnvList.SelectedItem).environmentVariables.Count() - 1)
+            {
+               ((Environment)lbEnvList.SelectedItem).environmentVariables.Move(varIndex, varIndex + 1);
+            }
          }
-
-         int varIndex = ((Environment)lbEnvList.SelectedItem).environmentVariables.IndexOf(
-            (EnvironmentVariable)dgVarList.SelectedItem);
-
-         if (varIndex < ((Environment)lbEnvList.SelectedItem).environmentVariables.Count() - 1)
+         catch (Exception exception)
          {
-            ((Environment)lbEnvList.SelectedItem).environmentVariables.Move(varIndex, varIndex + 1);
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
          }
       }
 
@@ -699,285 +946,376 @@ namespace eWamLauncher
 
       public void OnNewLauncher(object sender, RoutedEventArgs e)
       {
-         Launcher launcher = new Launcher();
-         launcher.name = "new launcher " + ((ObservableCollection<Launcher>)lbLauncherList.ItemsSource).Count.ToString();
-         ((ObservableCollection<Launcher>)lbLauncherList.ItemsSource).Add(launcher);
-         lbLauncherList.SelectedItem = launcher;
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
+         {
+            Launcher launcher = new Launcher();
+            launcher.name = "new launcher " + ((ObservableCollection<Launcher>)lbLauncherList.ItemsSource).Count.ToString();
+            ((ObservableCollection<Launcher>)lbLauncherList.ItemsSource).Add(launcher);
+            lbLauncherList.SelectedItem = launcher;
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
       }
 
       public void OnDuplicateLauncher(object sender, RoutedEventArgs e)
       {
-         if (lbLauncherList.SelectedItem == null)
-         {
-            return;
-         }
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
-         Launcher launcher = (Launcher)((Launcher)lbLauncherList.SelectedItem).Clone();
-         launcher.name += "(clone)";
-         ((ObservableCollection<Launcher>)lbLauncherList.ItemsSource).Add(launcher);
-         lbLauncherList.SelectedItem = launcher;
+         try
+         {
+            if (lbLauncherList.SelectedItem == null)
+            {
+               return;
+            }
+
+            Launcher launcher = (Launcher)((Launcher)lbLauncherList.SelectedItem).Clone();
+            launcher.name += "(clone)";
+            ((ObservableCollection<Launcher>)lbLauncherList.ItemsSource).Add(launcher);
+            lbLauncherList.SelectedItem = launcher;
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
       }
 
       public void OnDeleteLauncher(object sender, RoutedEventArgs e)
       {
-         int curSelection = lbLauncherList.SelectedIndex;
-         if (lbLauncherList.SelectedItem == null)
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
          {
-            return;
-         }
+            int curSelection = lbLauncherList.SelectedIndex;
+            if (lbLauncherList.SelectedItem == null)
+            {
+               return;
+            }
 
          ((ObservableCollection<Launcher>)lbLauncherList.ItemsSource).Remove((Launcher)lbLauncherList.SelectedItem);
-         lbLauncherList.SelectedIndex = curSelection;
-         if (lbLauncherList.SelectedIndex == -1)
-            lbLauncherList.SelectedIndex = curSelection - 1;
+            lbLauncherList.SelectedIndex = curSelection;
+            if (lbLauncherList.SelectedIndex == -1)
+               lbLauncherList.SelectedIndex = curSelection - 1;
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
       }
 
       public void OnImportLaunchers(object sender, RoutedEventArgs e)
       {
-         OpenFileDialog fileBrowser = new OpenFileDialog();
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
-         fileBrowser.Filter = "Batch file|*.bat";
-         fileBrowser.FilterIndex = 1;
-         fileBrowser.RestoreDirectory = true;
-
-         if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+         try
          {
+            OpenFileDialog fileBrowser = new OpenFileDialog();
 
-            string launchersPath = Path.GetDirectoryName(fileBrowser.FileName);
+            fileBrowser.Filter = "Batch file|*.bat";
+            fileBrowser.FilterIndex = 1;
+            fileBrowser.RestoreDirectory = true;
 
-            EnvironmentImporter importer = new EnvironmentImporter((Profile)this.profile, (Environment)lbEnvList.SelectedItem);
-            importer.ImportLaunchers(launchersPath);
+            if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+
+               string launchersPath = Path.GetDirectoryName(fileBrowser.FileName);
+
+               EnvironmentImporter importer = new EnvironmentImporter((Profile)this.profile, (Environment)lbEnvList.SelectedItem);
+               importer.ImportLaunchers(launchersPath);
+            }
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
          }
       }
 
       public void OnConsoleExecuteLauncher(object sender, RoutedEventArgs e)
       {
-         // Before anything, make sure all env. variable are up to date !
-         Environment environment = (Environment)lbEnvList.SelectedItem;
-         environment.ExpandAllEnvVariables();
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
-         Launcher launcher = (Launcher)lbLauncherList.SelectedItem;
-
-         ProcessStartInfo startInfo = new ProcessStartInfo();
-         
-         if (environment.binariesSet == null)
+         try
          {
-            System.Windows.MessageBox.Show(
-               "Warning : no binaries selected.",
-               "No eWAM binaries selected",
-               System.Windows.MessageBoxButton.OK);
-            return;
-         }
+            // Before anything, make sure all env. variable are up to date !
+            Environment environment = (Environment)lbEnvList.SelectedItem;
+            environment.ExpandAllEnvVariables();
 
-         char[] delimiters = { '\n', ';', '\r', '\b' };
+            Launcher launcher = (Launcher)lbLauncherList.SelectedItem;
 
-         // Set %PATH%
-         List<string> binSubPathes = new List<string>();
-         binSubPathes.AddRange(environment.binariesSet.dllPathes.Split(delimiters));
-         binSubPathes.AddRange(environment.binariesSet.cppdllPathes.Split(delimiters));
-         binSubPathes.AddRange(environment.binariesSet.exePathes.Split(delimiters));
+            ProcessStartInfo startInfo = new ProcessStartInfo();
 
-         string pathVariable = "";
-         foreach (string subBinPath in binSubPathes)
-         {
-            if (subBinPath != "")
+            if (environment.binariesSet == null)
             {
-               pathVariable += environment.ewam.basePath + "\\" + subBinPath + ";";
+               System.Windows.MessageBox.Show(
+                  "Warning : no binaries selected.",
+                  "No eWAM binaries selected",
+                  System.Windows.MessageBoxButton.OK);
+               return;
             }
-         }
 
-         if (((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("PATH") != null)
-         {
-            pathVariable += ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("PATH").result + ";";
-         }
+            char[] delimiters = { '\n', ';', '\r', '\b' };
 
-         pathVariable += System.Environment.GetEnvironmentVariable("PATH");
+            // Set %PATH%
+            List<string> binSubPathes = new List<string>();
+            binSubPathes.AddRange(environment.binariesSet.dllPathes.Split(delimiters));
+            binSubPathes.AddRange(environment.binariesSet.cppdllPathes.Split(delimiters));
+            binSubPathes.AddRange(environment.binariesSet.exePathes.Split(delimiters));
 
-         if (startInfo.EnvironmentVariables.ContainsKey("PATH"))
-         {
-            startInfo.EnvironmentVariables["PATH"] = pathVariable;
-         }
-         else
-         {
-            startInfo.EnvironmentVariables.Add("PATH", pathVariable);
-         }
-
-         // Put CppDll Folders in WYDE-DLL
-         string[] cppdlls = environment.binariesSet.cppdllPathes.Split(delimiters);
-         startInfo.EnvironmentVariables.Add("WYDE-DLL", environment.ewam.basePath + "\\" + cppdlls[0]);
-
-         // TODO : to use when WYDE-DLL support ';' seperated list of pathes.
-         //string cppdlls = launcher.binariesSet.cppdllPathes.Replace('\n', ';');
-         //startInfo.EnvironmentVariables.Add("WYDE-DLL", cppdlls);
-
-         //startInfo.EnvironmentVariables.Add("WYDE-ROOT", ((Environment)lbEnvList.SelectedItem).ewam.basePath);
-         startInfo.EnvironmentVariables.Add("WYDE-ROOT", 
-            ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("WYDE-ROOT").value);
-         startInfo.EnvironmentVariables.Add("WF-ROOT", 
-            ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("WF-ROOT").value);
-         startInfo.EnvironmentVariables.Add("ENV-ROOT", 
-            ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("ENV-ROOT").value);
-         startInfo.EnvironmentVariables.Add("WYDE-TGV", 
-            ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("WYDE-TGV").value);
-
-
-         // Set all other environment variables
-         foreach (EnvironmentVariable variable in
-            ((Environment)lbEnvList.SelectedItem).environmentVariables)
-         {
-            if (variable.name == "PATH") continue;
-
-            if (startInfo.EnvironmentVariables.ContainsKey(variable.name))
+            string pathVariable = "";
+            foreach (string subBinPath in binSubPathes)
             {
-               startInfo.EnvironmentVariables[variable.name] += variable.result;
+               if (subBinPath != "")
+               {
+                  pathVariable += environment.ewam.basePath + "\\" + subBinPath + ";";
+               }
+            }
+
+            if (((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("PATH") != null)
+            {
+               pathVariable += ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("PATH").result + ";";
+            }
+
+            pathVariable += System.Environment.GetEnvironmentVariable("PATH");
+
+            if (startInfo.EnvironmentVariables.ContainsKey("PATH"))
+            {
+               startInfo.EnvironmentVariables["PATH"] = pathVariable;
             }
             else
             {
-               startInfo.EnvironmentVariables.Add(variable.name, variable.result);
+               startInfo.EnvironmentVariables.Add("PATH", pathVariable);
             }
-         }
 
-         // Find the path to our exe
-         string commandPath = "";
-         foreach (string path in startInfo.EnvironmentVariables["PATH"].Split(';'))
-         {
-            if (File.Exists(path + "\\cmd.exe"))
+            // Put CppDll Folders in WYDE-DLL
+            string[] cppdlls = environment.binariesSet.cppdllPathes.Split(delimiters);
+            startInfo.EnvironmentVariables.Add("WYDE-DLL", environment.ewam.basePath + "\\" + cppdlls[0]);
+
+            // TODO : to use when WYDE-DLL support ';' seperated list of pathes.
+            //string cppdlls = launcher.binariesSet.cppdllPathes.Replace('\n', ';');
+            //startInfo.EnvironmentVariables.Add("WYDE-DLL", cppdlls);
+
+            //startInfo.EnvironmentVariables.Add("WYDE-ROOT", ((Environment)lbEnvList.SelectedItem).ewam.basePath);
+            startInfo.EnvironmentVariables.Add("WYDE-ROOT",
+               ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("WYDE-ROOT").value);
+            startInfo.EnvironmentVariables.Add("WF-ROOT",
+               ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("WF-ROOT").value);
+            startInfo.EnvironmentVariables.Add("ENV-ROOT",
+               ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("ENV-ROOT").value);
+            startInfo.EnvironmentVariables.Add("WYDE-TGV",
+               ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("WYDE-TGV").value);
+
+
+            // Set all other environment variables
+            foreach (EnvironmentVariable variable in
+               ((Environment)lbEnvList.SelectedItem).environmentVariables)
             {
-               commandPath = path;
-               break;
+               if (variable.name == "PATH") continue;
+
+               if (startInfo.EnvironmentVariables.ContainsKey(variable.name))
+               {
+                  startInfo.EnvironmentVariables[variable.name] += variable.result;
+               }
+               else
+               {
+                  startInfo.EnvironmentVariables.Add(variable.name, variable.result);
+               }
+            }
+
+            // Find the path to our exe
+            string commandPath = "";
+            foreach (string path in startInfo.EnvironmentVariables["PATH"].Split(';'))
+            {
+               if (File.Exists(path + "\\cmd.exe"))
+               {
+                  commandPath = path;
+                  break;
+               }
+            }
+
+            // Set the command and arguments
+            startInfo.WorkingDirectory = environment.ewam.basePath;
+            startInfo.FileName = commandPath + "\\cmd.exe";
+            startInfo.Arguments = "/K \"" + launcher.program + " " + environment.ExpandString(launcher.arguments) + "\"";
+
+            // We're all set, ready to launch.
+            startInfo.UseShellExecute = false;
+            try
+            {
+               Process newProcess = Process.Start(startInfo);
+            }
+            catch (Exception exception)
+            {
+               // Display message showing the exception message
+               log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
             }
          }
-
-         // Set the command and arguments
-         startInfo.WorkingDirectory = environment.ewam.basePath;
-         startInfo.FileName = commandPath + "\\cmd.exe";
-         startInfo.Arguments = "/K \"" + launcher.program + " " + environment.ExpandString(launcher.arguments) + "\"";
-
-         // We're all set, ready to launch.
-         startInfo.UseShellExecute = false;
-         try
+         catch (Exception exception)
          {
-            Process newProcess = Process.Start(startInfo);
-         }
-         catch
-         {
-            // Display message showing the exception message
-         }
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
 
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
       }
 
       public void OnExecuteLauncher(object sender, RoutedEventArgs e)
       {
-         // Before anything, make sure all env. variable are up to date !
-         Environment environment = (Environment)lbEnvList.SelectedItem;
-         environment.ExpandAllEnvVariables();
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
-         Launcher launcher = (Launcher)lbLauncherList.SelectedItem;
-
-         ProcessStartInfo startInfo = new ProcessStartInfo();
-
-         if (environment.binariesSet == null)
+         try
          {
-            System.Windows.MessageBox.Show(
-               "Warning : no binaries selected.",
-               "No eWAM binaries selected",
-               System.Windows.MessageBoxButton.OK);
-            return;
-         }
+            // Before anything, make sure all env. variable are up to date !
+            Environment environment = (Environment)lbEnvList.SelectedItem;
+            environment.ExpandAllEnvVariables();
 
-         char[] delimiters = { '\n', ';', '\r', '\b' };
+            Launcher launcher = (Launcher)lbLauncherList.SelectedItem;
 
-         // Set %PATH%
-         List<string> binSubPathes = new List<string>();
-         binSubPathes.AddRange(environment.binariesSet.dllPathes.Split(delimiters));
-         binSubPathes.AddRange(environment.binariesSet.cppdllPathes.Split(delimiters));
-         binSubPathes.AddRange(environment.binariesSet.exePathes.Split(delimiters));
+            ProcessStartInfo startInfo = new ProcessStartInfo();
 
-         string pathVariable = "";
-         foreach (string subBinPath in binSubPathes)
-         {
-            if (subBinPath != "")
+            if (environment.binariesSet == null)
             {
-               pathVariable += environment.ewam.basePath + "\\" + subBinPath + ";";
+               System.Windows.MessageBox.Show(
+                  "Warning : no binaries selected.",
+                  "No eWAM binaries selected",
+                  System.Windows.MessageBoxButton.OK);
+               return;
             }
-         }
 
-         if (((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("PATH") != null)
-         {
-            pathVariable += ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("PATH").result + ";";
-         }
-         
-         pathVariable += System.Environment.GetEnvironmentVariable("PATH");
+            char[] delimiters = { '\n', ';', '\r', '\b' };
 
+            // Set %PATH%
+            List<string> binSubPathes = new List<string>();
+            binSubPathes.AddRange(environment.binariesSet.dllPathes.Split(delimiters));
+            binSubPathes.AddRange(environment.binariesSet.cppdllPathes.Split(delimiters));
+            binSubPathes.AddRange(environment.binariesSet.exePathes.Split(delimiters));
 
-         if (startInfo.EnvironmentVariables.ContainsKey("PATH"))
-         {
-            startInfo.EnvironmentVariables["PATH"] = pathVariable;
-         }
-         else
-         {
-            startInfo.EnvironmentVariables.Add("PATH", pathVariable);
-         }
-
-         // Put CppDll Folders in WYDE-DLL
-         string[] cppdlls = environment.binariesSet.cppdllPathes.Split(delimiters);
-         startInfo.EnvironmentVariables.Add("WYDE-DLL", environment.ewam.basePath + "\\" + cppdlls[0]);
-
-         // TODO : to use when WYDE-DLL support ';' seperated list of pathes.
-         //string cppdlls = launcher.binariesSet.cppdllPathes.Replace('\n', ';');
-         //startInfo.EnvironmentVariables.Add("WYDE-DLL", cppdlls);
-
-         //startInfo.EnvironmentVariables.Add("WYDE-ROOT", ((Environment)lbEnvList.SelectedItem).ewam.basePath);
-         startInfo.EnvironmentVariables.Add("WYDE-ROOT", 
-            ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("WYDE-ROOT").value);
-         startInfo.EnvironmentVariables.Add("WF-ROOT", 
-            ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("WF-ROOT").value);
-         startInfo.EnvironmentVariables.Add("ENV-ROOT", 
-            ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("ENV-ROOT").value);
-         startInfo.EnvironmentVariables.Add("WYDE-TGV", 
-            ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("WYDE-TGV").value);
-
-         // Set all other environment variables
-         foreach (EnvironmentVariable variable in
-            ((Environment)lbEnvList.SelectedItem).environmentVariables)
-         {
-            if (variable.name == "PATH") continue;
-
-            if (startInfo.EnvironmentVariables.ContainsKey(variable.name))
+            string pathVariable = "";
+            foreach (string subBinPath in binSubPathes)
             {
-               startInfo.EnvironmentVariables[variable.name] += variable.result;
+               if (subBinPath != "")
+               {
+                  pathVariable += environment.ewam.basePath + "\\" + subBinPath + ";";
+               }
+            }
+
+            if (((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("PATH") != null)
+            {
+               pathVariable += ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("PATH").result + ";";
+            }
+
+            pathVariable += System.Environment.GetEnvironmentVariable("PATH");
+
+
+            if (startInfo.EnvironmentVariables.ContainsKey("PATH"))
+            {
+               startInfo.EnvironmentVariables["PATH"] = pathVariable;
             }
             else
             {
-               startInfo.EnvironmentVariables.Add(variable.name, variable.result);
+               startInfo.EnvironmentVariables.Add("PATH", pathVariable);
             }
-         }
 
-         // Find the path to our exe
-         string commandPath = "";
-         foreach (string path in startInfo.EnvironmentVariables["PATH"].Split(';'))
-         {
-            if (File.Exists(path + "\\" + launcher.program))
+            // Put CppDll Folders in WYDE-DLL
+            string[] cppdlls = environment.binariesSet.cppdllPathes.Split(delimiters);
+            startInfo.EnvironmentVariables.Add("WYDE-DLL", environment.ewam.basePath + "\\" + cppdlls[0]);
+
+            // TODO : to use when WYDE-DLL support ';' seperated list of pathes.
+            //string cppdlls = launcher.binariesSet.cppdllPathes.Replace('\n', ';');
+            //startInfo.EnvironmentVariables.Add("WYDE-DLL", cppdlls);
+
+            //startInfo.EnvironmentVariables.Add("WYDE-ROOT", ((Environment)lbEnvList.SelectedItem).ewam.basePath);
+            startInfo.EnvironmentVariables.Add("WYDE-ROOT",
+               ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("WYDE-ROOT").value);
+            startInfo.EnvironmentVariables.Add("WF-ROOT",
+               ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("WF-ROOT").value);
+            startInfo.EnvironmentVariables.Add("ENV-ROOT",
+               ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("ENV-ROOT").value);
+            startInfo.EnvironmentVariables.Add("WYDE-TGV",
+               ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("WYDE-TGV").value);
+
+            // Set all other environment variables
+            foreach (EnvironmentVariable variable in
+               ((Environment)lbEnvList.SelectedItem).environmentVariables)
             {
-               commandPath = path;
-               break;
+               if (variable.name == "PATH") continue;
+
+               if (startInfo.EnvironmentVariables.ContainsKey(variable.name))
+               {
+                  startInfo.EnvironmentVariables[variable.name] += variable.result;
+               }
+               else
+               {
+                  startInfo.EnvironmentVariables.Add(variable.name, variable.result);
+               }
+            }
+
+            // Find the path to our exe
+            string commandPath = "";
+            foreach (string path in startInfo.EnvironmentVariables["PATH"].Split(';'))
+            {
+               if (File.Exists(path + "\\" + launcher.program))
+               {
+                  commandPath = path;
+                  break;
+               }
+            }
+
+            // Set the command and arguments
+            startInfo.WorkingDirectory = commandPath;
+            startInfo.FileName = commandPath + "\\" + launcher.program;
+            startInfo.Arguments = environment.ExpandString(launcher.arguments);
+
+            // We're all set, ready to launch.
+            startInfo.UseShellExecute = false;
+            try
+            {
+               Process newProcess = Process.Start(startInfo);
+            }
+            catch (Exception exception)
+            {
+               // Display message showing the exception message
+               log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
             }
          }
-
-         // Set the command and arguments
-         startInfo.WorkingDirectory = commandPath;
-         startInfo.FileName = commandPath + "\\" + launcher.program;
-         startInfo.Arguments = environment.ExpandString(launcher.arguments);
-
-         // We're all set, ready to launch.
-         startInfo.UseShellExecute = false;
-         try
+         catch (Exception exception)
          {
-            Process newProcess = Process.Start(startInfo);
-         }
-         catch
-         {
-            // Display message showing the exception message
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
          }
       }
 
@@ -988,33 +1326,84 @@ namespace eWamLauncher
 
       public void OnMoveUpLauncher(object sender, RoutedEventArgs e)
       {
-         if (lbLauncherList.SelectedItem == null)
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
          {
-            return;
+            if (lbLauncherList.SelectedItem == null)
+            {
+               return;
+            }
+
+            int launcherIndex = ((Environment)lbEnvList.SelectedItem).launchers.IndexOf(
+               (Launcher)lbLauncherList.SelectedItem);
+
+            if (launcherIndex > 0)
+            {
+               ((Environment)lbEnvList.SelectedItem).launchers.Move(launcherIndex, launcherIndex - 1);
+            }
          }
-
-         int launcherIndex = ((Environment)lbEnvList.SelectedItem).launchers.IndexOf(
-            (Launcher)lbLauncherList.SelectedItem);
-
-         if (launcherIndex > 0)
+         catch (Exception exception)
          {
-            ((Environment)lbEnvList.SelectedItem).launchers.Move(launcherIndex, launcherIndex - 1);
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
          }
       }
 
       public void OnMoveDownLauncher(object sender, RoutedEventArgs e)
       {
-         if (lbLauncherList.SelectedItem == null)
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
          {
-            return;
+            if (lbLauncherList.SelectedItem == null)
+            {
+               return;
+            }
+
+            int launcherIndex = ((Environment)lbEnvList.SelectedItem).launchers.IndexOf(
+               (Launcher)lbLauncherList.SelectedItem);
+
+            if (launcherIndex < ((Environment)lbEnvList.SelectedItem).launchers.Count() - 1)
+            {
+               ((Environment)lbEnvList.SelectedItem).launchers.Move(launcherIndex, launcherIndex + 1);
+            }
          }
-
-         int launcherIndex = ((Environment)lbEnvList.SelectedItem).launchers.IndexOf(
-            (Launcher)lbLauncherList.SelectedItem);
-
-         if (launcherIndex < ((Environment)lbEnvList.SelectedItem).launchers.Count() - 1)
+         catch (Exception exception)
          {
-            ((Environment)lbEnvList.SelectedItem).launchers.Move(launcherIndex, launcherIndex + 1);
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
+      }
+
+      public void OnClickHLink(object sender, RequestNavigateEventArgs e)
+      {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
+         {
+            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
+            e.Handled = true;
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
          }
       }
 
@@ -1024,147 +1413,237 @@ namespace eWamLauncher
 
       public void OnNewEwam(object sender, RoutedEventArgs e)
       {
-         Ewam ewam = new Ewam();
-         ewam.name = "eWAM " + this.profile.environments.Count().ToString();
-         ((ObservableCollection<Ewam>)lbEwamList.ItemsSource).Add(ewam);
-         lbEwamList.SelectedItem = ewam;
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
+         {
+            Ewam ewam = new Ewam();
+            ewam.name = "eWAM " + this.profile.environments.Count().ToString();
+            ((ObservableCollection<Ewam>)lbEwamList.ItemsSource).Add(ewam);
+            lbEwamList.SelectedItem = ewam;
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
       }
 
       public void OnDuplicateEwam(object sender, RoutedEventArgs e)
       {
-         if (lbEwamList.SelectedItem == null)
-         {
-            return;
-         }
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
-         Ewam ewam = (Ewam)((Ewam)lbEwamList.SelectedItem).Clone();
-         ewam.name += " (clone)";
-         this.profile.ewams.Add(ewam);
-         lbEwamList.SelectedItem = ewam;
+         try
+         {
+            if (lbEwamList.SelectedItem == null)
+            {
+               return;
+            }
+
+            Ewam ewam = (Ewam)((Ewam)lbEwamList.SelectedItem).Clone();
+            ewam.name += " (clone)";
+            this.profile.ewams.Add(ewam);
+            lbEwamList.SelectedItem = ewam;
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
       }
 
       public void OnDeleteEwam(object sender, RoutedEventArgs e)
       {
-         int curSelection = lbEwamList.SelectedIndex;
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
-         if (lbEwamList.SelectedItem == null)
+         try
          {
-            return;
-         }
+            int curSelection = lbEwamList.SelectedIndex;
+
+            if (lbEwamList.SelectedItem == null)
+            {
+               return;
+            }
 
          ((ObservableCollection<Ewam>)lbEwamList.ItemsSource).Remove((Ewam)lbEwamList.SelectedItem);
 
-         lbEwamList.SelectedIndex = curSelection;
-         if (lbEwamList.SelectedIndex == -1)
-            lbEwamList.SelectedIndex = curSelection - 1;
+            lbEwamList.SelectedIndex = curSelection;
+            if (lbEwamList.SelectedIndex == -1)
+               lbEwamList.SelectedIndex = curSelection - 1;
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
       }
 
       public void OnImportEwam(object sender, RoutedEventArgs e)
       {
-         //FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
-         //folderBrowser.Description = "Select root folder of an eWAM installation.";
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
-         OpenFileDialog fileBrowser = new OpenFileDialog();
-
-         fileBrowser.Filter = "eWAM Maps Files|*.Map";
-         fileBrowser.FilterIndex = 1;
-         fileBrowser.RestoreDirectory = true;
-         fileBrowser.FileName = "Select a .map file in eWAM root folder.";
-
-         if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+         try
          {
-            EwamImporter wamImporter = new EwamImporter(this.profile);
+            //FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
+            //folderBrowser.Description = "Select root folder of an eWAM installation.";
 
-            string envPath = MainWindow.NormalizePath(Path.GetDirectoryName(fileBrowser.FileName));
-            Ewam ewam = wamImporter.ImportFromPath(envPath);
-            ((ObservableCollection<Ewam>)lbEwamList.ItemsSource).Add(ewam);
-            lbEwamList.SelectedItem = ewam;
+            OpenFileDialog fileBrowser = new OpenFileDialog();
 
-            //Import the environment associated with this new ewam
-            Environment newEnv = new Environment();
-            newEnv.ewam = ewam;
-            newEnv.name = ewam.name;
-            EnvironmentImporter envImporter = new EnvironmentImporter(this.profile, newEnv);
-            envImporter.ImportFromPath(ewam.basePath);
-            this.profile.environments.Add(newEnv);
+            fileBrowser.Filter = "eWAM Maps Files|*.Map";
+            fileBrowser.FilterIndex = 1;
+            fileBrowser.RestoreDirectory = true;
+            fileBrowser.FileName = "Select a .map file in eWAM root folder.";
+
+            if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+               EwamImporter wamImporter = new EwamImporter(this.profile);
+
+               string envPath = MainWindow.NormalizePath(Path.GetDirectoryName(fileBrowser.FileName));
+               Ewam ewam = wamImporter.ImportFromPath(envPath);
+               ((ObservableCollection<Ewam>)lbEwamList.ItemsSource).Add(ewam);
+               lbEwamList.SelectedItem = ewam;
+
+               //Import the environment associated with this new ewam
+               Environment newEnv = new Environment();
+               newEnv.ewam = ewam;
+               newEnv.name = ewam.name;
+               EnvironmentImporter envImporter = new EnvironmentImporter(this.profile, newEnv);
+               envImporter.ImportFromPath(ewam.basePath);
+               this.profile.environments.Add(newEnv);
+            }
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
          }
       }
 
       public void OnFileExportEwam(object sender, RoutedEventArgs e)
       {
-         OpenFileDialog fileBrowser = new OpenFileDialog();
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
-         fileBrowser.Filter = "XML ewam file|*.xwam|JSON ewam file|*.jswam";
-         fileBrowser.FilterIndex = 1;
-         fileBrowser.RestoreDirectory = true;
-         fileBrowser.CheckFileExists = false;
-         fileBrowser.Title = "Save";
-         fileBrowser.InitialDirectory = ((Ewam)lbEwamList.SelectedItem).basePath;
-
-         fileBrowser.FileName = ((Ewam)lbEwamList.SelectedItem).name;
-
-         if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+         try
          {
-            try
-            {
-               if (Path.GetExtension(fileBrowser.FileName).ToLower() == ".xwam")
-               {
-                  this.SaveEwamToXML(fileBrowser.FileName);
-               }
-               else if (Path.GetExtension(fileBrowser.FileName).ToLower() == ".jswam")
-               {
-                  this.SaveEwamToJSON(fileBrowser.FileName);
-               }
-            }
-            catch (Exception)
-            {
+            OpenFileDialog fileBrowser = new OpenFileDialog();
 
+            fileBrowser.Filter = "XML ewam file|*.xwam|JSON ewam file|*.jswam";
+            fileBrowser.FilterIndex = 1;
+            fileBrowser.RestoreDirectory = true;
+            fileBrowser.CheckFileExists = false;
+            fileBrowser.Title = "Save";
+            fileBrowser.InitialDirectory = ((Ewam)lbEwamList.SelectedItem).basePath;
+
+            fileBrowser.FileName = ((Ewam)lbEwamList.SelectedItem).name;
+
+            if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+               try
+               {
+                  if (Path.GetExtension(fileBrowser.FileName).ToLower() == ".xwam")
+                  {
+                     this.SaveEwamToXML(fileBrowser.FileName);
+                  }
+                  else if (Path.GetExtension(fileBrowser.FileName).ToLower() == ".jswam")
+                  {
+                     this.SaveEwamToJSON(fileBrowser.FileName);
+                  }
+               }
+               catch (Exception exception)
+               {
+                  log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+               }
             }
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
          }
       }
 
       public void OnFileImportEwam(object sender, RoutedEventArgs e)
       {
-         OpenFileDialog fileBrowser = new OpenFileDialog();
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
-         fileBrowser.Filter = "XML ewam file|*.xwam|JSON ewam file|*.jswam";
-         fileBrowser.FilterIndex = 1;
-         fileBrowser.RestoreDirectory = true;
-         fileBrowser.CheckFileExists = false;
-         fileBrowser.Title = "Open";
-
-         Ewam importedWam = null;
-
-         if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+         try
          {
-            try
+            OpenFileDialog fileBrowser = new OpenFileDialog();
+
+            fileBrowser.Filter = "XML ewam file|*.xwam|JSON ewam file|*.jswam";
+            fileBrowser.FilterIndex = 1;
+            fileBrowser.RestoreDirectory = true;
+            fileBrowser.CheckFileExists = false;
+            fileBrowser.Title = "Open";
+
+            Ewam importedWam = null;
+
+            if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-               if (Path.GetExtension(fileBrowser.FileName).ToLower() == ".xwam")
+               try
                {
-                  importedWam = LoadEwamFromXML(fileBrowser.FileName);
+                  if (Path.GetExtension(fileBrowser.FileName).ToLower() == ".xwam")
+                  {
+                     importedWam = LoadEwamFromXML(fileBrowser.FileName);
+                  }
+                  else if (Path.GetExtension(fileBrowser.FileName).ToLower() == ".jswam")
+                  {
+                     importedWam = LoadEwamFromJSON(fileBrowser.FileName);
+                  }
+
+                  importedWam.basePath = "";
+
+                  FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
+                  folderBrowser.SelectedPath = Path.GetDirectoryName(fileBrowser.FileName);
+
+                  folderBrowser.Description = "Select Ewam Root";
+                  if (folderBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                  {
+                     importedWam.basePath = folderBrowser.SelectedPath;
+                  }
+
+                  this.profile.ewams.Add(importedWam);
                }
-               else if (Path.GetExtension(fileBrowser.FileName).ToLower() == ".jswam")
+               catch (Exception exception)
                {
-                  importedWam = LoadEwamFromJSON(fileBrowser.FileName);
+                  log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
                }
-
-               importedWam.basePath = "";
-
-               FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
-               folderBrowser.SelectedPath = Path.GetDirectoryName(fileBrowser.FileName);
-
-               folderBrowser.Description = "Select Ewam Root";
-               if (folderBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-               {
-                  importedWam.basePath = folderBrowser.SelectedPath;
-               }
-
-               this.profile.ewams.Add(importedWam);
             }
-            catch (Exception execption)
-            {
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
 
-            }
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
          }
       }
 
@@ -1185,18 +1664,22 @@ namespace eWamLauncher
             //   env.RestoreReferenceEwam(this.profile.ewams);
             //}
          }
-         catch (FileNotFoundException)
+         catch (FileNotFoundException exception)
          {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
             return null;
          }
-         catch (Exception e)
+         catch (Exception exception)
          {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
             return null;
          }
       }
 
       public void SaveEwamToXML(string fileName)
       {
+         Directory.CreateDirectory(Path.GetDirectoryName(fileName));
+
          Ewam ewamCopy = (Ewam)((Ewam)lbEwamList.SelectedItem).Clone();
          ewamCopy.basePath = "";
          FileStream writer = new FileStream(fileName, FileMode.Create);
@@ -1223,18 +1706,22 @@ namespace eWamLauncher
             //   env.RestoreReferenceEwam(this.profile.ewams);
             //}
          }
-         catch (FileNotFoundException)
+         catch (FileNotFoundException exception)
          {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
             return null;
          }
-         catch (Exception e)
+         catch (Exception exception)
          {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
             return null;
          }
       }
 
       public void SaveEwamToJSON(string fileName)
       {
+         Directory.CreateDirectory(Path.GetDirectoryName(fileName));
+
          Ewam ewamCopy = (Ewam)((Ewam)lbEnvList.SelectedItem).Clone();
          ewamCopy.basePath = "";
          FileStream writer = new FileStream(fileName, FileMode.Create);
@@ -1246,31 +1733,61 @@ namespace eWamLauncher
 
       public void OnMoveUpEwam(object sender, RoutedEventArgs e)
       {
-         if (lbEwamList.SelectedItem == null)
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
          {
-            return;
+            if (lbEwamList.SelectedItem == null)
+            {
+               return;
+            }
+
+            int wamIndex = this.profile.ewams.IndexOf((Ewam)lbEwamList.SelectedItem);
+
+            if (wamIndex > 0)
+            {
+               this.profile.ewams.Move(wamIndex, wamIndex - 1);
+            }
          }
-
-         int wamIndex = this.profile.ewams.IndexOf((Ewam)lbEwamList.SelectedItem);
-
-         if (wamIndex > 0)
+         catch (Exception exception)
          {
-            this.profile.ewams.Move(wamIndex, wamIndex - 1);
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
          }
       }
 
       public void OnMoveDownEwam(object sender, RoutedEventArgs e)
       {
-         if (lbEwamList.SelectedItem == null)
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
          {
-            return;
+            if (lbEwamList.SelectedItem == null)
+            {
+               return;
+            }
+
+            int wamIndex = this.profile.ewams.IndexOf((Ewam)lbEwamList.SelectedItem);
+
+            if (wamIndex < this.profile.ewams.Count() - 1)
+            {
+               this.profile.ewams.Move(wamIndex, wamIndex + 1);
+            }
          }
-
-         int wamIndex = this.profile.ewams.IndexOf((Ewam)lbEwamList.SelectedItem);
-
-         if (wamIndex < this.profile.ewams.Count() - 1)
+         catch (Exception exception)
          {
-            this.profile.ewams.Move(wamIndex, wamIndex + 1);
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
          }
       }
 
@@ -1280,37 +1797,82 @@ namespace eWamLauncher
 
       public void OnNewBinariesSet(object sender, RoutedEventArgs e)
       {
-         BinariesSet binariesSet = new BinariesSet();
-         binariesSet.name = "new set of binaries " + ((ObservableCollection<BinariesSet>)lbBinariesSets.ItemsSource).Count.ToString();
-         ((ObservableCollection<BinariesSet>)lbBinariesSets.ItemsSource).Add(binariesSet);
-         lbBinariesSets.SelectedItem = binariesSet;
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
+         {
+            BinariesSet binariesSet = new BinariesSet();
+            binariesSet.name = "new set of binaries " + ((ObservableCollection<BinariesSet>)lbBinariesSets.ItemsSource).Count.ToString();
+            ((ObservableCollection<BinariesSet>)lbBinariesSets.ItemsSource).Add(binariesSet);
+            lbBinariesSets.SelectedItem = binariesSet;
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
       }
 
       public void OnDuplicateBinariesSet(object sender, RoutedEventArgs e)
       {
-         if (lbBinariesSets.SelectedItem == null)
-         {
-            return;
-         }
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
-         BinariesSet binariesSet = (BinariesSet)((BinariesSet)lbBinariesSets.SelectedItem).Clone();
-         binariesSet.name += " (clone)";
-         ((ObservableCollection<BinariesSet>)lbBinariesSets.ItemsSource).Add(binariesSet);
-         lbBinariesSets.SelectedItem = binariesSet;
+         try
+         {
+            if (lbBinariesSets.SelectedItem == null)
+            {
+               return;
+            }
+
+            BinariesSet binariesSet = (BinariesSet)((BinariesSet)lbBinariesSets.SelectedItem).Clone();
+            binariesSet.name += " (clone)";
+            ((ObservableCollection<BinariesSet>)lbBinariesSets.ItemsSource).Add(binariesSet);
+            lbBinariesSets.SelectedItem = binariesSet;
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
       }
 
       public void OnDeleteBinariesSet(object sender, RoutedEventArgs e)
       {
-         int curSelection = lbBinariesSets.SelectedIndex;
-         if (lbBinariesSets.SelectedItem == null)
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
          {
-            return;
-         }
+            int curSelection = lbBinariesSets.SelectedIndex;
+            if (lbBinariesSets.SelectedItem == null)
+            {
+               return;
+            }
 
          ((ObservableCollection<BinariesSet>)lbBinariesSets.ItemsSource).Remove((BinariesSet)lbBinariesSets.SelectedItem);
-         lbBinariesSets.SelectedIndex = curSelection;
-         if (lbBinariesSets.SelectedIndex == -1)
-            lbBinariesSets.SelectedIndex = curSelection - 1;
+            lbBinariesSets.SelectedIndex = curSelection;
+            if (lbBinariesSets.SelectedIndex == -1)
+               lbBinariesSets.SelectedIndex = curSelection - 1;
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
       }
 
       //public void OnImportBinariesSets(object sender, RoutedEventArgs e)
@@ -1337,201 +1899,329 @@ namespace eWamLauncher
 
       public void OnRefreshPackages(object sender, RoutedEventArgs e)
       {
-         this.packages.Clear();
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
-         System.Net.WebClient wc = new System.Net.WebClient();
-         byte[] raw;
          try
          {
-            raw = wc.DownloadData(this.profile.settings.ewamUpdateServerURL + "//package-index.xml");
-         } 
-         catch (Exception except)
+            this.packages.Clear();
+
+            System.Net.WebClient wc = new System.Net.WebClient();
+            byte[] raw;
+            try
+            {
+               raw = wc.DownloadData(this.profile.settings.ewamUpdateServerURL + "//package-index.xml");
+            }
+            catch (Exception exception)
+            {
+               log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+               System.Windows.MessageBox.Show(
+                  "Could not download package-index.xml from " +
+                     this.profile.settings.ewamUpdateServerURL +
+                     "//package-index.xml\n\n" + exception.Message,
+                  "Package index error",
+                  System.Windows.MessageBoxButton.OK,
+                  System.Windows.MessageBoxImage.Error);
+               return;
+            }
+            String webData = System.Text.Encoding.UTF8.GetString(raw);
+            XmlSerializer serializer = new XmlSerializer(typeof(WideIndex));
+            MemoryStream memStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(webData));
+            WideIndex packageIndex = (WideIndex)serializer.Deserialize(memStream);
+            foreach (Package package in packageIndex.packages)
+            {
+               this.packages.Add(package);
+            }
+         }
+         catch (Exception exception)
          {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
             System.Windows.MessageBox.Show(
-               "Could not download package-index.xml from " + 
-                  this.profile.settings.ewamUpdateServerURL + 
-                  "//package-index.xml\n\n" + except.Message, 
-               "Package index error",
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
                System.Windows.MessageBoxButton.OK,
                System.Windows.MessageBoxImage.Error);
-            return;
-         }
-         String webData = System.Text.Encoding.UTF8.GetString(raw);
-         XmlSerializer serializer = new XmlSerializer(typeof(WideIndex));
-         MemoryStream memStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(webData));
-         WideIndex packageIndex = (WideIndex)serializer.Deserialize(memStream);
-         foreach (Package package in packageIndex.packages)
-         {
-            this.packages.Add(package);
          }
       }
 
       public async void OnImportSelectedPackage(object sender, RoutedEventArgs e)
       {
-         string targetDir = "";
-         //Select destination folder
-         FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
-         folderBrowser.Description = "Select target directory";
-         if (folderBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
          {
-            targetDir = NormalizePath(folderBrowser.SelectedPath);
-         }
-         else
-         {
-            return;
-         }
-
-         Package package = (Package)lbPackageList.SelectedItem;
-
-         //Create ProgressBar
-         System.Windows.Controls.Label label = new System.Windows.Controls.Label();
-         label.Content = "Downloading " + package.Description + "...";
-         label.HorizontalAlignment = System.Windows.HorizontalAlignment.Left;
-         label.VerticalAlignment = System.Windows.VerticalAlignment.Bottom;
-         stkpProgressBars.Children.Add(label);
-
-         System.Windows.Controls.ProgressBar progressBar = new System.Windows.Controls.ProgressBar();
-         progressBar.HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch;
-         stkpProgressBars.Children.Add(progressBar);
-
-         await Task.Run(() => PullPackage(this, targetDir, package, progressBar));
-
-
-         label.Content = "Configuring...";
-
-         // the package is an eWAM binaries set
-         if (package.Type == "ewam")
-         {
-            Ewam importedEwam = null;
-
-            // Get BinariesSet and import associated eWAM
-            foreach (PackageComponent component in package.Components)
+            if (lbPackageList.SelectedItem == null)
             {
-               if (component.Name == "BinariesSets")
-               {
-                  string filename = NormalizePath(targetDir + "\\" + component.Files[0].Path);
-                  string extension = Path.GetExtension(filename);
-
-                  if (extension == ".xwam")
-                  {
-                     importedEwam = LoadEwamFromXML(filename);
-                  }
-                  else if (extension == ".jswam")
-                  {
-                     importedEwam = LoadEwamFromJSON(filename);
-                  }
-
-                  importedEwam.basePath = targetDir;
-                  importedEwam.name = package.Description;
-
-                  profile.ewams.Add(importedEwam);
-               }
+               return;
             }
 
-            // If exists, also create associated environment using Launchers
-            foreach (PackageComponent component in package.Components)
+            string targetDir = "";
+            //Select destination folder
+            FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
+            folderBrowser.Description = "Select target directory";
+            if (folderBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-               if (component.Name == "Launchers")
+               targetDir = NormalizePath(folderBrowser.SelectedPath);
+            }
+            else
+            {
+               return;
+            }
+
+            Package package = (Package)lbPackageList.SelectedItem;
+
+            //Create ProgressBar
+            System.Windows.Controls.Label label = new System.Windows.Controls.Label();
+            label.Content = package.Description + " - Downloading ...";
+            label.HorizontalAlignment = System.Windows.HorizontalAlignment.Left;
+            label.VerticalAlignment = System.Windows.VerticalAlignment.Bottom;
+            stkpProgressBars.Children.Add(label);
+
+            System.Windows.Controls.ProgressBar progressBar = new System.Windows.Controls.ProgressBar();
+            progressBar.HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch;
+            stkpProgressBars.Children.Add(progressBar);
+
+            await Task.Run(() => PullPackage(this, targetDir, package, progressBar, label));
+
+
+            label.Content = "Configuring...";
+
+            // the package is an eWAM binaries set
+            if (package.Type == "ewam")
+            {
+               Ewam importedEwam = null;
+
+               // Get BinariesSet and import associated eWAM
+               foreach (PackageComponent component in package.Components)
                {
-                  string filename = NormalizePath(targetDir + "\\" + component.Files[0].Path);
-                  string extension = Path.GetExtension(filename);
-
-                  Environment importedEnv = null;
-
-                  if (extension == ".xenv")
+                  if (component.Name == "BinariesSets")
                   {
-                     importedEnv = LoadEnvironmentFromXML(filename);
+                     string filename = NormalizePath(targetDir + "\\" + component.Files[0].Path);
+                     string extension = Path.GetExtension(filename);
+
+                     if (extension == ".xwam")
+                     {
+                        importedEwam = LoadEwamFromXML(filename);
+                     }
+                     else if (extension == ".jswam")
+                     {
+                        importedEwam = LoadEwamFromJSON(filename);
+                     }
+
+                     importedEwam.basePath = targetDir;
+                     importedEwam.name = package.Description;
+
+                     profile.ewams.Add(importedEwam);
                   }
-                  else if (extension == ".jsenv")
+               }
+
+               // If exists, also create associated environment using Launchers
+               foreach (PackageComponent component in package.Components)
+               {
+                  if (component.Name == "Launchers")
                   {
-                     importedEnv = LoadEnvironmentFromJSON(filename);
+                     string filename = NormalizePath(targetDir + "\\" + component.Files[0].Path);
+                     string extension = Path.GetExtension(filename);
+
+                     Environment importedEnv = null;
+
+                     if (extension == ".xenv")
+                     {
+                        importedEnv = LoadEnvironmentFromXML(filename);
+                     }
+                     else if (extension == ".jsenv")
+                     {
+                        importedEnv = LoadEnvironmentFromJSON(filename);
+                     }
+
+                     importedEnv.envRoot = targetDir;
+                     importedEnv.ewam = importedEwam;
+                     importedEnv.name = package.Description;
+
+                     profile.environments.Add(importedEnv);
                   }
-
-                  importedEnv.envRoot = targetDir;
-                  importedEnv.ewam = importedEwam;
-                  importedEnv.name = package.Description;
-
-                  profile.environments.Add(importedEnv);
                }
             }
+            // the package is an environment
+            else if (package.Type == "environment")
+            {
+               // If exists, also create associated environment using Launchers
+               foreach (PackageComponent component in package.Components)
+               {
+                  if (component.Name == "Launchers")
+                  {
+                     string filename = NormalizePath(targetDir + "\\" + component.Files[0].Path);
+                     string extension = Path.GetExtension(filename);
+
+                     Environment importedEnv = null;
+
+                     if (extension == ".xenv")
+                     {
+                        importedEnv = LoadEnvironmentFromXML(filename);
+                     }
+                     else if (extension == ".jsenv")
+                     {
+                        importedEnv = LoadEnvironmentFromJSON(filename);
+                     }
+
+                     // fill envRoot and wfRoot by adding the provided path as prefix
+                     importedEnv.envRoot = targetDir + "\\" + importedEnv.envRoot;
+                     importedEnv.wfRoot = targetDir + "\\" + importedEnv.wfRoot;
+
+                     importedEnv.name = package.Description;
+
+                     profile.environments.Add(importedEnv);
+                  }
+               }
+            }
+            
+            //Remove Progress bar
+            stkpProgressBars.Children.Remove(progressBar);
+            stkpProgressBars.Children.Remove(label);
          }
-         // the package is an environment
-         else if (package.Type == "environment")
+         catch (Exception exception)
          {
-            // If exists, also create associated environment using Launchers
-            foreach (PackageComponent component in package.Components)
-            {
-               if (component.Name == "Launchers")
-               {
-                  string filename = NormalizePath(targetDir + "\\" + component.Files[0].Path);
-                  string extension = Path.GetExtension(filename);
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
 
-                  Environment importedEnv = null;
-
-                  if (extension == ".xenv")
-                  {
-                     importedEnv = LoadEnvironmentFromXML(filename);
-                  }
-                  else if (extension == ".jsenv")
-                  {
-                     importedEnv = LoadEnvironmentFromJSON(filename);
-                  }
-
-                  // fill envRoot and wfRoot by adding the provided path as prefix
-                  importedEnv.envRoot = targetDir + "\\" + importedEnv.envRoot;
-                  importedEnv.wfRoot = targetDir + "\\" + importedEnv.wfRoot;
-
-                  importedEnv.name = package.Description;
-
-                  profile.environments.Add(importedEnv);
-               }
-            }
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
          }
-
-
-         //Remove Progress bar
-         stkpProgressBars.Children.Remove(progressBar);
-         stkpProgressBars.Children.Remove(label);
 
       }
 
-      private void PullPackage(MainWindow gui, string targetDir, Package package, System.Windows.Controls.ProgressBar progressBar)
+      private void PullPackage(MainWindow gui, string targetDir, Package package, 
+         System.Windows.Controls.ProgressBar progressBar, 
+         System.Windows.Controls.Label label)
       {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
-         int progressAmount = 0;
-         foreach (PackageComponent component in package.Components)
+         try
          {
-            progressAmount += component.Files.Count();
-         }
-         int currentProgress = 0;
+            int progressAmount = 0;
+            int currentProgress = 0;
 
-         //Download
-         System.Net.WebClient wc = new System.Net.WebClient();
-         foreach (PackageComponent component in package.Components)
-         {
-            foreach (ComponentFile file in component.Files)
+            foreach (PackageComponent component in package.Components)
             {
-               string convertedPath = file.Path.Replace("\\", "/");
-               Directory.CreateDirectory(Path.GetDirectoryName(targetDir + "\\" + file.Path));
-               string url = this.profile.settings.ewamUpdateServerURL + "/" +
-                  package.Id + "/" +
-                  convertedPath;
-               wc.DownloadFile(
-                  url,
-                  targetDir + "\\" + file.Path);
-
-               //Decompress the things if needed
-               if (file.Compression != null && file.Compression == "zip")
+               if (component.Files != null)
                {
-                  ZipFile.ExtractToDirectory(targetDir + "\\" + file.Path, targetDir);
-                  File.Delete(targetDir + "\\" + file.Path);
+                  progressAmount += component.Files.Count();
                }
+            }
 
-               currentProgress++;
-               gui.Dispatcher.BeginInvoke(new Action(() => progressBar.Value = ((double)currentProgress / (double)progressAmount) * 100.0));
+            //Download
+            System.Net.WebClient wc = new System.Net.WebClient();
+            foreach (PackageComponent component in package.Components)
+            {
+               //Decompress the things if needed
+               if (component.Compression != null && component.Compression != "" && component.Compression != "None")
+               {
+                  //Download the corresponding zip
+                  gui.Dispatcher.BeginInvoke(new Action(() => label.Content = package.Description + " - Downloading " + component.Name + "..."));
+
+                  string url = this.profile.settings.ewamUpdateServerURL + "/" +
+                     package.Id + "/" +
+                     component.Name + ".zip";
+
+                  string zipFullPath = System.IO.Path.GetTempPath() + Guid.NewGuid().ToString() + ".zip";
+
+                  wc.DownloadFile(url, zipFullPath);
+
+                  //ZipFile.ExtractToDirectory(targetDir + "\\" + component.Name + ".zip", targetDir);
+                  using (SharpCompress.Archives.Zip.ZipArchive archive = SharpCompress.Archives.Zip.ZipArchive.Open(zipFullPath))
+                  {
+                     foreach (SharpCompress.Archives.Zip.ZipArchiveEntry entry in archive.Entries)
+                     {
+                        gui.Dispatcher.BeginInvoke(new Action(() => label.Content = package.Description + " - Extracting " + component.Name + "..."));
+                        //if (entry.FullName.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
+                        Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(targetDir, entry.ToString())));
+                        entry.WriteToFile(Path.Combine(targetDir, entry.ToString()));
+                        currentProgress++;
+                        gui.Dispatcher.BeginInvoke(new Action(() => progressBar.Value = ((double)currentProgress / (double)progressAmount) * 100.0));
+                     }
+                  }
+
+                  try
+                  {
+                     File.Delete(zipFullPath);
+                  }
+                  catch (Exception exception)
+                  {
+                     log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+                  }
+
+               }
+               //if (component.Compression != null && component.Compression == "zip")
+               //{
+               //   //Download the corresponding zip
+               //   gui.Dispatcher.BeginInvoke(new Action(() => label.Content = package.Description + " - Downloading " + component.Name + "..."));
+
+               //   string url = this.profile.settings.ewamUpdateServerURL + "/" +
+               //      package.Id + "/" +
+               //      component.Name + "." + component.Compression;
+
+               //   string zipFullPath = System.IO.Path.GetTempPath() + Guid.NewGuid().ToString() + "." + component.Compression;
+
+               //   wc.DownloadFile(url, zipFullPath);
+
+               //   //ZipFile.ExtractToDirectory(targetDir + "\\" + component.Name + ".zip", targetDir);
+               //   using (ZipArchive archive = ZipFile.OpenRead(zipFullPath))
+               //   {
+               //      foreach (ZipArchiveEntry entry in archive.Entries)
+               //      {
+               //         gui.Dispatcher.BeginInvoke(new Action(() => label.Content = package.Description + " - Extracting " + component.Name + "..."));
+               //         //if (entry.FullName.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
+               //         Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(targetDir, entry.FullName)));
+               //         entry.ExtractToFile(Path.Combine(targetDir, entry.FullName));
+               //         currentProgress++;
+               //         gui.Dispatcher.BeginInvoke(new Action(() => progressBar.Value = ((double)currentProgress / (double)progressAmount) * 100.0));
+               //      }
+               //   }
+
+               //   try
+               //   {
+               //      File.Delete(zipFullPath);
+               //   }
+               //   catch (Exception exception)
+               //   {
+               //      log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+               //   }
+
+               //}
+               else
+               {
+                  gui.Dispatcher.BeginInvoke(new Action(() => label.Content = package.Description + " - Downloading " + component.Name + "..."));
+
+                  foreach (ComponentFile file in component.Files)
+                  {
+                     string convertedPath = file.Path.Replace("\\", "/");
+                     Directory.CreateDirectory(Path.GetDirectoryName(targetDir + "\\" + file.Path));
+
+                     string url = this.profile.settings.ewamUpdateServerURL + "/" +
+                        package.Id + "/" +
+                        convertedPath;
+
+                     wc.DownloadFile(url, targetDir + "\\" + file.Path);
+
+                     currentProgress++;
+                     gui.Dispatcher.BeginInvoke(new Action(() => progressBar.Value = ((double)currentProgress / (double)progressAmount) * 100.0));
+                  }
+               }
             }
          }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
 
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
       }
 
       #endregion
@@ -1540,16 +2230,20 @@ namespace eWamLauncher
 
       public void OnCheckUpdate(object sender, RoutedEventArgs e)
       {
-         Task.Run( async () =>
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
          {
-            using (var mgr = new UpdateManager(this.profile.settings.launcherUpdateServerURL))
-            {
-               UpdateInfo updateInfo = await mgr.CheckForUpdate();
+            Task.Run(async () =>
+           {
+              using (var mgr = new UpdateManager(this.profile.settings.launcherUpdateServerURL))
+              {
+                 UpdateInfo updateInfo = await mgr.CheckForUpdate();
 
-               this.assemblyUpdateInfo = "Latest version: " + updateInfo.FutureReleaseEntry.Version;
+                 this.assemblyUpdateInfo = "Latest version: " + updateInfo.FutureReleaseEntry.Version;
 
-               if (updateInfo.CurrentlyInstalledVersion.Version != updateInfo.FutureReleaseEntry.Version)
-               {
+                 if (updateInfo.CurrentlyInstalledVersion.Version != updateInfo.FutureReleaseEntry.Version)
+                 {
                   //this.assemblyUpdateInfo = "New version available, downloading...";
 
                   //await mgr.DownloadReleases(updateInfo.ReleasesToApply);
@@ -1563,14 +2257,25 @@ namespace eWamLauncher
                   //mgr.KillAllExecutablesBelongingToPackage();
 
                   await mgr.UpdateApp();
-                  this.assemblyUpdateInfo = "Update installed, please restart the app !";
-               }
-               else
-               {
-                  this.assemblyUpdateInfo = "You are up to date.";
-               }
-            }
-         });
+                    this.assemblyUpdateInfo = "Update installed, please restart the app !";
+                 }
+                 else
+                 {
+                    this.assemblyUpdateInfo = "You are up to date.";
+                 }
+              }
+           });
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
       }
 
       #endregion

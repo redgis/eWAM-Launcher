@@ -162,6 +162,8 @@ namespace eWamLauncher
 
       private string nameField;
 
+      private string compressionField;
+
       /// <remarks/>
       [System.Xml.Serialization.XmlElementAttribute("File", Form = System.Xml.Schema.XmlSchemaForm.Unqualified)]
       public ComponentFile[] Files
@@ -189,6 +191,20 @@ namespace eWamLauncher
             this.nameField = value;
          }
       }
+
+      /// <remarks/>
+      [System.Xml.Serialization.XmlAttributeAttribute()]
+      public string Compression
+      {
+         get
+         {
+            return this.compressionField;
+         }
+         set
+         {
+            this.compressionField = value;
+         }
+      }
    }
 
    /// <remarks/>
@@ -205,8 +221,6 @@ namespace eWamLauncher
       private string plateformField;
 
       private string versionField;
-
-      private string compressionField;
 
       /// <remarks/>
       [System.Xml.Serialization.XmlAttributeAttribute()]
@@ -247,20 +261,6 @@ namespace eWamLauncher
          set
          {
             this.versionField = value;
-         }
-      }
-
-      /// <remarks/>
-      [System.Xml.Serialization.XmlAttributeAttribute()]
-      public string Compression
-      {
-         get
-         {
-            return this.compressionField;
-         }
-         set
-         {
-            this.compressionField = value;
          }
       }
 

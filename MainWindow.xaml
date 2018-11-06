@@ -213,6 +213,12 @@
                                        SelectedItem="{Binding SelectedItem.binariesSet, ElementName=lbEnvList, Mode=TwoWay}"
                                        Margin="5"
                                         MinWidth="150"/>
+                              <TextBlock VerticalAlignment="Center" Margin="20,0">           
+                                 <Hyperlink NavigateUri="https://mphasiswyde.atlassian.net/wiki/spaces/PTD/pages/67174695/Executable+Command+Line+Options"
+                                            RequestNavigate="OnClickHLink">
+                                    Help : eWAM Command-Line options
+                                 </Hyperlink>
+                              </TextBlock>
                            </WrapPanel>
                            <Grid>
                               <Grid.ColumnDefinitions>
@@ -511,7 +517,7 @@
                                  Margin="5" />
 
                         <StackPanel Orientation="Vertical" x:Name="stkpProgressBars" Grid.Column="1" 
-                                    HorizontalAlignment="Stretch" Margin="5" />
+                                    HorizontalAlignment="Stretch" Margin="1" />
 
                         <!--<Label Content="Name: " Grid.Column="0" Grid.Row="0"/>
                         <TextBox Text="{Binding SelectedItem.name, ElementName=lbLauncherList, Mode=TwoWay}" Grid.Column="1" Grid.Row="0" Margin="5"/>
