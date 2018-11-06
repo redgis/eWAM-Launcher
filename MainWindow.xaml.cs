@@ -2235,36 +2235,49 @@ namespace eWamLauncher
          try
          {
             Task.Run(async () =>
-           {
-              using (var mgr = new UpdateManager(this.profile.settings.launcherUpdateServerURL))
-              {
-                 UpdateInfo updateInfo = await mgr.CheckForUpdate();
+            {
+               try
+               {
+                  using (var mgr = new UpdateManager(this.profile.settings.launcherUpdateServerURL))
+                  {
+                     UpdateInfo updateInfo = await mgr.CheckForUpdate();
 
-                 this.assemblyUpdateInfo = "Latest version: " + updateInfo.FutureReleaseEntry.Version;
+                     this.assemblyUpdateInfo = "Latest version: " + updateInfo.FutureReleaseEntry.Version;
 
-                 if (updateInfo.CurrentlyInstalledVersion.Version != updateInfo.FutureReleaseEntry.Version)
-                 {
-                  //this.assemblyUpdateInfo = "New version available, downloading...";
+                     if (updateInfo.CurrentlyInstalledVersion.Version != updateInfo.FutureReleaseEntry.Version)
+                     {
+                        //this.assemblyUpdateInfo = "New version available, downloading...";
 
-                  //await mgr.DownloadReleases(updateInfo.ReleasesToApply);
+                        //await mgr.DownloadReleases(updateInfo.ReleasesToApply);
 
-                  //this.assemblyUpdateInfo = "Download finished, Ready to apply the update.";
+                        //this.assemblyUpdateInfo = "Download finished, Ready to apply the update.";
 
-                  //string resultPath = await mgr.ApplyReleases(updateInfo);
+                        //string resultPath = await mgr.ApplyReleases(updateInfo);
 
-                  //this.assemblyUpdateInfo = "Update applied. You now need to restart !";
+                        //this.assemblyUpdateInfo = "Update applied. You now need to restart !";
 
-                  //mgr.KillAllExecutablesBelongingToPackage();
+                        //mgr.KillAllExecutablesBelongingToPackage();
 
-                  await mgr.UpdateApp();
-                    this.assemblyUpdateInfo = "Update installed, please restart the app !";
-                 }
-                 else
-                 {
-                    this.assemblyUpdateInfo = "You are up to date.";
-                 }
-              }
-           });
+                        await mgr.UpdateApp();
+                        this.assemblyUpdateInfo = "Update installed, please restart the app !";
+                     }
+                     else
+                     {
+                        this.assemblyUpdateInfo = "You are up to date.";
+                     }
+                  }
+               }
+               catch (Exception exception)
+               {
+                  log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+                  System.Windows.MessageBox.Show(
+                     "Something went wrong ! \n\n" + exception.Message,
+                     "Oops",
+                     System.Windows.MessageBoxButton.OK,
+                     System.Windows.MessageBoxImage.Error);
+               }
+            });
          }
          catch (Exception exception)
          {

@@ -22,6 +22,7 @@
         <file src="..\bin\Release\DeltaCompressionDotNet.PatchApi.dll" target="lib\net45\DeltaCompressionDotNet.PatchApi.dll" />
         <file src="..\bin\Release\eWamLauncher.exe" target="lib\net45\eWamLauncher.exe" />
         <file src="..\bin\Release\eWamLauncher.exe.config" target="lib\net45\eWamLauncher.exe.config" />
+        <file src="..\bin\Release\log4net.config" target="lib\net45\log4net.config" />
         <file src="..\bin\Release\log4net.dll" target="lib\net45\log4net.dll" />
         <file src="..\bin\Release\MahApps.Metro.dll" target="lib\net45\MahApps.Metro.dll" />
         <file src="..\bin\Release\Mono.Cecil.dll" target="lib\net45\Mono.Cecil.dll" />
