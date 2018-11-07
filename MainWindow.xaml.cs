@@ -336,6 +336,40 @@ namespace eWamLauncher
          }
       }
 
+      public static string FindLongestCommonPath(string path1, string path2)
+      {
+         string result = "";
+
+         string absPath1 = Path.GetFullPath(path1).ToUpperInvariant();
+         string absPath2 = Path.GetFullPath(path2).ToUpperInvariant();
+
+         char[] delimiters = { '\\' };
+
+         string[] pathChunks1 = absPath1.Split(delimiters);
+         string[] pathChunks2 = absPath2.Split(delimiters);
+
+         
+         for (int index = 0; index < Math.Min(pathChunks1.Count(), pathChunks2.Count()); index ++)
+         {
+            if (pathChunks1[index] == pathChunks2[index])
+            {
+               if (index > 0)
+               {
+                  result += "\\";
+               }
+
+               result += pathChunks1[index];
+            }
+            else
+            {
+               break;
+            }
+
+         }
+
+         return result;
+      }
+
       private void OnChangePath(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -780,8 +814,9 @@ namespace eWamLauncher
          Environment envCopy = (Environment) ((Environment)lbEnvList.SelectedItem).Clone();
          envCopy.binariesSet = null;
          envCopy.ewam = null;
-         envCopy.envRoot = "";
-         envCopy.wfRoot = "";
+         string commonPath = FindLongestCommonPath(envCopy.envRoot, envCopy.wfRoot);
+         envCopy.envRoot = envCopy.envRoot.Substring(commonPath.Length + 1);
+         envCopy.wfRoot = envCopy.wfRoot.Substring(commonPath.Length + 1);
          FileStream writer = new FileStream(fileName, FileMode.Create);
          DataContractSerializer xmlSerializer = new DataContractSerializer(typeof(Environment));
          xmlSerializer.WriteObject(writer, envCopy);
@@ -825,8 +860,9 @@ namespace eWamLauncher
          Environment envCopy = (Environment)((Environment)lbEnvList.SelectedItem).Clone();
          envCopy.binariesSet = null;
          envCopy.ewam = null;
-         envCopy.envRoot = "";
-         envCopy.wfRoot = "";
+         string commonPath = FindLongestCommonPath(envCopy.envRoot, envCopy.wfRoot);
+         envCopy.envRoot = envCopy.envRoot.Substring(commonPath.Length + 1);
+         envCopy.wfRoot = envCopy.wfRoot.Substring(commonPath.Length + 1);
          FileStream writer = new FileStream(fileName, FileMode.Create);
          DataContractJsonSerializer jsonSerializer =
              new DataContractJsonSerializer(typeof(Environment));
@@ -1394,6 +1430,40 @@ namespace eWamLauncher
          {
             Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
             e.Handled = true;
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
+      }
+
+      public void OnFileExportAllLaunchers(object sender, RoutedEventArgs e)
+      {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
+         {
+            Environment environment = (Environment)lbEnvList.SelectedItem;
+
+
+            char[] delimiters = { '\n', ';', '\r', '\b' };
+
+            FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
+            folderBrowser.Description = "Select output folder";
+            folderBrowser.SelectedPath = environment.envRoot;
+
+            if (folderBrowser.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+            {
+               return;
+            }
+
+            environment.GenerateBatchFiles(folderBrowser.SelectedPath);
          }
          catch (Exception exception)
          {
@@ -1987,92 +2057,79 @@ namespace eWamLauncher
 
             label.Content = "Configuring...";
 
-            // the package is an eWAM binaries set
-            if (package.Type == "ewam")
+
+            //Look for BinariesSets
+            // Get BinariesSet and import associated eWAM
+            Ewam importedEwam = null;
+            Boolean found = false;
+            foreach (PackageComponent component in package.Components)
             {
-               Ewam importedEwam = null;
+               foreach (ComponentFile file in component.Files)
+               {               
+                  string filename = NormalizePath(targetDir + "\\" + file.Path);
+                  string extension = Path.GetExtension(filename);
 
-               // Get BinariesSet and import associated eWAM
-               foreach (PackageComponent component in package.Components)
-               {
-                  if (component.Name == "BinariesSets")
+                  if (extension == ".xwam")
                   {
-                     string filename = NormalizePath(targetDir + "\\" + component.Files[0].Path);
-                     string extension = Path.GetExtension(filename);
-
-                     if (extension == ".xwam")
-                     {
-                        importedEwam = LoadEwamFromXML(filename);
-                     }
-                     else if (extension == ".jswam")
-                     {
-                        importedEwam = LoadEwamFromJSON(filename);
-                     }
-
-                     importedEwam.basePath = targetDir;
-                     importedEwam.name = package.Description;
-
-                     profile.ewams.Add(importedEwam);
+                     importedEwam = LoadEwamFromXML(filename);
+                     found = true;
+                     break;
+                     
                   }
+                  else if (extension == ".jswam")
+                  {
+                     importedEwam = LoadEwamFromJSON(filename);
+                     found = true;
+                     break;
+                  }
+
                }
 
-               // If exists, also create associated environment using Launchers
-               foreach (PackageComponent component in package.Components)
+               if (found)
                {
-                  if (component.Name == "Launchers")
-                  {
-                     string filename = NormalizePath(targetDir + "\\" + component.Files[0].Path);
-                     string extension = Path.GetExtension(filename);
+                  importedEwam.basePath = targetDir;
+                  importedEwam.name = package.Description;
 
-                     Environment importedEnv = null;
-
-                     if (extension == ".xenv")
-                     {
-                        importedEnv = LoadEnvironmentFromXML(filename);
-                     }
-                     else if (extension == ".jsenv")
-                     {
-                        importedEnv = LoadEnvironmentFromJSON(filename);
-                     }
-
-                     importedEnv.envRoot = targetDir;
-                     importedEnv.ewam = importedEwam;
-                     importedEnv.name = package.Description;
-
-                     profile.environments.Add(importedEnv);
-                  }
+                  profile.ewams.Add(importedEwam);
+                  break;
                }
             }
-            // the package is an environment
-            else if (package.Type == "environment")
+
+            //Look for environment definition / launchers
+            // If exists, create associated environment using Launchers
+            found = false;
+            Environment importedEnv = null;
+            foreach (PackageComponent component in package.Components)
             {
-               // If exists, also create associated environment using Launchers
-               foreach (PackageComponent component in package.Components)
+               foreach (ComponentFile file in component.Files)
                {
-                  if (component.Name == "Launchers")
+                  string filename = NormalizePath(targetDir + "\\" + file.Path);
+                  string extension = Path.GetExtension(filename);
+                  
+                  if (extension == ".xenv")
                   {
-                     string filename = NormalizePath(targetDir + "\\" + component.Files[0].Path);
-                     string extension = Path.GetExtension(filename);
-
-                     Environment importedEnv = null;
-
-                     if (extension == ".xenv")
-                     {
-                        importedEnv = LoadEnvironmentFromXML(filename);
-                     }
-                     else if (extension == ".jsenv")
-                     {
-                        importedEnv = LoadEnvironmentFromJSON(filename);
-                     }
-
-                     // fill envRoot and wfRoot by adding the provided path as prefix
-                     importedEnv.envRoot = targetDir + "\\" + importedEnv.envRoot;
-                     importedEnv.wfRoot = targetDir + "\\" + importedEnv.wfRoot;
-
-                     importedEnv.name = package.Description;
-
-                     profile.environments.Add(importedEnv);
+                     importedEnv = LoadEnvironmentFromXML(filename);
+                     found = true;
+                     break;
                   }
+                  else if (extension == ".jsenv")
+                  {
+                     importedEnv = LoadEnvironmentFromJSON(filename);
+                     found = true;
+                     break;
+                  }
+               }
+
+               if (found)
+               {
+                  // Fill envRoot and wfRoot by adding the provided path as prefix
+                  importedEnv.envRoot = targetDir + "\\" + importedEnv.envRoot;
+                  importedEnv.wfRoot = targetDir + "\\" + importedEnv.wfRoot;
+                  importedEnv.ewam = importedEwam;
+                  importedEnv.name = package.Description;
+
+                  profile.environments.Add(importedEnv);
+                  break;
                }
             }
             
@@ -2259,7 +2316,7 @@ namespace eWamLauncher
                         //mgr.KillAllExecutablesBelongingToPackage();
 
                         await mgr.UpdateApp();
-                        this.assemblyUpdateInfo = "Update installed, please restart the app !";
+                        this.assemblyUpdateInfo = "eWamLauncher updated :) ! Please restart the application !";
                      }
                      else
                      {

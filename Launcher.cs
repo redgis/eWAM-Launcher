@@ -54,5 +54,15 @@ namespace eWamLauncher
 
          return this.MemberwiseClone();
       }
+
+      public string GenerateBatch(string ewamSetEnvFilename)
+      {
+         string output = "";
+         output += "@echo off\n";
+         output += "@call \"%~dp0" + ewamSetEnvFilename + "\"\n";
+         output += "@echo Starting " + this.name + "...\n";
+         output += "@call \"" + this.program + "\" " + this.arguments + "\n";
+         return output;
+      }
    }
 }

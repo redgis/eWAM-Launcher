@@ -12,8 +12,7 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Xml.Serialization;
-
-
+using System.Windows.Forms;
 
 namespace eWamLauncher
 {
@@ -261,6 +260,81 @@ namespace eWamLauncher
          foreach (EnvironmentVariable envVariable in this.environmentVariables)
          {
             envVariable.result = this.ResolveVariable(envVariable.name);
+         }
+      }
+
+      public string GetEnvVarBatch()
+      {
+         Dictionary<string, string> variables = new Dictionary<string, string>();
+
+         char[] delimiters = { '\n', ';', '\r', '\b' };
+
+         variables.Add("WYDE-ROOT", this.ewam.basePath);
+         string[] cppdlls = this.binariesSet.cppdllPathes.Split(delimiters);
+         variables.Add("WYDE-DLL", "%WYDE-ROOT%" + "\\" + cppdlls[0]);
+
+         variables.Add("ENV-ROOT", this.envRoot);
+
+         if (this.wfRoot == null || this.wfRoot == "")
+            variables.Add("WF-ROOT", this.envRoot);
+         else
+            variables.Add("WF-ROOT", this.wfRoot);
+
+         variables.Add("WYDE-TGV", "%ENV-ROOT%" + "\\" + this.tgvSubPath);
+
+
+         // Set all other environment variables
+         foreach (EnvironmentVariable variable in this.environmentVariables)
+         {
+            if (variable.name == "PATH") continue;
+
+            variables.Add(variable.name, variable.value);
+         }
+
+
+         // Add raw PATHs
+         List<string> binSubPathes = new List<string>();
+         binSubPathes.AddRange(this.binariesSet.dllPathes.Split(delimiters));
+         binSubPathes.AddRange(this.binariesSet.cppdllPathes.Split(delimiters));
+         binSubPathes.AddRange(this.binariesSet.exePathes.Split(delimiters));
+
+         string pathVariable = "";
+         foreach (string subBinPath in binSubPathes)
+         {
+            if (subBinPath != "")
+            {
+               pathVariable += "%WYDE-ROOT%" + "\\" + subBinPath + ";";
+            }
+         }
+
+         if (this.GetEnvironmentVariable("PATH") != null)
+         {
+            pathVariable += this.GetEnvironmentVariable("PATH").value + ";";
+         }
+
+         pathVariable += "%PATH%";
+
+         variables.Add("PATH", pathVariable);
+
+
+         string output = "";
+         foreach (KeyValuePair<string, string> envVar in variables)
+         {
+            output += "set " + envVar.Key + "=" + envVar.Value + "\n";
+         }
+
+         return output;
+      }
+
+      public void GenerateBatchFiles(string path)
+      {
+         string eWamSetEnv = "eWAM Set Env.bat";
+
+         System.IO.File.WriteAllText(path + "\\" + eWamSetEnv, this.GetEnvVarBatch());
+
+         foreach (Launcher launcher in this.launchers)
+         {
+            System.IO.File.WriteAllText(path + "\\" + launcher.name + ".bat", launcher.GenerateBatch(eWamSetEnv));
          }
       }
 
