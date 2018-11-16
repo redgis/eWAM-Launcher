@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:eWamLauncher"
              StartupUri="MainWindow.xaml">
-    <Application.Resources>
+   <Application.Resources>
       <!-- 
          Style="{DynamicResource SquareButtonStyle}"
 
@@ -12,7 +12,7 @@
                <Setter Property="Background" Value="Transparent"/>
             </Style>
          </ResourceDictionary>
-       -->
+         -->
 
       <ResourceDictionary>
 
@@ -24,8 +24,9 @@
             <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseLight.xaml" />
             <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/FlatButton.xaml" />
          </ResourceDictionary.MergedDictionaries>
-         
-      </ResourceDictionary>
 
+      </ResourceDictionary>
+      
    </Application.Resources>
+
 </Application>

@@ -13,16 +13,16 @@ namespace eWamLauncher
    [DataContract(Name = "Launcher", Namespace = "http://www.wyde.com")]
    public class Launcher : ICloneable, INotifyPropertyChanged
    {
-      [DataMember()] private string _name;
-      public string name { get { return _name; } set { _name = value;  NotifyPropertyChanged(); } }
+      private string _name;
+      [DataMember()] public string name { get { return _name; } set { _name = value;  NotifyPropertyChanged(); } }
 
-      [DataMember()] private string _program;
+      private string _program;
       [DataMember()] public string program { get { return _program; } set { _program = value;  NotifyPropertyChanged(); } }
 
-      [DataMember()] private string _arguments;
+      private string _arguments;
       [DataMember()] public string arguments { get { return _arguments; } set { _arguments = value;  NotifyPropertyChanged(); } }
 
-      //[DataMember()] private string _binariesSet;
+      //private string _binariesSet;
       //[DataMember()] public string binariesSet { get { return _binariesSet; } set { _binariesSet = value;  NotifyPropertyChanged(); } }
 
       public event PropertyChangedEventHandler PropertyChanged;
@@ -47,8 +47,6 @@ namespace eWamLauncher
 
       public object Clone()
       {
-         Launcher clone = (Launcher)this.MemberwiseClone();
-
          //No need to clone binariesSet because it is a reference!
          //clone.binariesSet = this.binariesSet.Clone();
 

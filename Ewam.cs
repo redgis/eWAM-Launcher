@@ -13,14 +13,14 @@ namespace eWamLauncher
    [DataContract(Name = "Ewam", Namespace = "http://www.wyde.com")]
    public class Ewam : ICloneable, INotifyPropertyChanged
    {
-      [DataMember()] private string _name;
-      public string name { get { return _name; } set { _name = value; NotifyPropertyChanged(); } }
+      private string _name;
+      [DataMember()] public string name { get { return _name; } set { _name = value; NotifyPropertyChanged(); } }
 
-      [DataMember()] private string _basePath;
-      public string basePath { get { return _basePath; } set { _basePath = value; NotifyPropertyChanged(); } }
+      private string _basePath;
+      [DataMember()] public string basePath { get { return _basePath; } set { _basePath = value; NotifyPropertyChanged(); } }
 
-      [DataMember()] private ObservableCollection<BinariesSet> _binariesSets;
-      public ObservableCollection<BinariesSet> binariesSets { get { return _binariesSets; } set { _binariesSets = value; NotifyPropertyChanged(); } }
+      private ObservableCollection<BinariesSet> _binariesSets;
+      [DataMember()] public ObservableCollection<BinariesSet> binariesSets { get { return _binariesSets; } set { _binariesSets = value; NotifyPropertyChanged(); } }
 
       public event PropertyChangedEventHandler PropertyChanged;
 

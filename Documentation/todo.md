@@ -6,7 +6,17 @@
 - [x] Save / load session feature / button : implemented as a command (?)
 - [x] Add menu bar, items, associated commands (?)
 - [x] Command / Menu to export an entire environment or binary set
-   
+- [x] Added logging feature
+- [x] Show log in a window, in the UI
+
+## WydeWeb configuration
+- [x] Import configuration from wNetConf.ini, wNetConf.xml
+- [x] Configuration edition
+- [ ] Add missing "extension" in wNetConf XML definitions
+- [ ] Make a simpler object to avoid redundancy between client and server configuration (security, etc), simplify http tunnel configuration
+- [ ] Export a configuration to a wNetConf.ini, wNetConf.xml, of WydeWebAsAuto.html
+- [ ] Add automatic wNetConf import on environment pull and import ! (based on WYDE-NETCONF)
+
 ## Ergonomy
 - [x] Shouldn't we simply have a pool of eWAMs referenced by the various environments ?
 - [x] Remove Wyde-DLL : this should not be editable, and be set from the binaries set
@@ -19,12 +29,17 @@
    http://www.eidias.com/blog/2014/8/15/movable-rows-in-wpf-datagrid
 - [x] Add link to confluence commandline options in launchers page
 - [x] Don't die on any exception : have global try/catch for each feature (launch, import, explore, change path, etc). Show dialog box with exception message.
+- [x] Add "Open Console" button opening cmd with associated env var, in env-root. (In environment variables window, or in general)
+- [ ] Use MasterDetailsView ? https://docs.microsoft.com/en-us/windows/communitytoolkit/controls/masterdetailsview
+- [x] Add a Systray icon. Right click => close. Make it work correctly (not working when window doesn't have focus)
+- [x] Reduce /close to systray. 
+- [x] Double-click on Systray icon reopens app
 
 ## Code quality
 - [ ] Document code
-- [ ] Replace / bind implemented "actions" to WPF commands
-- [ ] XAML / WPF : How to create a UI for a specific type, and include it in another ? use pages ?
-- [ ] Mutualize code between OnConsoleExecuteLauncher and OnExecuteLauncher
+- [ ] Replace / bind implemented "actions" to WPF commands <= not sure it's worse it...
+- [x] XAML / WPF : How to create a UI for a specific type, and include it in another ? use pages ?
+- [x] Mutualize code between OnConsoleExecuteLauncher and OnExecuteLauncher
 - [ ] Rewrite variable importing : sanitize wyde-root, env-root, wf-root, wyde-dll and path after importing, let user choose the right value from a list or set custom value
 - [ ] Rewrite environment and ewam importing functions : buggy and messy at the moment
 
@@ -48,21 +63,29 @@
 - [x] reload last session (based on last session file opened, default is in %appdata%)
 - [x] address of update server
 - [ ] Add "Additional pathes", and forbid "PATH" in environment variables
+- [ ] Add Section with VS2010, VS2012 path to be called if needed, find a way to enable that in an environment.
+   See https://stackoverflow.com/questions/1842491/how-do-i-find-the-path-of-visual-studio-in-the-registry-using-python :
+      - HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\SxS\VC7
+      - path + vcvars*.bat :
+         - D:\Developpement\EDIs\Visual Studio 2008 Professional\VC\bin\vcvars32.bat
+         - D:\Developpement\EDIs\Visual Studio 2008 Professional\VC\bin\amd64\vcvarsamd64.bat
+         - D:\Developpement\EDIs\Visual Studio 2010 Premium\VC\bin\vcvars32.bat
+         - D:\Developpement\EDIs\Visual Studio 2010 Premium\VC\bin\amd64\vcvars64.bat
+         - D:\Developpement\EDIs\Visual Studio 2012 Premium\VC\bin\vcvars32.bat
+         - D:\Developpement\EDIs\Visual Studio 2012 Premium\VC\bin\amd64\vcvars64.bat
 
 ## Binaries/environment deployment from Web repository
 - [x] Have a repository index online with all eWAM binaries
 - [x] Add a progress bar for each package pull started
 - [x] Zip-Compress packages using any compression method available (store, deflate, lzma, bzip2)
+- [ ] Re-design using BackgroundWorker : supports progress and cancellation !
+   - [ ] Add ability to cancel an on-going download
 - [ ] Allow downloading only selected components
-- [ ] Add ability to cancel an on-going download
 - [ ] Allow comparing local environment and suggest update binaries
 - [ ] Use nuget packaging ?
       
 ## Auto update
 - [x] Auto updater using Squirrel
-
-## Visual Studio environment
-- [ ] Add Section with VS2010, VS2012 path to be called if needed ?
 
 ## Environment from scratch
 - [x] Allow download of entire environment binaries, from scratch
@@ -77,6 +100,8 @@
 - [x] When importing an eWAM, the associated environment, the binary set isn't set in environment
 - [x] When changing eWAM, also change (or at least remove) all the binary set used in the launchers
 - [x] Add path to Wyseman and WydeWeb.exe somewhere (at import of eWAM or environment, or in path, at launch)
+- [x] Wynsure environment launchers not importing correctly after environment pull from online repo
+- [ ] Auto-Update doesn't seem to work correctly ...
 
 https://youtu.be/rDjrOaoHz9s
 

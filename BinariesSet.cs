@@ -14,17 +14,17 @@ namespace eWamLauncher
    [DataContract(Name = "BinariesSet", Namespace = "http://www.wyde.com")]
    public class BinariesSet : ICloneable, INotifyPropertyChanged
    {
-      [DataMember()] private string _name;
-      public string name { get { return _name; } set { _name = value;  NotifyPropertyChanged(); } }
+      private string _name;
+      [DataMember()] public string name { get { return _name; } set { _name = value;  NotifyPropertyChanged(); } }
 
-      [DataMember()] private string _exePathes;
-      public string exePathes { get { return _exePathes; } set { _exePathes = value;  NotifyPropertyChanged(); } }
+      private string _exePathes;
+      [DataMember()] public string exePathes { get { return _exePathes; } set { _exePathes = value;  NotifyPropertyChanged(); } }
 
-      [DataMember()] private string _dllPathes;
-      public string dllPathes { get { return _dllPathes; } set { _dllPathes = value;  NotifyPropertyChanged(); } }
+      private string _dllPathes;
+      [DataMember()] public string dllPathes { get { return _dllPathes; } set { _dllPathes = value;  NotifyPropertyChanged(); } }
 
-      [DataMember()] private string _cppdllPathes;
-      public string cppdllPathes { get { return _cppdllPathes; } set { _cppdllPathes = value;  NotifyPropertyChanged(); } }
+      private string _cppdllPathes;
+      [DataMember()] public string cppdllPathes { get { return _cppdllPathes; } set { _cppdllPathes = value;  NotifyPropertyChanged(); } }
 
       public event PropertyChangedEventHandler PropertyChanged;
 

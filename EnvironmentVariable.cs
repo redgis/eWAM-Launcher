@@ -12,14 +12,14 @@ namespace eWamLauncher
    [DataContract(Name = "EnvironmentVariable", Namespace = "http://www.wyde.com")]
    public class EnvironmentVariable : ICloneable, INotifyPropertyChanged
    {
-      [DataMember()] private string _name;
-      public string name { get { return _name.ToUpper(); } set { _name = value.ToUpper();  NotifyPropertyChanged(); } }
+      private string _name;
+      [DataMember()] public string name { get { return _name.ToUpper(); } set { _name = value.ToUpper();  NotifyPropertyChanged(); } }
 
-      [DataMember()] private string _value;
-      public string value { get { return _value; } set { _value = value;  NotifyPropertyChanged(); } }
+      private string _value;
+      [DataMember()] public string value { get { return _value; } set { _value = value;  NotifyPropertyChanged(); } }
 
-      [DataMember()] private string _result;
-      public string result { get { return _result; } set { _result = value;  NotifyPropertyChanged(); } }
+      private string _result;
+      [DataMember()] public string result { get { return _result; } set { _result = value;  NotifyPropertyChanged(); } }
 
       public Boolean isBeingResolved;
 

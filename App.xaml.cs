@@ -26,7 +26,5 @@ namespace eWamLauncher
       public App()
       {
       }
-
    }
-
 }

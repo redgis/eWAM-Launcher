@@ -19,30 +19,32 @@ namespace eWamLauncher
    [DataContract(Name = "Environment", Namespace = "http://www.wyde.com")]
    public class Environment : ICloneable, INotifyPropertyChanged
    {
-      [DataMember()] private string _name;
-      public string name { get { return _name; } set { _name = value; NotifyPropertyChanged(); } }
+      private string _name;
+      [DataMember()] public string name { get { return _name; } set { _name = value; NotifyPropertyChanged(); } }
 
-      [DataMember()] private string _envRoot;
-      public string envRoot { get { return _envRoot; } set { _envRoot = value; NotifyPropertyChanged(); } }
+      private string _envRoot;
+      [DataMember()] public string envRoot { get { return _envRoot; } set { _envRoot = value; NotifyPropertyChanged(); } }
 
-      [DataMember()] private string _wfRoot;
-      public string wfRoot { get { return _wfRoot; } set { _wfRoot = value; NotifyPropertyChanged(); } }
+      private string _wfRoot;
+      [DataMember()] public string wfRoot { get { return _wfRoot; } set { _wfRoot = value; NotifyPropertyChanged(); } }
 
-      [DataMember()] private string _tgvSubPath;
-      public string tgvSubPath { get { return _tgvSubPath; } set { _tgvSubPath = value; NotifyPropertyChanged(); } }
+      private string _tgvSubPath;
+      [DataMember()] public string tgvSubPath { get { return _tgvSubPath; } set { _tgvSubPath = value; NotifyPropertyChanged(); } }
 
-      [DataMember()] private ObservableCollection<EnvironmentVariable> _environmentVariables;
-      public ObservableCollection<EnvironmentVariable> environmentVariables { get { return _environmentVariables; } set { _environmentVariables = value; NotifyPropertyChanged(); } }
+      private ObservableCollection<EnvironmentVariable> _environmentVariables;
+      [DataMember()] public ObservableCollection<EnvironmentVariable> environmentVariables { get { return _environmentVariables; } set { _environmentVariables = value; NotifyPropertyChanged(); } }
 
-      [DataMember()] private ObservableCollection<Launcher> _launchers;
-      public ObservableCollection<Launcher> launchers { get { return _launchers; } set { _launchers = value; NotifyPropertyChanged(); } }
+      private ObservableCollection<Launcher> _launchers;
+      [DataMember()] public ObservableCollection<Launcher> launchers { get { return _launchers; } set { _launchers = value; NotifyPropertyChanged(); } }
 
-      //TODO: add some validation in NotifyPropertyChanged : mainly change selected binariesSet in each launcher !
-      [DataMember()] private Ewam _ewam;
-      public Ewam ewam { get { return _ewam; } set { _ewam = value; this.NotifyPropertyChanged(); } }
+      private Ewam _ewam;
+      [DataMember()] public Ewam ewam { get { return _ewam; } set { _ewam = value; this.NotifyPropertyChanged(); } }
 
-      [DataMember()] private BinariesSet _binariesSet;
+      private BinariesSet _binariesSet;
       [DataMember()] public BinariesSet binariesSet { get { return _binariesSet; } set { _binariesSet = value; NotifyPropertyChanged(); } }
+
+      private WNetConf _wNetConf;
+      [DataMember()] public WNetConf wNetConf { get { return _wNetConf; } set { _wNetConf = value; NotifyPropertyChanged(); } }
 
 
       public ObservableCollection<Process> processes { get; set; }

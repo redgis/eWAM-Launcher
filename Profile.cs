@@ -12,14 +12,14 @@ namespace eWamLauncher
    [DataContract(Name = "Profile", Namespace = "http://www.wyde.com")]
    public class Profile : ICloneable, INotifyPropertyChanged
    {
-      [DataMember()] private ObservableCollection<Environment> _environments;
-      public ObservableCollection<Environment> environments { get { return _environments; } set { _environments = value; this.NotifyPropertyChanged(); } }
+      private ObservableCollection<Environment> _environments;
+      [DataMember()] public ObservableCollection<Environment> environments { get { return _environments; } set { _environments = value; this.NotifyPropertyChanged(); } }
 
-      [DataMember()] private ObservableCollection<Ewam> _ewams;
-      public ObservableCollection<Ewam> ewams { get { return _ewams; } set { _ewams = value; this.NotifyPropertyChanged(); } }
+      private ObservableCollection<Ewam> _ewams;
+      [DataMember()] public ObservableCollection<Ewam> ewams { get { return _ewams; } set { _ewams = value; this.NotifyPropertyChanged(); } }
 
-      [DataMember()] private Settings _settings;
-      public Settings settings { get { return _settings; } set { _settings = value; this.NotifyPropertyChanged(); } }
+      private Settings _settings;
+      [DataMember()] public Settings settings { get { return _settings; } set { _settings = value; this.NotifyPropertyChanged(); } }
 
 
       public event PropertyChangedEventHandler PropertyChanged;

@@ -21,9 +21,21 @@ using System.Windows.Controls;
 using System.IO.Compression;
 using SharpCompress.Archives;
 using log4net;
+using Hardcodet.Wpf.TaskbarNotification;
 
 namespace eWamLauncher
 {
+   public static class Commands
+   {
+
+      public static readonly RoutedUICommand ChangePath =
+         new RoutedUICommand("Change Path", "ChangePath", typeof(MainWindow));
+
+      public static readonly RoutedUICommand ExplorePath =
+         new RoutedUICommand("Explore Path", "ExplorePath", typeof(MainWindow));
+
+   }
+
    /// <summary>
    /// Interaction logic for MainWindow.xaml
    /// </summary>
@@ -39,9 +51,8 @@ namespace eWamLauncher
       private string _assemblyUpdateInfo { get; set; }
       public string assemblyUpdateInfo { get { return _assemblyUpdateInfo; } set { _assemblyUpdateInfo = value; this.NotifyPropertyChanged(); } }
 
-      [DataMember()] private ObservableCollection<Package> _packages;
+      private ObservableCollection<Package> _packages;
       public ObservableCollection<Package> packages { get { return _packages; } set { _packages = value; this.NotifyPropertyChanged(); } }
-      
 
       public event PropertyChangedEventHandler PropertyChanged;
 
@@ -55,9 +66,6 @@ namespace eWamLauncher
             this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
          }
       }
-
-      //Initialize logging system
-      private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
       public MainWindow()
       {
@@ -90,63 +98,118 @@ namespace eWamLauncher
          InitializeComponent();
          this.DataContext = this;
 
+         //this.notifier.MouseDown += new System.Windows.Forms.MouseEventHandler(OnNotifyIconClicked);
+         //this.notifier.Icon = System.Drawing.Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
+         //this.notifier.Visible = true;
+
+         //this.menu = (System.Windows.Controls.ContextMenu)this.FindResource("NotifierContextMenu");
+
          StartUpdater();
       }
 
       private void StartUpdater()
-      {
-         Task.Run(async () =>
          {
-            using (var mgr = new UpdateManager(this.profile.settings.launcherUpdateServerURL))
+            Task.Run(async () =>
             {
-              // Note, in most of these scenarios, the app exits after this method
-              // completes!
-              //SquirrelAwareApp.HandleEvents(
-              //   onInitialInstall: v => mgr.CreateShortcutForThisExe(),
-              //   onAppUpdate: v =>
-              //   {
-              //      mgr.CreateShortcutForThisExe();
-              //      System.Windows.MessageBox.Show("Updated", "Update detected!", System.Windows.MessageBoxButton.OK);
-              //   },
-              //   onAppUninstall: v => mgr.RemoveShortcutForThisExe(),
-              //   onFirstRun: () =>
-              //   {
-              //      System.Windows.MessageBox.Show("First run", "First run!", System.Windows.MessageBoxButton.OK);
-              //   },
-              //   onAppObsoleted: v =>
-              //   {
-              //      System.Windows.MessageBox.Show("Obsoleted", "App obsolete!", System.Windows.MessageBoxButton.OK);
-              //   }
-              //);
+               using (var mgr = new UpdateManager(this.profile.settings.launcherUpdateServerURL))
+               {
+                 // Note, in most of these scenarios, the app exits after this method
+                 // completes!
+                 //SquirrelAwareApp.HandleEvents(
+                 //   onInitialInstall: v => mgr.CreateShortcutForThisExe(),
+                 //   onAppUpdate: v =>
+                 //   {
+                 //      mgr.CreateShortcutForThisExe();
+                 //      System.Windows.MessageBox.Show("Updated", "Update detected!", System.Windows.MessageBoxButton.OK);
+                 //   },
+                 //   onAppUninstall: v => mgr.RemoveShortcutForThisExe(),
+                 //   onFirstRun: () =>
+                 //   {
+                 //      System.Windows.MessageBox.Show("First run", "First run!", System.Windows.MessageBoxButton.OK);
+                 //   },
+                 //   onAppObsoleted: v =>
+                 //   {
+                 //      System.Windows.MessageBox.Show("Obsoleted", "App obsolete!", System.Windows.MessageBoxButton.OK);
+                 //   }
+                 //);
 
-               await mgr.UpdateApp();
-            }
-         });
+                  await mgr.UpdateApp();
+               }
+            });
+         }
+
+      #region Logger
+
+      //Log Appender used to show log in UI.
+      public static NotifyAppender logAppender
+      {
+         get
+         {
+            return NotifyAppender.GetAppender();
+         }
+      }
+
+      private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+      #endregion
+
+      #region Close action
+
+      public void CloseApplication(object sender, RoutedEventArgs e)
+      {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
+         {
+            this.Close();
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
       }
 
       private void CloseCommandHandler(object sender, ExecutedRoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
-
          this.Close();
       }
 
       protected override void OnClosing(CancelEventArgs e)
       {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
          string defaultXMLSettings = System.Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%\\ewamLauncher\\ewamLauncher.config.xml");
          string defaultJSONSettings = System.Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%\\ewamLauncher\\ewamLauncher.config.json");
          SaveCfgToXML(defaultXMLSettings);
          SaveCfgToJSON(defaultJSONSettings);
       }
 
-      #region Configuration commands
-
-      private void OpenConfiguration_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+      private void RestoreCommandHandler(object sender, RoutedEventArgs e)
       {
-         e.CanExecute = true;
+         this.Show();
+         this.WindowState = WindowState.Normal;
       }
 
-      private void OpenConfiguration_Executed(object sender, ExecutedRoutedEventArgs e)
+      protected override void OnStateChanged(EventArgs e)
+      {
+         if (WindowState == System.Windows.WindowState.Minimized)
+            this.Hide();
+
+         base.OnStateChanged(e);
+      }
+
+      #endregion
+
+      #region Configuration commands
+
+      private void OpenConfiguration(object sender, ExecutedRoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
@@ -183,12 +246,12 @@ namespace eWamLauncher
          }
       }
 
-      private void SaveConfiguration_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+      private void OpenConfiguration_CanExecute(object sender, CanExecuteRoutedEventArgs e)
       {
          e.CanExecute = true;
       }
 
-      private void SaveConfiguration_Executed(object sender, ExecutedRoutedEventArgs e)
+      private void SaveConfiguration(object sender, ExecutedRoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
@@ -225,7 +288,12 @@ namespace eWamLauncher
                System.Windows.MessageBoxImage.Error);
          }
       }
-      
+
+      private void SaveConfiguration_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+      {
+         e.CanExecute = true;
+      }
+
       #endregion
 
       #region Configuration actions
@@ -340,8 +408,8 @@ namespace eWamLauncher
       {
          string result = "";
 
-         string absPath1 = Path.GetFullPath(path1).ToUpperInvariant();
-         string absPath2 = Path.GetFullPath(path2).ToUpperInvariant();
+         string absPath1 = Path.GetFullPath(path1);
+         string absPath2 = Path.GetFullPath(path2);
 
          char[] delimiters = { '\\' };
 
@@ -351,7 +419,7 @@ namespace eWamLauncher
          
          for (int index = 0; index < Math.Min(pathChunks1.Count(), pathChunks2.Count()); index ++)
          {
-            if (pathChunks1[index] == pathChunks2[index])
+            if (pathChunks1[index].ToUpperInvariant() == pathChunks2[index].ToUpperInvariant())
             {
                if (index > 0)
                {
@@ -370,33 +438,19 @@ namespace eWamLauncher
          return result;
       }
 
-      private void OnChangePath(object sender, RoutedEventArgs e)
+      private void OnChangePath(object sender, ExecutedRoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
-         //OpenFileDialog fileBrowser = new OpenFileDialog();
-
-         //fileBrowser.Filter = "eWAM TGV Files|*.tgv";
-         //fileBrowser.FilterIndex = 1;
-         //fileBrowser.RestoreDirectory = true;
-         //fileBrowser.FileName = "Select a .tgv from the environment.";
-
-         //if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-         //{
-         //   EwamImporter wamImporter = new EwamImporter(this.profile);
-
-         //   ((Environment)lbEnvList.SelectedItem).tgvPath = MainWindow.NormalizePath(Path.GetDirectoryName(fileBrowser.FileName));
-         //}
-
          try
          {
-            FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
-            folderBrowser.Description = "Select TGV folder for your environment (i.e. the folder containing tgv/)";
-            folderBrowser.SelectedPath = (string)((System.Windows.Controls.Button)sender).Tag;
-            if (folderBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            string newvalue = (string)((System.Windows.Controls.Button)e.OriginalSource).Tag;
+
+            if (MainWindow.ChangePath(ref newvalue))
             {
-               ((System.Windows.Controls.Button)sender).Tag = folderBrowser.SelectedPath;
+               ((System.Windows.Controls.Button)e.OriginalSource).Tag = newvalue;
             }
+               
          }
          catch (Exception exception)
          {
@@ -410,13 +464,18 @@ namespace eWamLauncher
          }
       }
 
-      private void OnExplorePath(object sender, RoutedEventArgs e)
+      private void OnChangePath_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+      {
+         e.CanExecute = true;
+      }
+
+      private void OnExplorePath(object sender, ExecutedRoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
          try
          {
-            Process.Start("explorer.exe", (string)((System.Windows.Controls.Button)sender).Tag);
+            MainWindow.ExplorePath((string)((System.Windows.Controls.Button)e.OriginalSource).Tag);
          }
          catch (Exception exception)
          {
@@ -428,13 +487,38 @@ namespace eWamLauncher
                System.Windows.MessageBoxButton.OK,
                System.Windows.MessageBoxImage.Error);
          }
+      }
+
+      private void OnExplorePath_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+      {
+         e.CanExecute = true;
+      }
+      
+      public static bool ChangePath(ref string oldPath)
+      {
+         bool changed = false;
+         FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
+         folderBrowser.Description = "Select TGV folder for your environment (i.e. the folder containing tgv/)";
+         folderBrowser.SelectedPath = oldPath;
+         if (folderBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+         {
+            changed = true;
+            oldPath = folderBrowser.SelectedPath;
+         }
+
+         return changed;
+      }
+
+      public static void ExplorePath(string path)
+      {
+         Process.Start("explorer.exe", path);
       }
 
       #endregion
 
       #region Environments actions
 
-      public void OnNeEnvironment(object sender, RoutedEventArgs e)
+      public void OnNewEnvironment(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
@@ -811,7 +895,7 @@ namespace eWamLauncher
       {
          Directory.CreateDirectory(Path.GetDirectoryName(fileName));
 
-         Environment envCopy = (Environment) ((Environment)lbEnvList.SelectedItem).Clone();
+         Environment envCopy = (Environment)((Environment)lbEnvList.SelectedItem).Clone();
          envCopy.binariesSet = null;
          envCopy.ewam = null;
          string commonPath = FindLongestCommonPath(envCopy.envRoot, envCopy.wfRoot);
@@ -868,613 +952,6 @@ namespace eWamLauncher
              new DataContractJsonSerializer(typeof(Environment));
          jsonSerializer.WriteObject(writer, envCopy);
          writer.Close();
-      }
-
-      #endregion
-
-      #region Environment variables actions
-
-      private void OnReevaluateEnvVariables(object sender, RoutedEventArgs e)
-      {
-         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
-
-         try
-         {
-            ((Environment)lbEnvList.SelectedItem).ExpandAllEnvVariables();
-         }
-         catch (Exception exception)
-         {
-            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
-
-            System.Windows.MessageBox.Show(
-               "Something went wrong ! \n\n" + exception.Message,
-               "Oops",
-               System.Windows.MessageBoxButton.OK,
-               System.Windows.MessageBoxImage.Error);
-         }
-      }
-
-      private void OnReevaluateEnvVariables(object sender, EventArgs e)
-      {
-         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
-
-         try
-         {
-            ((Environment)lbEnvList.SelectedItem).ExpandAllEnvVariables();
-         }
-         catch (Exception exception)
-         {
-            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
-
-            System.Windows.MessageBox.Show(
-               "Something went wrong ! \n\n" + exception.Message,
-               "Oops",
-               System.Windows.MessageBoxButton.OK,
-               System.Windows.MessageBoxImage.Error);
-         }
-      }
-
-      public void OnMoveUpVariable(object sender, RoutedEventArgs e)
-      {
-         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
-
-         try
-         {
-            if (lbEnvList.SelectedItem == null || dgVarList.SelectedItem == null)
-            {
-               return;
-            }
-
-            int varIndex = ((Environment)lbEnvList.SelectedItem).environmentVariables.IndexOf(
-               (EnvironmentVariable)dgVarList.SelectedItem);
-
-            if (varIndex > 0)
-            {
-               ((Environment)lbEnvList.SelectedItem).environmentVariables.Move(varIndex, varIndex - 1);
-            }
-         }
-         catch (Exception exception)
-         {
-            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
-
-            System.Windows.MessageBox.Show(
-               "Something went wrong ! \n\n" + exception.Message,
-               "Oops",
-               System.Windows.MessageBoxButton.OK,
-               System.Windows.MessageBoxImage.Error);
-         }
-      }
-
-      public void OnMoveDownVariable(object sender, RoutedEventArgs e)
-      {
-         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
-
-         try
-         {
-            if (lbEnvList.SelectedItem == null || dgVarList.SelectedItem == null)
-            {
-               return;
-            }
-
-            int varIndex = ((Environment)lbEnvList.SelectedItem).environmentVariables.IndexOf(
-               (EnvironmentVariable)dgVarList.SelectedItem);
-
-            if (varIndex < ((Environment)lbEnvList.SelectedItem).environmentVariables.Count() - 1)
-            {
-               ((Environment)lbEnvList.SelectedItem).environmentVariables.Move(varIndex, varIndex + 1);
-            }
-         }
-         catch (Exception exception)
-         {
-            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
-
-            System.Windows.MessageBox.Show(
-               "Something went wrong ! \n\n" + exception.Message,
-               "Oops",
-               System.Windows.MessageBoxButton.OK,
-               System.Windows.MessageBoxImage.Error);
-         }
-      }
-
-      #endregion
-
-      #region Launchers actions
-
-      public void OnNewLauncher(object sender, RoutedEventArgs e)
-      {
-         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
-
-         try
-         {
-            Launcher launcher = new Launcher();
-            launcher.name = "new launcher " + ((ObservableCollection<Launcher>)lbLauncherList.ItemsSource).Count.ToString();
-            ((ObservableCollection<Launcher>)lbLauncherList.ItemsSource).Add(launcher);
-            lbLauncherList.SelectedItem = launcher;
-         }
-         catch (Exception exception)
-         {
-            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
-
-            System.Windows.MessageBox.Show(
-               "Something went wrong ! \n\n" + exception.Message,
-               "Oops",
-               System.Windows.MessageBoxButton.OK,
-               System.Windows.MessageBoxImage.Error);
-         }
-      }
-
-      public void OnDuplicateLauncher(object sender, RoutedEventArgs e)
-      {
-         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
-
-         try
-         {
-            if (lbLauncherList.SelectedItem == null)
-            {
-               return;
-            }
-
-            Launcher launcher = (Launcher)((Launcher)lbLauncherList.SelectedItem).Clone();
-            launcher.name += "(clone)";
-            ((ObservableCollection<Launcher>)lbLauncherList.ItemsSource).Add(launcher);
-            lbLauncherList.SelectedItem = launcher;
-         }
-         catch (Exception exception)
-         {
-            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
-
-            System.Windows.MessageBox.Show(
-               "Something went wrong ! \n\n" + exception.Message,
-               "Oops",
-               System.Windows.MessageBoxButton.OK,
-               System.Windows.MessageBoxImage.Error);
-         }
-      }
-
-      public void OnDeleteLauncher(object sender, RoutedEventArgs e)
-      {
-         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
-
-         try
-         {
-            int curSelection = lbLauncherList.SelectedIndex;
-            if (lbLauncherList.SelectedItem == null)
-            {
-               return;
-            }
-
-         ((ObservableCollection<Launcher>)lbLauncherList.ItemsSource).Remove((Launcher)lbLauncherList.SelectedItem);
-            lbLauncherList.SelectedIndex = curSelection;
-            if (lbLauncherList.SelectedIndex == -1)
-               lbLauncherList.SelectedIndex = curSelection - 1;
-         }
-         catch (Exception exception)
-         {
-            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
-
-            System.Windows.MessageBox.Show(
-               "Something went wrong ! \n\n" + exception.Message,
-               "Oops",
-               System.Windows.MessageBoxButton.OK,
-               System.Windows.MessageBoxImage.Error);
-         }
-      }
-
-      public void OnImportLaunchers(object sender, RoutedEventArgs e)
-      {
-         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
-
-         try
-         {
-            OpenFileDialog fileBrowser = new OpenFileDialog();
-
-            fileBrowser.Filter = "Batch file|*.bat";
-            fileBrowser.FilterIndex = 1;
-            fileBrowser.RestoreDirectory = true;
-
-            if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            {
-
-               string launchersPath = Path.GetDirectoryName(fileBrowser.FileName);
-
-               EnvironmentImporter importer = new EnvironmentImporter((Profile)this.profile, (Environment)lbEnvList.SelectedItem);
-               importer.ImportLaunchers(launchersPath);
-            }
-         }
-         catch (Exception exception)
-         {
-            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
-
-            System.Windows.MessageBox.Show(
-               "Something went wrong ! \n\n" + exception.Message,
-               "Oops",
-               System.Windows.MessageBoxButton.OK,
-               System.Windows.MessageBoxImage.Error);
-         }
-      }
-
-      public void OnConsoleExecuteLauncher(object sender, RoutedEventArgs e)
-      {
-         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
-
-         try
-         {
-            // Before anything, make sure all env. variable are up to date !
-            Environment environment = (Environment)lbEnvList.SelectedItem;
-            environment.ExpandAllEnvVariables();
-
-            Launcher launcher = (Launcher)lbLauncherList.SelectedItem;
-
-            ProcessStartInfo startInfo = new ProcessStartInfo();
-
-            if (environment.binariesSet == null)
-            {
-               System.Windows.MessageBox.Show(
-                  "Warning : no binaries selected.",
-                  "No eWAM binaries selected",
-                  System.Windows.MessageBoxButton.OK);
-               return;
-            }
-
-            char[] delimiters = { '\n', ';', '\r', '\b' };
-
-            // Set %PATH%
-            List<string> binSubPathes = new List<string>();
-            binSubPathes.AddRange(environment.binariesSet.dllPathes.Split(delimiters));
-            binSubPathes.AddRange(environment.binariesSet.cppdllPathes.Split(delimiters));
-            binSubPathes.AddRange(environment.binariesSet.exePathes.Split(delimiters));
-
-            string pathVariable = "";
-            foreach (string subBinPath in binSubPathes)
-            {
-               if (subBinPath != "")
-               {
-                  pathVariable += environment.ewam.basePath + "\\" + subBinPath + ";";
-               }
-            }
-
-            if (((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("PATH") != null)
-            {
-               pathVariable += ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("PATH").result + ";";
-            }
-
-            pathVariable += System.Environment.GetEnvironmentVariable("PATH");
-
-            if (startInfo.EnvironmentVariables.ContainsKey("PATH"))
-            {
-               startInfo.EnvironmentVariables["PATH"] = pathVariable;
-            }
-            else
-            {
-               startInfo.EnvironmentVariables.Add("PATH", pathVariable);
-            }
-
-            // Put CppDll Folders in WYDE-DLL
-            string[] cppdlls = environment.binariesSet.cppdllPathes.Split(delimiters);
-            startInfo.EnvironmentVariables.Add("WYDE-DLL", environment.ewam.basePath + "\\" + cppdlls[0]);
-
-            // TODO : to use when WYDE-DLL support ';' seperated list of pathes.
-            //string cppdlls = launcher.binariesSet.cppdllPathes.Replace('\n', ';');
-            //startInfo.EnvironmentVariables.Add("WYDE-DLL", cppdlls);
-
-            //startInfo.EnvironmentVariables.Add("WYDE-ROOT", ((Environment)lbEnvList.SelectedItem).ewam.basePath);
-            startInfo.EnvironmentVariables.Add("WYDE-ROOT",
-               ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("WYDE-ROOT").value);
-            startInfo.EnvironmentVariables.Add("WF-ROOT",
-               ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("WF-ROOT").value);
-            startInfo.EnvironmentVariables.Add("ENV-ROOT",
-               ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("ENV-ROOT").value);
-            startInfo.EnvironmentVariables.Add("WYDE-TGV",
-               ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("WYDE-TGV").value);
-
-
-            // Set all other environment variables
-            foreach (EnvironmentVariable variable in
-               ((Environment)lbEnvList.SelectedItem).environmentVariables)
-            {
-               if (variable.name == "PATH") continue;
-
-               if (startInfo.EnvironmentVariables.ContainsKey(variable.name))
-               {
-                  startInfo.EnvironmentVariables[variable.name] += variable.result;
-               }
-               else
-               {
-                  startInfo.EnvironmentVariables.Add(variable.name, variable.result);
-               }
-            }
-
-            // Find the path to our exe
-            string commandPath = "";
-            foreach (string path in startInfo.EnvironmentVariables["PATH"].Split(';'))
-            {
-               if (File.Exists(path + "\\cmd.exe"))
-               {
-                  commandPath = path;
-                  break;
-               }
-            }
-
-            // Set the command and arguments
-            startInfo.WorkingDirectory = environment.ewam.basePath;
-            startInfo.FileName = commandPath + "\\cmd.exe";
-            startInfo.Arguments = "/K \"" + launcher.program + " " + environment.ExpandString(launcher.arguments) + "\"";
-
-            // We're all set, ready to launch.
-            startInfo.UseShellExecute = false;
-            try
-            {
-               Process newProcess = Process.Start(startInfo);
-            }
-            catch (Exception exception)
-            {
-               // Display message showing the exception message
-               log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
-            }
-         }
-         catch (Exception exception)
-         {
-            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
-
-            System.Windows.MessageBox.Show(
-               "Something went wrong ! \n\n" + exception.Message,
-               "Oops",
-               System.Windows.MessageBoxButton.OK,
-               System.Windows.MessageBoxImage.Error);
-         }
-      }
-
-      public void OnExecuteLauncher(object sender, RoutedEventArgs e)
-      {
-         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
-
-         try
-         {
-            // Before anything, make sure all env. variable are up to date !
-            Environment environment = (Environment)lbEnvList.SelectedItem;
-            environment.ExpandAllEnvVariables();
-
-            Launcher launcher = (Launcher)lbLauncherList.SelectedItem;
-
-            ProcessStartInfo startInfo = new ProcessStartInfo();
-
-            if (environment.binariesSet == null)
-            {
-               System.Windows.MessageBox.Show(
-                  "Warning : no binaries selected.",
-                  "No eWAM binaries selected",
-                  System.Windows.MessageBoxButton.OK);
-               return;
-            }
-
-            char[] delimiters = { '\n', ';', '\r', '\b' };
-
-            // Set %PATH%
-            List<string> binSubPathes = new List<string>();
-            binSubPathes.AddRange(environment.binariesSet.dllPathes.Split(delimiters));
-            binSubPathes.AddRange(environment.binariesSet.cppdllPathes.Split(delimiters));
-            binSubPathes.AddRange(environment.binariesSet.exePathes.Split(delimiters));
-
-            string pathVariable = "";
-            foreach (string subBinPath in binSubPathes)
-            {
-               if (subBinPath != "")
-               {
-                  pathVariable += environment.ewam.basePath + "\\" + subBinPath + ";";
-               }
-            }
-
-            if (((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("PATH") != null)
-            {
-               pathVariable += ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("PATH").result + ";";
-            }
-
-            pathVariable += System.Environment.GetEnvironmentVariable("PATH");
-
-
-            if (startInfo.EnvironmentVariables.ContainsKey("PATH"))
-            {
-               startInfo.EnvironmentVariables["PATH"] = pathVariable;
-            }
-            else
-            {
-               startInfo.EnvironmentVariables.Add("PATH", pathVariable);
-            }
-
-            // Put CppDll Folders in WYDE-DLL
-            string[] cppdlls = environment.binariesSet.cppdllPathes.Split(delimiters);
-            startInfo.EnvironmentVariables.Add("WYDE-DLL", environment.ewam.basePath + "\\" + cppdlls[0]);
-
-            // TODO : to use when WYDE-DLL support ';' seperated list of pathes.
-            //string cppdlls = launcher.binariesSet.cppdllPathes.Replace('\n', ';');
-            //startInfo.EnvironmentVariables.Add("WYDE-DLL", cppdlls);
-
-            //startInfo.EnvironmentVariables.Add("WYDE-ROOT", ((Environment)lbEnvList.SelectedItem).ewam.basePath);
-            startInfo.EnvironmentVariables.Add("WYDE-ROOT",
-               ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("WYDE-ROOT").value);
-            startInfo.EnvironmentVariables.Add("WF-ROOT",
-               ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("WF-ROOT").value);
-            startInfo.EnvironmentVariables.Add("ENV-ROOT",
-               ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("ENV-ROOT").value);
-            startInfo.EnvironmentVariables.Add("WYDE-TGV",
-               ((Environment)lbEnvList.SelectedItem).GetEnvironmentVariable("WYDE-TGV").value);
-
-            // Set all other environment variables
-            foreach (EnvironmentVariable variable in
-               ((Environment)lbEnvList.SelectedItem).environmentVariables)
-            {
-               if (variable.name == "PATH") continue;
-
-               if (startInfo.EnvironmentVariables.ContainsKey(variable.name))
-               {
-                  startInfo.EnvironmentVariables[variable.name] += variable.result;
-               }
-               else
-               {
-                  startInfo.EnvironmentVariables.Add(variable.name, variable.result);
-               }
-            }
-
-            // Find the path to our exe
-            string commandPath = "";
-            foreach (string path in startInfo.EnvironmentVariables["PATH"].Split(';'))
-            {
-               if (File.Exists(path + "\\" + launcher.program))
-               {
-                  commandPath = path;
-                  break;
-               }
-            }
-
-            // Set the command and arguments
-            startInfo.WorkingDirectory = commandPath;
-            startInfo.FileName = commandPath + "\\" + launcher.program;
-            startInfo.Arguments = environment.ExpandString(launcher.arguments);
-
-            // We're all set, ready to launch.
-            startInfo.UseShellExecute = false;
-            try
-            {
-               Process newProcess = Process.Start(startInfo);
-            }
-            catch (Exception exception)
-            {
-               // Display message showing the exception message
-               log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
-            }
-         }
-         catch (Exception exception)
-         {
-            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
-
-            System.Windows.MessageBox.Show(
-               "Something went wrong ! \n\n" + exception.Message,
-               "Oops",
-               System.Windows.MessageBoxButton.OK,
-               System.Windows.MessageBoxImage.Error);
-         }
-      }
-
-      private void processExited(object sender, EventArgs e)
-      {
-         throw new NotImplementedException();
-      }
-
-      public void OnMoveUpLauncher(object sender, RoutedEventArgs e)
-      {
-         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
-
-         try
-         {
-            if (lbLauncherList.SelectedItem == null)
-            {
-               return;
-            }
-
-            int launcherIndex = ((Environment)lbEnvList.SelectedItem).launchers.IndexOf(
-               (Launcher)lbLauncherList.SelectedItem);
-
-            if (launcherIndex > 0)
-            {
-               ((Environment)lbEnvList.SelectedItem).launchers.Move(launcherIndex, launcherIndex - 1);
-            }
-         }
-         catch (Exception exception)
-         {
-            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
-
-            System.Windows.MessageBox.Show(
-               "Something went wrong ! \n\n" + exception.Message,
-               "Oops",
-               System.Windows.MessageBoxButton.OK,
-               System.Windows.MessageBoxImage.Error);
-         }
-      }
-
-      public void OnMoveDownLauncher(object sender, RoutedEventArgs e)
-      {
-         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
-
-         try
-         {
-            if (lbLauncherList.SelectedItem == null)
-            {
-               return;
-            }
-
-            int launcherIndex = ((Environment)lbEnvList.SelectedItem).launchers.IndexOf(
-               (Launcher)lbLauncherList.SelectedItem);
-
-            if (launcherIndex < ((Environment)lbEnvList.SelectedItem).launchers.Count() - 1)
-            {
-               ((Environment)lbEnvList.SelectedItem).launchers.Move(launcherIndex, launcherIndex + 1);
-            }
-         }
-         catch (Exception exception)
-         {
-            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
-
-            System.Windows.MessageBox.Show(
-               "Something went wrong ! \n\n" + exception.Message,
-               "Oops",
-               System.Windows.MessageBoxButton.OK,
-               System.Windows.MessageBoxImage.Error);
-         }
-      }
-
-      public void OnClickHLink(object sender, RequestNavigateEventArgs e)
-      {
-         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
-
-         try
-         {
-            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
-            e.Handled = true;
-         }
-         catch (Exception exception)
-         {
-            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
-
-            System.Windows.MessageBox.Show(
-               "Something went wrong ! \n\n" + exception.Message,
-               "Oops",
-               System.Windows.MessageBoxButton.OK,
-               System.Windows.MessageBoxImage.Error);
-         }
-      }
-
-      public void OnFileExportAllLaunchers(object sender, RoutedEventArgs e)
-      {
-         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
-
-         try
-         {
-            Environment environment = (Environment)lbEnvList.SelectedItem;
-
-
-            char[] delimiters = { '\n', ';', '\r', '\b' };
-
-            FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
-            folderBrowser.Description = "Select output folder";
-            folderBrowser.SelectedPath = environment.envRoot;
-
-            if (folderBrowser.ShowDialog() != System.Windows.Forms.DialogResult.OK)
-            {
-               return;
-            }
-
-            environment.GenerateBatchFiles(folderBrowser.SelectedPath);
-         }
-         catch (Exception exception)
-         {
-            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
-
-            System.Windows.MessageBox.Show(
-               "Something went wrong ! \n\n" + exception.Message,
-               "Oops",
-               System.Windows.MessageBoxButton.OK,
-               System.Windows.MessageBoxImage.Error);
-         }
       }
 
       #endregion
@@ -1863,108 +1340,6 @@ namespace eWamLauncher
 
       #endregion
 
-      #region binariesSets actions
-
-      public void OnNewBinariesSet(object sender, RoutedEventArgs e)
-      {
-         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
-
-         try
-         {
-            BinariesSet binariesSet = new BinariesSet();
-            binariesSet.name = "new set of binaries " + ((ObservableCollection<BinariesSet>)lbBinariesSets.ItemsSource).Count.ToString();
-            ((ObservableCollection<BinariesSet>)lbBinariesSets.ItemsSource).Add(binariesSet);
-            lbBinariesSets.SelectedItem = binariesSet;
-         }
-         catch (Exception exception)
-         {
-            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
-
-            System.Windows.MessageBox.Show(
-               "Something went wrong ! \n\n" + exception.Message,
-               "Oops",
-               System.Windows.MessageBoxButton.OK,
-               System.Windows.MessageBoxImage.Error);
-         }
-      }
-
-      public void OnDuplicateBinariesSet(object sender, RoutedEventArgs e)
-      {
-         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
-
-         try
-         {
-            if (lbBinariesSets.SelectedItem == null)
-            {
-               return;
-            }
-
-            BinariesSet binariesSet = (BinariesSet)((BinariesSet)lbBinariesSets.SelectedItem).Clone();
-            binariesSet.name += " (clone)";
-            ((ObservableCollection<BinariesSet>)lbBinariesSets.ItemsSource).Add(binariesSet);
-            lbBinariesSets.SelectedItem = binariesSet;
-         }
-         catch (Exception exception)
-         {
-            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
-
-            System.Windows.MessageBox.Show(
-               "Something went wrong ! \n\n" + exception.Message,
-               "Oops",
-               System.Windows.MessageBoxButton.OK,
-               System.Windows.MessageBoxImage.Error);
-         }
-      }
-
-      public void OnDeleteBinariesSet(object sender, RoutedEventArgs e)
-      {
-         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
-
-         try
-         {
-            int curSelection = lbBinariesSets.SelectedIndex;
-            if (lbBinariesSets.SelectedItem == null)
-            {
-               return;
-            }
-
-         ((ObservableCollection<BinariesSet>)lbBinariesSets.ItemsSource).Remove((BinariesSet)lbBinariesSets.SelectedItem);
-            lbBinariesSets.SelectedIndex = curSelection;
-            if (lbBinariesSets.SelectedIndex == -1)
-               lbBinariesSets.SelectedIndex = curSelection - 1;
-         }
-         catch (Exception exception)
-         {
-            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
-
-            System.Windows.MessageBox.Show(
-               "Something went wrong ! \n\n" + exception.Message,
-               "Oops",
-               System.Windows.MessageBoxButton.OK,
-               System.Windows.MessageBoxImage.Error);
-         }
-      }
-
-      //public void OnImportBinariesSets(object sender, RoutedEventArgs e)
-      //{
-      //   OpenFileDialog fileBrowser = new OpenFileDialog();
-
-      //   fileBrowser.Filter = "Any file|*.exe;*.dll";
-      //   fileBrowser.FilterIndex = 1;
-      //   fileBrowser.RestoreDirectory = true;
-
-      //   if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-      //   {
-
-      //      string envPath = Path.GetDirectoryName(Path.GetDirectoryName(fileBrowser.FileName));
-
-      //      EwamImporter importer = new EwamImporter((Profile)this.profile);
-      //      importer.ImportFromPath(envPath);
-      //   }
-      //}
-
-      #endregion
-      
       #region Package actions
 
       public void OnRefreshPackages(object sender, RoutedEventArgs e)
@@ -2013,6 +1388,7 @@ namespace eWamLauncher
                System.Windows.MessageBoxButton.OK,
                System.Windows.MessageBoxImage.Error);
          }
+
       }
 
       public async void OnImportSelectedPackage(object sender, RoutedEventArgs e)
@@ -2052,11 +1428,13 @@ namespace eWamLauncher
             progressBar.HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch;
             stkpProgressBars.Children.Add(progressBar);
 
+            eWAMLauncherNotifyIcon.ShowBalloonTip("Download started", package.Description, BalloonIcon.Info);
+
             await Task.Run(() => PullPackage(this, targetDir, package, progressBar, label));
 
+            eWAMLauncherNotifyIcon.ShowBalloonTip("Download Complete", package.Description, BalloonIcon.Info);
 
             label.Content = "Configuring...";
-
 
             //Look for BinariesSets
             // Get BinariesSet and import associated eWAM
@@ -2064,25 +1442,28 @@ namespace eWamLauncher
             Boolean found = false;
             foreach (PackageComponent component in package.Components)
             {
-               foreach (ComponentFile file in component.Files)
-               {               
-                  string filename = NormalizePath(targetDir + "\\" + file.Path);
-                  string extension = Path.GetExtension(filename);
+               if (component.Files != null)
+               {
+                  foreach (ComponentFile file in component.Files)
+                  {               
+                     string filename = NormalizePath(targetDir + "\\" + file.Path);
+                     string extension = Path.GetExtension(filename);
 
-                  if (extension == ".xwam")
-                  {
-                     importedEwam = LoadEwamFromXML(filename);
-                     found = true;
-                     break;
+                     if (extension == ".xwam")
+                     {
+                        importedEwam = LoadEwamFromXML(filename);
+                        found = true;
+                        break;
                      
-                  }
-                  else if (extension == ".jswam")
-                  {
-                     importedEwam = LoadEwamFromJSON(filename);
-                     found = true;
-                     break;
-                  }
+                     }
+                     else if (extension == ".jswam")
+                     {
+                        importedEwam = LoadEwamFromJSON(filename);
+                        found = true;
+                        break;
+                     }
 
+                  }
                }
 
                if (found)
@@ -2101,22 +1482,25 @@ namespace eWamLauncher
             Environment importedEnv = null;
             foreach (PackageComponent component in package.Components)
             {
-               foreach (ComponentFile file in component.Files)
+               if (component.Files != null)
                {
-                  string filename = NormalizePath(targetDir + "\\" + file.Path);
-                  string extension = Path.GetExtension(filename);
-                  
-                  if (extension == ".xenv")
+                  foreach (ComponentFile file in component.Files)
                   {
-                     importedEnv = LoadEnvironmentFromXML(filename);
-                     found = true;
-                     break;
-                  }
-                  else if (extension == ".jsenv")
-                  {
-                     importedEnv = LoadEnvironmentFromJSON(filename);
-                     found = true;
-                     break;
+                     string filename = NormalizePath(targetDir + "\\" + file.Path);
+                     string extension = Path.GetExtension(filename);
+
+                     if (extension == ".xenv")
+                     {
+                        importedEnv = LoadEnvironmentFromXML(filename);
+                        found = true;
+                        break;
+                     }
+                     else if (extension == ".jsenv")
+                     {
+                        importedEnv = LoadEnvironmentFromJSON(filename);
+                        found = true;
+                        break;
+                     }
                   }
                }
 
@@ -2185,6 +1569,7 @@ namespace eWamLauncher
 
                   string zipFullPath = System.IO.Path.GetTempPath() + Guid.NewGuid().ToString() + ".zip";
 
+                  //wc.DownloadProgressChanged += ...
                   wc.DownloadFile(url, zipFullPath);
 
                   //ZipFile.ExtractToDirectory(targetDir + "\\" + component.Name + ".zip", targetDir);
@@ -2349,5 +1734,6 @@ namespace eWamLauncher
       }
 
       #endregion
+
    }
 }

@@ -12,31 +12,65 @@ namespace eWamLauncher
    public class Settings : ICloneable, INotifyPropertyChanged
    {
       // TODO : when setting or getting, transform "\n" seperated list to ";" seperated list, and vice versa.
-      [DataMember()] private string _exeSearchPathes;
-      public string exeSearchPathes { get { return _exeSearchPathes; } set { _exeSearchPathes= value; NotifyPropertyChanged(); } }
-      [DataMember()] private string _dllSearchPathes;
-      public string dllSearchPathes { get { return _dllSearchPathes; } set { _dllSearchPathes = value; NotifyPropertyChanged(); } }
-      [DataMember()] private string _cppdllSearchPathes;
-      public string cppdllSearchPathes { get { return _cppdllSearchPathes; } set { _cppdllSearchPathes = value; NotifyPropertyChanged(); } }
-      [DataMember()] private string _launcherSearchPathes;
-      public string launcherSearchPathes { get { return _launcherSearchPathes; } set { _launcherSearchPathes = value; NotifyPropertyChanged(); } }
-      [DataMember()] private string _batchSearchPathes;
-      public string batchSearchPathes { get { return _batchSearchPathes; } set { _batchSearchPathes = value; NotifyPropertyChanged(); } }
-      [DataMember()] private string _tgvSearchPathes;
-      public string tgvSearchPathes { get { return _tgvSearchPathes; } set { _tgvSearchPathes = value; NotifyPropertyChanged(); } }
+      private string _exeSearchPathes;
+      [Category("Environment import settings")]
+      [DisplayName("Search pathes for eWam binaries")]
+      [Description("Comma seperated list of sub folder to be looked into.")]
+      [DataMember()] public string exeSearchPathes { get { return _exeSearchPathes; } set { _exeSearchPathes= value; NotifyPropertyChanged(); } }
 
-      [DataMember()] private string _launcherUpdateServerURL;
-      public string launcherUpdateServerURL { get { return _launcherUpdateServerURL; } set { _launcherUpdateServerURL = value; NotifyPropertyChanged(); } }
+      private string _dllSearchPathes;
+      [Category("eWAM import settings")]
+      [DisplayName("Search pathes for eWam dlls")]
+      [Description("Comma seperated list of sub folder to be looked into.")]
+      [DataMember()] public string dllSearchPathes { get { return _dllSearchPathes; } set { _dllSearchPathes = value; NotifyPropertyChanged(); } }
 
-      [DataMember()] private string _ewamUpdateServerURL;
-      public string ewamUpdateServerURL { get { return _ewamUpdateServerURL; } set { _ewamUpdateServerURL = value; NotifyPropertyChanged(); } }
+      private string _cppdllSearchPathes;
+      [Category("eWAM import settings")]
+      [DisplayName("Search pathes for CppDlls")]
+      [Description("Comma seperated list of sub folder to be looked into.")]
+      [DataMember()] public string cppdllSearchPathes { get { return _cppdllSearchPathes; } set { _cppdllSearchPathes = value; NotifyPropertyChanged(); } }
 
-      [DataMember()] private string _ewamexes;
-      public string ewamexes { get { return _ewamexes; } set { _ewamexes = value; NotifyPropertyChanged(); } }
+      private string _launcherSearchPathes;
+      [Category("Environment import settings")]
+      [DisplayName("Search pathes for launchers")]
+      [Description("Comma seperated list of sub folder to be looked into.")]
+      [DataMember()] public string launcherSearchPathes { get { return _launcherSearchPathes; } set { _launcherSearchPathes = value; NotifyPropertyChanged(); } }
+
+      private string _batchSearchPathes;
+      [Category("Environment import settings")]
+      [DisplayName("Search pathes for batch files")]
+      [Description("Comma seperated list of sub folder to be looked into.")]
+      [DataMember()] public string batchSearchPathes { get { return _batchSearchPathes; } set { _batchSearchPathes = value; NotifyPropertyChanged(); } }
+
+      private string _tgvSearchPathes;
+      [Category("Environment import settings")]
+      [DisplayName("Search pathes for TGV")]
+      [Description("Comma seperated list of sub folder to be looked into.")]
+      [DataMember()] public string tgvSearchPathes { get { return _tgvSearchPathes; } set { _tgvSearchPathes = value; NotifyPropertyChanged(); } }
+      
+      private string _ewamexes;
+      [Category("Unused settings")]
+      [DisplayName("eWAM common executables")]
+      [Description("Comma seperated list of eWam executables. This settings is unused for now.")]
+      [DataMember()] public string ewamexes { get { return _ewamexes; } set { _ewamexes = value; NotifyPropertyChanged(); } }
+
+      private string _launcherUpdateServerURL;
+      [Category("Update settings")]
+      [DisplayName("Update URL")]
+      [Description("URL to self update server (for eWamLauncher to update itself).")]
+      [DataMember()] public string launcherUpdateServerURL { get { return _launcherUpdateServerURL; } set { _launcherUpdateServerURL = value; NotifyPropertyChanged(); } }
+
+      private string _ewamUpdateServerURL;
+      [Category("Package repository settings")]
+      [DisplayName("Package server URL")]
+      [Description("URL of the package repository containing the package-index.xml file.")]
+      [DataMember()] public string ewamUpdateServerURL { get { return _ewamUpdateServerURL; } set { _ewamUpdateServerURL = value; NotifyPropertyChanged(); } }
 
 
-      //[DataMember()] private string _ewamdlls;
-      //public string ewamdlls { get { return _ewamdlls; } set { _ewamdlls = value; NotifyPropertyChanged(); } }
+
+
+      //private string _ewamdlls;
+      //[DataMember()] public string ewamdlls { get { return _ewamdlls; } set { _ewamdlls = value; NotifyPropertyChanged(); } }
 
       public event PropertyChangedEventHandler PropertyChanged;
 

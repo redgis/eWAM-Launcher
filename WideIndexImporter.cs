@@ -164,6 +164,7 @@ namespace eWamLauncher
 
       private string compressionField;
 
+
       /// <remarks/>
       [System.Xml.Serialization.XmlElementAttribute("File", Form = System.Xml.Schema.XmlSchemaForm.Unqualified)]
       public ComponentFile[] Files
@@ -205,6 +206,7 @@ namespace eWamLauncher
             this.compressionField = value;
          }
       }
+
    }
 
    /// <remarks/>
