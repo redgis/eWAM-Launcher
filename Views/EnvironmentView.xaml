@@ -12,8 +12,8 @@
       <CommandBinding Command="localviews:EnvironmentView.ChangeTgvPath" Executed="OnChangeTgvPath" CanExecute="OnChangeTgvPath_CanExecute"/>
       <CommandBinding Command="localviews:EnvironmentView.ExploreTgvPath" Executed="OnExploreTgvPath" CanExecute="OnExploreTgvPath_CanExecute"/>
    </UserControl.CommandBindings>
-   
-   <DockPanel VerticalAlignment="Stretch">
+
+   <DockPanel>
       <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5" HorizontalContentAlignment="Center" TabStripPlacement="Top">
          <TabItem Header="General ">
             <Grid>
@@ -121,7 +121,7 @@
                </WrapPanel>
                <WrapPanel Orientation="Horizontal" Margin="20,5" DockPanel.Dock="Top">
                   <Label Content="Launch using: " VerticalAlignment="Center" />
-                  
+
                   <ComboBox ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=profile.ewams, Mode=TwoWay}"
                         DisplayMemberPath="name"
                         SelectedItem="{Binding ewam, Mode=TwoWay}"
@@ -192,37 +192,65 @@
             </DockPanel>
          </TabItem>
          <TabItem Header="WydeWeb ">
-            <DockPanel>
-               <WrapPanel Orientation="Horizontal" Margin="0,2" DockPanel.Dock="Bottom">
-                  <Button Click="OnNewWWService" Content="New" Margin="2,2"/>
-                  <!--<Button Click="OnDuplicateWWService" Content="Duplicate" Margin="2,2"/>-->
-                  <Button Click="OnDeleteWWService" Content="Delete" Margin="2,2"/>
-                  <Button Click="OnMoveUpWWService" Content="Move Up" Margin="2,2"/>
-                  <Button Click="OnMoveDownWWService" Content="Move Down" Margin="2,2"/>
-               </WrapPanel>
-               <WrapPanel Orientation="Horizontal" Margin="20,5" DockPanel.Dock="Top">
-                  <Button Click="OnFileImportWydeWeb" Content="Load WNetConf"/>
-                  <Button Click="OnFileExportWNetConfIni" Content="Save WNetConf"/>
-               </WrapPanel>
-               <Grid>
-                  <Grid.ColumnDefinitions>
-                     <ColumnDefinition Width="150" MinWidth="150"/>
-                     <ColumnDefinition Width="2"/>
-                     <ColumnDefinition Width="*"/>
-                  </Grid.ColumnDefinitions>
 
-                  <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" DockPanel.Dock="Top"
-                     x:Name="lbServices"
-                     ItemsSource="{Binding wNetConf.services, Mode=TwoWay}"
-                     SelectedIndex="0"
-                     DisplayMemberPath="Name"
-                     MinWidth="120"
-                     MinHeight="200"
-                     Margin="5"/>
-                  <GridSplitter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" Grid.Column="1" Background="IndianRed"/>
-                  <ContentControl Grid.Column="2" Content="{Binding SelectedItem, ElementName=lbServices, Mode=TwoWay}" />
-               </Grid>
+            <DockPanel>
+
+               <StackPanel Orientation="Horizontal" Margin="20,5" DockPanel.Dock="Top">
+                  <Button Click="OnFileImportWNetConfIni" Content="Import from WNetConf" Margin="2,2"/>
+                  <Button Click="OnFileExportWNetConfIni_Client" Content="Export Client-only WNetConf" Margin="2,2"/>
+                  <Button Click="OnFileExportWNetConfIni_WSMISAPI" Content="Export WSMISAPI-only WNetConf" Margin="2,2"/>
+                  <Button Click="OnFileExportWNetConfIni_Server" Content="Export Server-only WNetConf" Margin="2,2"/>
+                  <Button Click="OnFileExportWNetConfIni_Full" Content="Export Full WNetConf (for developpers)" Margin="2,2"/>
+               </StackPanel>
+               
+               <StackPanel Orientation="Vertical" Margin="0,2" DockPanel.Dock="Bottom">
+
+                  <WrapPanel Orientation="Horizontal">
+                     <Button Click="OnNewWWService" Content="New" Margin="2,2"/>
+                     <Button Click="OnDuplicateWWService" Content="Duplicate" Margin="2,2"/>
+                     <Button Click="OnDeleteWWService" Content="Delete" Margin="2,2"/>
+                     <Button Click="OnMoveUpWWService" Content="Move Up" Margin="2,2"/>
+                     <Button Click="OnMoveDownWWService" Content="Move Down" Margin="2,2"/>
+                  </WrapPanel>
+                  
+               </StackPanel>
+
+               <StackPanel Orientation="Horizontal">
+
+                  <GroupBox Header="Global Parameters" Margin="10">
+                     <ScrollViewer HorizontalScrollBarVisibility="Auto">
+                        <StackPanel Orientation="Vertical">
+                           <ContentControl Content="{Binding wNetConf.traceConfig, Mode=TwoWay}" Margin="0,0,5,0" />
+                           <ContentControl Content="{Binding wNetConf.serverSecurity, Mode=TwoWay}" Margin="0,5,5,0" />
+                        </StackPanel>
+                     </ScrollViewer>
+                  </GroupBox>
+
+                  <GroupBox Header="Services" Margin="10">
+                     <Grid>
+                        <Grid.ColumnDefinitions>
+                           <ColumnDefinition Width="150" MinWidth="150"/>
+                           <ColumnDefinition Width="2"/>
+                           <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0"
+                           x:Name="lbServices"
+                           ItemsSource="{Binding wNetConf.services, Mode=TwoWay}"
+                           SelectedIndex="0"
+                           DisplayMemberPath="Name"
+                           MinWidth="120"
+                           MinHeight="200"
+                           Margin="5"/>
+                     
+                        <GridSplitter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" Grid.Column="1" Background="IndianRed"/>
+                        <ContentControl Grid.Column="2" Content="{Binding SelectedItem, ElementName=lbServices, Mode=TwoWay}" />
+                     </Grid>
+                  </GroupBox>
+               </StackPanel>
+               
             </DockPanel>
+
          </TabItem>
 
       </TabControl>

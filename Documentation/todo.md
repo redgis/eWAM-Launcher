@@ -1,7 +1,7 @@
 # Todo
 
 ## Basic features
-- [ ] Implement WydeWeb configuration (Client configuration, server configuration)
+- [x] Implement WydeWeb configuration (Client configuration, server configuration)
 - [x] Allow to generate .bat files corresponding to launchers
 - [x] Save / load session feature / button : implemented as a command (?)
 - [x] Add menu bar, items, associated commands (?)
@@ -12,10 +12,11 @@
 ## WydeWeb configuration
 - [x] Import configuration from wNetConf.ini, wNetConf.xml
 - [x] Configuration edition
-- [ ] Add missing "extension" in wNetConf XML definitions
-- [ ] Make a simpler object to avoid redundancy between client and server configuration (security, etc), simplify http tunnel configuration
-- [ ] Export a configuration to a wNetConf.ini, wNetConf.xml, of WydeWebAsAuto.html
-- [ ] Add automatic wNetConf import on environment pull and import ! (based on WYDE-NETCONF)
+- [x] Add missing "extension" in wNetConf XML definitions
+- [x] Make a simpler object to avoid redundancy between client and server configuration (security, etc), simplify http tunnel configuration
+- [x] Export a configuration to a wNetConf.ini, wNetConf.xml, of WydeWebAsAuto.html
+- [x] Add automatic wNetConf import on environment pull (included in .xenv) and import ! (based on WYDE-NETCONF)
+- [ ] Wizard to automatically deploy ClickOnce / OCX with given configuration (maybe create a Wizard for the occasion)
 
 ## Ergonomy
 - [x] Shouldn't we simply have a pool of eWAMs referenced by the various environments ?
@@ -30,7 +31,7 @@
 - [x] Add link to confluence commandline options in launchers page
 - [x] Don't die on any exception : have global try/catch for each feature (launch, import, explore, change path, etc). Show dialog box with exception message.
 - [x] Add "Open Console" button opening cmd with associated env var, in env-root. (In environment variables window, or in general)
-- [ ] Use MasterDetailsView ? https://docs.microsoft.com/en-us/windows/communitytoolkit/controls/masterdetailsview
+- [/] Use MasterDetailsView ? https://docs.microsoft.com/en-us/windows/communitytoolkit/controls/masterdetailsview
 - [x] Add a Systray icon. Right click => close. Make it work correctly (not working when window doesn't have focus)
 - [x] Reduce /close to systray. 
 - [x] Double-click on Systray icon reopens app
@@ -42,6 +43,7 @@
 - [x] Mutualize code between OnConsoleExecuteLauncher and OnExecuteLauncher
 - [ ] Rewrite variable importing : sanitize wyde-root, env-root, wf-root, wyde-dll and path after importing, let user choose the right value from a list or set custom value
 - [ ] Rewrite environment and ewam importing functions : buggy and messy at the moment
+- [ ] XML serealization : get rid of DataContract ? (But we would also loose json serialization ?)
 
 ## Process management
 - [ ] Process monitor looking up possible launchers working
@@ -78,11 +80,12 @@
 - [x] Have a repository index online with all eWAM binaries
 - [x] Add a progress bar for each package pull started
 - [x] Zip-Compress packages using any compression method available (store, deflate, lzma, bzip2)
-- [ ] Re-design using BackgroundWorker : supports progress and cancellation !
-   - [ ] Add ability to cancel an on-going download
-- [ ] Allow downloading only selected components
+- [x] Re-design using BackgroundWorker : supports progress and cancellation !
+   - [x] Add ability to cancel an on-going download
+- [x] Allow downloading only selected components
 - [ ] Allow comparing local environment and suggest update binaries
-- [ ] Use nuget packaging ?
+- [x] Add a progressbar for download and extraction
+- [/] Use nuget packaging ?
       
 ## Auto update
 - [x] Auto updater using Squirrel
@@ -108,3 +111,5 @@ https://youtu.be/rDjrOaoHz9s
 - idea : VSCode plugin could use eWAM Launcher environments to choose on which env one is working
 - IIS: remove all URL filterings and Hidden Segments. Add .* MIME type as application/octet-stream
 - XML => xsd => .cs  : https://stackoverflow.com/questions/3187444/convert-xml-string-to-object
+
+

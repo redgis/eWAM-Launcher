@@ -23,6 +23,8 @@ namespace eWamLauncher.Views
 
    public partial class EnvironmentView : System.Windows.Controls.UserControl
    {
+      private static readonly ILog log = LogManager.GetLogger(typeof(EnvironmentView));
+
       public static readonly RoutedUICommand ChangeTgvPath =
          new RoutedUICommand("Change TGV Path", "ChangeTgvPath", typeof(EnvironmentView));
 
@@ -30,7 +32,6 @@ namespace eWamLauncher.Views
          new RoutedUICommand("Explore TGV Path", "ExploreTgvPath", typeof(EnvironmentView));
 
 
-      private static readonly ILog log = LogManager.GetLogger(typeof(EnvironmentView));
 
       public EnvironmentView()
       {
@@ -638,7 +639,7 @@ namespace eWamLauncher.Views
 
       #endregion
 
-      #region WydeWeb actions
+      #region WydeWeb services actions
 
       public void OnNewWWService(object sender, RoutedEventArgs e)
       {
@@ -647,9 +648,9 @@ namespace eWamLauncher.Views
          try
          {
             WWService service = new WWService();
-            service.Name = "new service" + ((ObservableCollection<Launcher>)lbServices.ItemsSource).Count.ToString();
+            service.Name = "new service " + ((ObservableCollection<WWService>)lbServices.ItemsSource).Count.ToString();
             ((ObservableCollection<WWService>)lbServices.ItemsSource).Add(service);
-            lbLauncherList.SelectedItem = service;
+            lbServices.SelectedItem = service;
          }
          catch (Exception exception)
          {
@@ -663,33 +664,33 @@ namespace eWamLauncher.Views
          }
       }
 
-      //public void OnDuplicateWWService(object sender, RoutedEventArgs e)
-      //{
-      //   log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+      public void OnDuplicateWWService(object sender, RoutedEventArgs e)
+      {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
-      //   try
-      //   {
-      //      if (lbServices.SelectedItem == null)
-      //      {
-      //         return;
-      //      }
+         try
+         {
+            if (lbServices.SelectedItem == null)
+            {
+               return;
+            }
 
-      //      WWService service = (WWService)((WWService)lbLauncherList.SelectedItem).Clone();
-      //      launcher.name += "(clone)";
-      //      ((ObservableCollection<Launcher>)lbLauncherList.ItemsSource).Add(launcher);
-      //      lbLauncherList.SelectedItem = launcher;
-      //   }
-      //   catch (Exception exception)
-      //   {
-      //      log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+            WWService service = (WWService)((WWService)lbServices.SelectedItem).Clone();
+            service.Name += " (clone)";
+            ((ObservableCollection<WWService>)lbServices.ItemsSource).Add(service);
+            lbServices.SelectedItem = service;
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
 
-      //      System.Windows.MessageBox.Show(
-      //         "Something went wrong ! \n\n" + exception.Message,
-      //         "Oops",
-      //         System.Windows.MessageBoxButton.OK,
-      //         System.Windows.MessageBoxImage.Error);
-      //   }
-      //}
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
+      }
 
       public void OnDeleteWWService(object sender, RoutedEventArgs e)
       {
@@ -782,6 +783,10 @@ namespace eWamLauncher.Views
          }
       }
 
+      #endregion
+
+      #region WydeWeb actions
+
       public WydeNetWorkConfiguration LoadWNetConf(string fileName)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -803,12 +808,37 @@ namespace eWamLauncher.Views
          return null;
       }
 
-      public void OnFileImportWydeWeb(object sender, RoutedEventArgs e)
+      private string GetWNetConf(WNetConf.eNetConf outputType, WWService service)
+      {
+         Environment environment = (Environment)this.DataContext;
+         if (environment == null) throw new Exception("Select a valid environment first.");
+         if (environment.wNetConf == null) throw new Exception("This environment doesn't have a WydeWeb configuration.");
+
+         WydeNetWorkConfiguration wNetConf = environment.wNetConf.GetWydeNetConf(outputType, service);
+
+         StringWriter writer = new StringWriter();
+         XmlSerializer xmlSerializer = new XmlSerializer(typeof(WydeNetWorkConfiguration));
+         XmlSerializerNamespaces namespaces = new XmlSerializerNamespaces();
+         namespaces.Add("", "");
+         xmlSerializer.Serialize(writer, wNetConf, namespaces);
+
+         return writer.ToString();
+      }
+
+      public void OnFileImportWNetConfIni(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
          try
          {
+            if (System.Windows.MessageBox.Show(
+               "This will erase any WydeWeb configuration you have for this environment !\n" +
+               "\n\n    Are you sure ?",
+               "Overwrite current WydeWeb configuration ?",
+               System.Windows.MessageBoxButton.YesNo,
+               System.Windows.MessageBoxImage.Question) != MessageBoxResult.Yes)
+               return;
+
             Environment environment = (Environment)this.DataContext;
             if (environment == null) throw new Exception("Select a valid environment first.");
 
@@ -817,8 +847,8 @@ namespace eWamLauncher.Views
             fileBrowser.Filter = "WNetConf file|wNetConf.ini";
             fileBrowser.FilterIndex = 1;
             fileBrowser.RestoreDirectory = true;
-            fileBrowser.CheckFileExists = true;
-            fileBrowser.Title = "Open";
+            fileBrowser.CheckFileExists = false;
+            fileBrowser.Title = "Export";
 
             environment.ExpandAllEnvVariables();
             fileBrowser.InitialDirectory = System.IO.Path.GetDirectoryName(
@@ -847,7 +877,7 @@ namespace eWamLauncher.Views
          }
       }
 
-      public void OnFileExportWNetConfIni(object sender, RoutedEventArgs e)
+      public void OnFileExportWNetConfIni_Client(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
@@ -863,7 +893,7 @@ namespace eWamLauncher.Views
             fileBrowser.FilterIndex = 1;
             fileBrowser.RestoreDirectory = true;
             fileBrowser.CheckFileExists = false;
-            fileBrowser.Title = "Save";
+            fileBrowser.Title = "Export";
 
             environment.ExpandAllEnvVariables();
             fileBrowser.InitialDirectory = System.IO.Path.GetDirectoryName(
@@ -872,14 +902,166 @@ namespace eWamLauncher.Views
 
             if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-               WydeNetWorkConfiguration wNetConf = environment.wNetConf.GetWydeNetConf();
+               Directory.CreateDirectory(System.IO.Path.GetDirectoryName(fileBrowser.FileName));
+
+               string output = GetWNetConf(WNetConf.eNetConf.Client, null);
+               File.WriteAllText(fileBrowser.FileName, output);
+
+               //WydeNetWorkConfiguration wNetConf = environment.wNetConf.GetWydeNetConf(WNetConf.eNetConf.Client, null);
+               //FileStream writer = new FileStream(fileBrowser.FileName, FileMode.Create);
+               //XmlSerializer xmlSerializer = new XmlSerializer(typeof(WydeNetWorkConfiguration));
+               //XmlSerializerNamespaces namespaces = new XmlSerializerNamespaces();
+               //namespaces.Add("", "");
+               //xmlSerializer.Serialize(writer, wNetConf, namespaces);
+               //writer.Close();
+            }
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
+      }
+
+      public void OnFileExportWNetConfIni_WSMISAPI(object sender, RoutedEventArgs e)
+      {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
+         {
+            Environment environment = (Environment)this.DataContext;
+            if (environment == null) throw new Exception("Select a valid environment first.");
+            if (environment.wNetConf == null) throw new Exception("This environment doesn't have a WydeWeb configuration.");
+
+            OpenFileDialog fileBrowser = new OpenFileDialog();
+
+            fileBrowser.Filter = "WNetConf file|wNetConf.ini";
+            fileBrowser.FilterIndex = 1;
+            fileBrowser.RestoreDirectory = true;
+            fileBrowser.CheckFileExists = false;
+            fileBrowser.Title = "Export";
+
+            environment.ExpandAllEnvVariables();
+            fileBrowser.InitialDirectory = System.IO.Path.GetDirectoryName(
+               environment.GetEnvironmentVariable("WYDE-NETCONF").result);
+            fileBrowser.FileName = "wnetconf.ini";
+
+            if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
 
                Directory.CreateDirectory(System.IO.Path.GetDirectoryName(fileBrowser.FileName));
 
-               FileStream writer = new FileStream(fileBrowser.FileName, FileMode.Create);
-               XmlSerializer xmlSerializer = new XmlSerializer(typeof(WydeNetWorkConfiguration));
-               xmlSerializer.Serialize(writer, wNetConf);
-               writer.Close();
+               string output = GetWNetConf(WNetConf.eNetConf.WSMISAPI, null);
+               File.WriteAllText(fileBrowser.FileName, output);
+
+               //WydeNetWorkConfiguration wNetConf = environment.wNetConf.GetWydeNetConf(WNetConf.eNetConf.WSMISAPI, null);
+               //FileStream writer = new FileStream(fileBrowser.FileName, FileMode.Create);
+               //XmlSerializer xmlSerializer = new XmlSerializer(typeof(WydeNetWorkConfiguration));
+               //xmlSerializer.Serialize(writer, wNetConf);
+               //writer.Close();
+            }
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
+      }
+
+      public void OnFileExportWNetConfIni_Server(object sender, RoutedEventArgs e)
+      {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
+         {
+            Environment environment = (Environment)this.DataContext;
+            if (environment == null) throw new Exception("Select a valid environment first.");
+            if (environment.wNetConf == null) throw new Exception("This environment doesn't have a WydeWeb configuration.");
+
+            OpenFileDialog fileBrowser = new OpenFileDialog();
+
+            fileBrowser.Filter = "WNetConf file|wNetConf.ini";
+            fileBrowser.FilterIndex = 1;
+            fileBrowser.RestoreDirectory = true;
+            fileBrowser.CheckFileExists = false;
+            fileBrowser.Title = "Export";
+
+            environment.ExpandAllEnvVariables();
+            fileBrowser.InitialDirectory = System.IO.Path.GetDirectoryName(
+               environment.GetEnvironmentVariable("WYDE-NETCONF").result);
+            fileBrowser.FileName = "wnetconf.ini";
+
+            if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+               Directory.CreateDirectory(System.IO.Path.GetDirectoryName(fileBrowser.FileName));
+
+               string output = GetWNetConf(WNetConf.eNetConf.Server, null);
+               File.WriteAllText(fileBrowser.FileName, output);
+
+               //WydeNetWorkConfiguration wNetConf = environment.wNetConf.GetWydeNetConf(WNetConf.eNetConf.Server, null);
+               //FileStream writer = new FileStream(fileBrowser.FileName, FileMode.Create);
+               //XmlSerializer xmlSerializer = new XmlSerializer(typeof(WydeNetWorkConfiguration));
+               //xmlSerializer.Serialize(writer, wNetConf);
+               //writer.Close();
+            }
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
+      }
+
+      public void OnFileExportWNetConfIni_Full(object sender, RoutedEventArgs e)
+      {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
+         {
+            Environment environment = (Environment)this.DataContext;
+            if (environment == null) throw new Exception("Select a valid environment first.");
+            if (environment.wNetConf == null) throw new Exception("This environment doesn't have a WydeWeb configuration.");
+
+            OpenFileDialog fileBrowser = new OpenFileDialog();
+
+            fileBrowser.Filter = "WNetConf file|wNetConf.ini";
+            fileBrowser.FilterIndex = 1;
+            fileBrowser.RestoreDirectory = true;
+            fileBrowser.CheckFileExists = false;
+            fileBrowser.Title = "Export";
+
+            environment.ExpandAllEnvVariables();
+            fileBrowser.InitialDirectory = System.IO.Path.GetDirectoryName(
+               environment.GetEnvironmentVariable("WYDE-NETCONF").result);
+            fileBrowser.FileName = "wnetconf.ini";
+
+            if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+               Directory.CreateDirectory(System.IO.Path.GetDirectoryName(fileBrowser.FileName));
+
+               string output = GetWNetConf(WNetConf.eNetConf.Full, null);
+               File.WriteAllText(fileBrowser.FileName, output);
+
+               //WydeNetWorkConfiguration wNetConf = environment.wNetConf.GetWydeNetConf(WNetConf.eNetConf.Full, null);
+               //FileStream writer = new FileStream(fileBrowser.FileName, FileMode.Create);
+               //XmlSerializer xmlSerializer = new XmlSerializer(typeof(WydeNetWorkConfiguration));
+               //xmlSerializer.Serialize(writer, wNetConf);
+               //writer.Close();
             }
          }
          catch (Exception exception)

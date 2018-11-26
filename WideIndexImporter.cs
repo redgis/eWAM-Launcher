@@ -8,6 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System;
 using System.Xml.Serialization;
 
 // 
@@ -23,14 +24,29 @@ namespace eWamLauncher
    [System.ComponentModel.DesignerCategoryAttribute("code")]
    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
    [System.Xml.Serialization.XmlRootAttribute(Namespace = "", IsNullable = false)]
-   public partial class WideIndex
+   public partial class WideIndex : ICloneable
    {
+      public object Clone()
+      {
+         WideIndex clone = (WideIndex)this.MemberwiseClone();
+
+         clone.Packages = new Package[this.Packages.Length];
+
+         int index = 0;
+         foreach (Package package in this.Packages)
+         {
+            clone.Packages[index] = (Package)package.Clone();
+            index++;
+         }
+
+         return clone;
+      }
 
       private Package[] packagesField;
 
       /// <remarks/>
       [System.Xml.Serialization.XmlElementAttribute("Package", Form = System.Xml.Schema.XmlSchemaForm.Unqualified)]
-      public Package[] packages
+      public Package[] Packages
       {
          get
          {
@@ -49,8 +65,23 @@ namespace eWamLauncher
    [System.Diagnostics.DebuggerStepThroughAttribute()]
    [System.ComponentModel.DesignerCategoryAttribute("code")]
    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-   public partial class Package
+   public partial class Package : ICloneable
    {
+      public object Clone()
+      {
+         Package clone = (Package)this.MemberwiseClone();
+
+         clone.Components = new PackageComponent[this.Components.Length];
+
+         int index = 0;
+         foreach (PackageComponent component in this.Components)
+         {
+            clone.Components[index] = (PackageComponent)component.Clone();
+            index++;
+         }
+
+         return clone;
+      }
 
       private PackageComponent[] componentsField;
 
@@ -155,8 +186,23 @@ namespace eWamLauncher
    [System.Diagnostics.DebuggerStepThroughAttribute()]
    [System.ComponentModel.DesignerCategoryAttribute("code")]
    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-   public partial class PackageComponent
+   public partial class PackageComponent : ICloneable
    {
+      public object Clone()
+      {
+         PackageComponent clone = (PackageComponent)this.MemberwiseClone();
+         
+         clone.Files = new ComponentFile[this.Files.Length];
+
+         int index = 0;
+         foreach (ComponentFile componentFile in this.Files)
+         {
+            clone.Files[index] = (ComponentFile)componentFile.Clone();
+            index++;
+         }
+
+         return clone;
+      }
 
       private ComponentFile[] filesField;
 
@@ -164,6 +210,11 @@ namespace eWamLauncher
 
       private string compressionField;
 
+
+      public bool IsCompressed()
+      {
+         return this.Compression != null && this.Compression != "" && this.Compression != "None";
+      }
 
       /// <remarks/>
       [System.Xml.Serialization.XmlElementAttribute("File", Form = System.Xml.Schema.XmlSchemaForm.Unqualified)]
@@ -215,8 +266,14 @@ namespace eWamLauncher
    [System.Diagnostics.DebuggerStepThroughAttribute()]
    [System.ComponentModel.DesignerCategoryAttribute("code")]
    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-   public partial class ComponentFile
+   public partial class ComponentFile : ICloneable
    {
+      public object Clone()
+      {
+         ComponentFile clone = (ComponentFile)this.MemberwiseClone();
+
+         return clone;
+      }
 
       private string pathField;
 

@@ -22,6 +22,8 @@ using System.IO.Compression;
 using SharpCompress.Archives;
 using log4net;
 using Hardcodet.Wpf.TaskbarNotification;
+using System.Runtime.InteropServices;
+using System.Net;
 
 namespace eWamLauncher
 {
@@ -54,6 +56,9 @@ namespace eWamLauncher
       private ObservableCollection<Package> _packages;
       public ObservableCollection<Package> packages { get { return _packages; } set { _packages = value; this.NotifyPropertyChanged(); } }
 
+      private PackageDownloadManager _packageDownloadManager;
+      public PackageDownloadManager packageDownloadManager { get { return _packageDownloadManager; } set { _packageDownloadManager = value; this.NotifyPropertyChanged(); } }
+
       public event PropertyChangedEventHandler PropertyChanged;
 
       // This method is called by the Set accessor of each property.
@@ -72,39 +77,58 @@ namespace eWamLauncher
          //Initialize logging system
          log4net.Config.XmlConfigurator.Configure();
 
-         this.assemblyVersion = Assembly.GetEntryAssembly().GetName().Name;
-         this.assemblyVersion += " - " + Assembly.GetEntryAssembly().GetName().Version;
-         this.assemblyVersion += " - (c) Mphasis Wyde";
-         this.assemblyUpdateInfo = "";
-
-         this.profile = new Profile();
-         this.packages = new ObservableCollection<Package>();
-
-         string defaultXMLSettings = System.Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%\\ewamLauncher\\ewamLauncher.config.xml");
-         string defaultJSONSettings = System.Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%\\ewamLauncher\\ewamLauncher.config.json");
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
          try
-         { LoadCfgFromXML(defaultXMLSettings); }
-         catch
          {
+            this.assemblyVersion = Assembly.GetEntryAssembly().GetName().Name;
+            this.assemblyVersion += " - " + Assembly.GetEntryAssembly().GetName().Version;
+            this.assemblyVersion += " - (c) Mphasis Wyde";
+            this.assemblyUpdateInfo = "";
+
+            string defaultXMLSettings = System.Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%\\ewamLauncher\\ewamLauncher.config.xml");
+            string defaultJSONSettings = System.Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%\\ewamLauncher\\ewamLauncher.config.json");
+
+            this.profile = new Profile();
+            this.packages = new ObservableCollection<Package>();
+
             try
-            { LoadCfgFromJSON(defaultJSONSettings); }
-            catch (Exception exception)
+            { LoadCfgFromXML(defaultXMLSettings); }
+            catch
             {
-               log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+               try
+               { LoadCfgFromJSON(defaultJSONSettings); }
+               catch (Exception exception)
+               {
+                  this.profile = new Profile();
+                  this.packages = new ObservableCollection<Package>();
+                  log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+               }
             }
+
+            this.packageDownloadManager = new PackageDownloadManager(this.profile);
+
+            InitializeComponent();
+            this.DataContext = this;
+
+            //this.notifier.MouseDown += new System.Windows.Forms.MouseEventHandler(OnNotifyIconClicked);
+            //this.notifier.Icon = System.Drawing.Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
+            //this.notifier.Visible = true;
+
+            //this.menu = (System.Windows.Controls.ContextMenu)this.FindResource("NotifierContextMenu");
+
+            StartUpdater();
          }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
 
-         InitializeComponent();
-         this.DataContext = this;
-
-         //this.notifier.MouseDown += new System.Windows.Forms.MouseEventHandler(OnNotifyIconClicked);
-         //this.notifier.Icon = System.Drawing.Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
-         //this.notifier.Visible = true;
-
-         //this.menu = (System.Windows.Controls.ContextMenu)this.FindResource("NotifierContextMenu");
-
-         StartUpdater();
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
       }
 
       private void StartUpdater()
@@ -191,10 +215,20 @@ namespace eWamLauncher
          SaveCfgToJSON(defaultJSONSettings);
       }
 
+      [DllImport("user32.dll")]
+      static extern bool SetForegroundWindow(IntPtr hWnd);
+
       private void RestoreCommandHandler(object sender, RoutedEventArgs e)
       {
          this.Show();
-         this.WindowState = WindowState.Normal;
+         this.Focus();
+
+         SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
+
+         if (this.WindowState != WindowState.Normal && this.WindowState != WindowState.Maximized)
+         {
+            this.WindowState = WindowState.Normal;
+         }
       }
 
       protected override void OnStateChanged(EventArgs e)
@@ -898,9 +932,20 @@ namespace eWamLauncher
          Environment envCopy = (Environment)((Environment)lbEnvList.SelectedItem).Clone();
          envCopy.binariesSet = null;
          envCopy.ewam = null;
-         string commonPath = FindLongestCommonPath(envCopy.envRoot, envCopy.wfRoot);
-         envCopy.envRoot = envCopy.envRoot.Substring(commonPath.Length + 1);
-         envCopy.wfRoot = envCopy.wfRoot.Substring(commonPath.Length + 1);
+
+         if (envCopy.envRoot != null && envCopy.envRoot != "" && 
+             envCopy.wfRoot != null && envCopy.wfRoot != "")
+         {
+            string commonPath = FindLongestCommonPath(envCopy.envRoot, envCopy.wfRoot);
+            envCopy.envRoot = envCopy.envRoot.Substring(commonPath.Length + 1);
+            envCopy.wfRoot = envCopy.wfRoot.Substring(commonPath.Length + 1);
+         }
+         else
+         {
+            envCopy.envRoot = "";
+            envCopy.wfRoot = "";
+         }
+
          FileStream writer = new FileStream(fileName, FileMode.Create);
          DataContractSerializer xmlSerializer = new DataContractSerializer(typeof(Environment));
          xmlSerializer.WriteObject(writer, envCopy);
@@ -944,9 +989,20 @@ namespace eWamLauncher
          Environment envCopy = (Environment)((Environment)lbEnvList.SelectedItem).Clone();
          envCopy.binariesSet = null;
          envCopy.ewam = null;
-         string commonPath = FindLongestCommonPath(envCopy.envRoot, envCopy.wfRoot);
-         envCopy.envRoot = envCopy.envRoot.Substring(commonPath.Length + 1);
-         envCopy.wfRoot = envCopy.wfRoot.Substring(commonPath.Length + 1);
+
+         if (envCopy.envRoot != null && envCopy.envRoot != "" &&
+             envCopy.wfRoot != null && envCopy.wfRoot != "")
+         {
+            string commonPath = FindLongestCommonPath(envCopy.envRoot, envCopy.wfRoot);
+            envCopy.envRoot = envCopy.envRoot.Substring(commonPath.Length + 1);
+            envCopy.wfRoot = envCopy.wfRoot.Substring(commonPath.Length + 1);
+         }
+         else
+         {
+            envCopy.envRoot = "";
+            envCopy.wfRoot = "";
+         }
+
          FileStream writer = new FileStream(fileName, FileMode.Create);
          DataContractJsonSerializer jsonSerializer =
              new DataContractJsonSerializer(typeof(Environment));
@@ -1350,33 +1406,9 @@ namespace eWamLauncher
          {
             this.packages.Clear();
 
-            System.Net.WebClient wc = new System.Net.WebClient();
-            byte[] raw;
-            try
-            {
-               raw = wc.DownloadData(this.profile.settings.ewamUpdateServerURL + "//package-index.xml");
-            }
-            catch (Exception exception)
-            {
-               log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
-
-               System.Windows.MessageBox.Show(
-                  "Could not download package-index.xml from " +
-                     this.profile.settings.ewamUpdateServerURL +
-                     "//package-index.xml\n\n" + exception.Message,
-                  "Package index error",
-                  System.Windows.MessageBoxButton.OK,
-                  System.Windows.MessageBoxImage.Error);
-               return;
-            }
-            String webData = System.Text.Encoding.UTF8.GetString(raw);
-            XmlSerializer serializer = new XmlSerializer(typeof(WideIndex));
-            MemoryStream memStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(webData));
-            WideIndex packageIndex = (WideIndex)serializer.Deserialize(memStream);
-            foreach (Package package in packageIndex.packages)
-            {
-               this.packages.Add(package);
-            }
+            WebClient wc = new WebClient();
+            wc.DownloadDataCompleted += new DownloadDataCompletedEventHandler(this.OnPackageIndexDownloaded);
+            wc.DownloadDataAsync(new Uri(this.profile.settings.ewamUpdateServerURL + "//package-index.xml"));
          }
          catch (Exception exception)
          {
@@ -1391,7 +1423,53 @@ namespace eWamLauncher
 
       }
 
-      public async void OnImportSelectedPackage(object sender, RoutedEventArgs e)
+      private void OnPackageIndexDownloaded(object sender, DownloadDataCompletedEventArgs e)
+      {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
+         {
+            if (e.Cancelled == true)
+            {
+               eWAMLauncherNotifyIcon.ShowBalloonTip("package-index.xml download cancelled",
+                  e.Error.Message, BalloonIcon.Error);
+
+               log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : package-index.xml download cancelled");
+            }
+            else if (e.Error != null)
+            {
+               eWAMLauncherNotifyIcon.ShowBalloonTip("package-index.xml download failed",
+                  e.Error.Message, BalloonIcon.Error);
+
+               log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + e.Error.Message);
+            }
+            else
+            {
+               byte[] raw = e.Result;
+
+               String webData = System.Text.Encoding.UTF8.GetString(raw);
+               XmlSerializer serializer = new XmlSerializer(typeof(WideIndex));
+               MemoryStream memStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(webData));
+               WideIndex packageIndex = (WideIndex)serializer.Deserialize(memStream);
+               foreach (Package package in packageIndex.Packages)
+               {
+                  this.packages.Add(package);
+               }
+            }
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
+      }
+
+      public void OnImportSelectedPackage(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
@@ -1417,109 +1495,7 @@ namespace eWamLauncher
 
             Package package = (Package)lbPackageList.SelectedItem;
 
-            //Create ProgressBar
-            System.Windows.Controls.Label label = new System.Windows.Controls.Label();
-            label.Content = package.Description + " - Downloading ...";
-            label.HorizontalAlignment = System.Windows.HorizontalAlignment.Left;
-            label.VerticalAlignment = System.Windows.VerticalAlignment.Bottom;
-            stkpProgressBars.Children.Add(label);
-
-            System.Windows.Controls.ProgressBar progressBar = new System.Windows.Controls.ProgressBar();
-            progressBar.HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch;
-            stkpProgressBars.Children.Add(progressBar);
-
-            eWAMLauncherNotifyIcon.ShowBalloonTip("Download started", package.Description, BalloonIcon.Info);
-
-            await Task.Run(() => PullPackage(this, targetDir, package, progressBar, label));
-
-            eWAMLauncherNotifyIcon.ShowBalloonTip("Download Complete", package.Description, BalloonIcon.Info);
-
-            label.Content = "Configuring...";
-
-            //Look for BinariesSets
-            // Get BinariesSet and import associated eWAM
-            Ewam importedEwam = null;
-            Boolean found = false;
-            foreach (PackageComponent component in package.Components)
-            {
-               if (component.Files != null)
-               {
-                  foreach (ComponentFile file in component.Files)
-                  {               
-                     string filename = NormalizePath(targetDir + "\\" + file.Path);
-                     string extension = Path.GetExtension(filename);
-
-                     if (extension == ".xwam")
-                     {
-                        importedEwam = LoadEwamFromXML(filename);
-                        found = true;
-                        break;
-                     
-                     }
-                     else if (extension == ".jswam")
-                     {
-                        importedEwam = LoadEwamFromJSON(filename);
-                        found = true;
-                        break;
-                     }
-
-                  }
-               }
-
-               if (found)
-               {
-                  importedEwam.basePath = targetDir;
-                  importedEwam.name = package.Description;
-
-                  profile.ewams.Add(importedEwam);
-                  break;
-               }
-            }
-
-            //Look for environment definition / launchers
-            // If exists, create associated environment using Launchers
-            found = false;
-            Environment importedEnv = null;
-            foreach (PackageComponent component in package.Components)
-            {
-               if (component.Files != null)
-               {
-                  foreach (ComponentFile file in component.Files)
-                  {
-                     string filename = NormalizePath(targetDir + "\\" + file.Path);
-                     string extension = Path.GetExtension(filename);
-
-                     if (extension == ".xenv")
-                     {
-                        importedEnv = LoadEnvironmentFromXML(filename);
-                        found = true;
-                        break;
-                     }
-                     else if (extension == ".jsenv")
-                     {
-                        importedEnv = LoadEnvironmentFromJSON(filename);
-                        found = true;
-                        break;
-                     }
-                  }
-               }
-
-               if (found)
-               {
-                  // Fill envRoot and wfRoot by adding the provided path as prefix
-                  importedEnv.envRoot = targetDir + "\\" + importedEnv.envRoot;
-                  importedEnv.wfRoot = targetDir + "\\" + importedEnv.wfRoot;
-                  importedEnv.ewam = importedEwam;
-                  importedEnv.name = package.Description;
-
-                  profile.environments.Add(importedEnv);
-                  break;
-               }
-            }
-            
-            //Remove Progress bar
-            stkpProgressBars.Children.Remove(progressBar);
-            stkpProgressBars.Children.Remove(label);
+            this.packageDownloadManager.AddDownloadTask(package, targetDir);
          }
          catch (Exception exception)
          {
@@ -1534,125 +1510,42 @@ namespace eWamLauncher
 
       }
 
-      private void PullPackage(MainWindow gui, string targetDir, Package package, 
-         System.Windows.Controls.ProgressBar progressBar, 
-         System.Windows.Controls.Label label)
+      public void OnImportSelectedComponents(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
          try
          {
-            int progressAmount = 0;
-            int currentProgress = 0;
-
-            foreach (PackageComponent component in package.Components)
+            if (lbComponentList.SelectedItems.Count == 0)
             {
-               if (component.Files != null)
-               {
-                  progressAmount += component.Files.Count();
-               }
+               return;
             }
 
-            //Download
-            System.Net.WebClient wc = new System.Net.WebClient();
-            foreach (PackageComponent component in package.Components)
+            string targetDir = "";
+            //Select destination folder
+            FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
+            folderBrowser.Description = "Select target directory";
+            if (folderBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-               //Decompress the things if needed
-               if (component.Compression != null && component.Compression != "" && component.Compression != "None")
-               {
-                  //Download the corresponding zip
-                  gui.Dispatcher.BeginInvoke(new Action(() => label.Content = package.Description + " - Downloading " + component.Name + "..."));
-
-                  string url = this.profile.settings.ewamUpdateServerURL + "/" +
-                     package.Id + "/" +
-                     component.Name + ".zip";
-
-                  string zipFullPath = System.IO.Path.GetTempPath() + Guid.NewGuid().ToString() + ".zip";
-
-                  //wc.DownloadProgressChanged += ...
-                  wc.DownloadFile(url, zipFullPath);
-
-                  //ZipFile.ExtractToDirectory(targetDir + "\\" + component.Name + ".zip", targetDir);
-                  using (SharpCompress.Archives.Zip.ZipArchive archive = SharpCompress.Archives.Zip.ZipArchive.Open(zipFullPath))
-                  {
-                     foreach (SharpCompress.Archives.Zip.ZipArchiveEntry entry in archive.Entries)
-                     {
-                        gui.Dispatcher.BeginInvoke(new Action(() => label.Content = package.Description + " - Extracting " + component.Name + "..."));
-                        //if (entry.FullName.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
-                        Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(targetDir, entry.ToString())));
-                        entry.WriteToFile(Path.Combine(targetDir, entry.ToString()));
-                        currentProgress++;
-                        gui.Dispatcher.BeginInvoke(new Action(() => progressBar.Value = ((double)currentProgress / (double)progressAmount) * 100.0));
-                     }
-                  }
-
-                  try
-                  {
-                     File.Delete(zipFullPath);
-                  }
-                  catch (Exception exception)
-                  {
-                     log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
-                  }
-
-               }
-               //if (component.Compression != null && component.Compression == "zip")
-               //{
-               //   //Download the corresponding zip
-               //   gui.Dispatcher.BeginInvoke(new Action(() => label.Content = package.Description + " - Downloading " + component.Name + "..."));
-
-               //   string url = this.profile.settings.ewamUpdateServerURL + "/" +
-               //      package.Id + "/" +
-               //      component.Name + "." + component.Compression;
-
-               //   string zipFullPath = System.IO.Path.GetTempPath() + Guid.NewGuid().ToString() + "." + component.Compression;
-
-               //   wc.DownloadFile(url, zipFullPath);
-
-               //   //ZipFile.ExtractToDirectory(targetDir + "\\" + component.Name + ".zip", targetDir);
-               //   using (ZipArchive archive = ZipFile.OpenRead(zipFullPath))
-               //   {
-               //      foreach (ZipArchiveEntry entry in archive.Entries)
-               //      {
-               //         gui.Dispatcher.BeginInvoke(new Action(() => label.Content = package.Description + " - Extracting " + component.Name + "..."));
-               //         //if (entry.FullName.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
-               //         Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(targetDir, entry.FullName)));
-               //         entry.ExtractToFile(Path.Combine(targetDir, entry.FullName));
-               //         currentProgress++;
-               //         gui.Dispatcher.BeginInvoke(new Action(() => progressBar.Value = ((double)currentProgress / (double)progressAmount) * 100.0));
-               //      }
-               //   }
-
-               //   try
-               //   {
-               //      File.Delete(zipFullPath);
-               //   }
-               //   catch (Exception exception)
-               //   {
-               //      log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
-               //   }
-
-               //}
-               else
-               {
-                  gui.Dispatcher.BeginInvoke(new Action(() => label.Content = package.Description + " - Downloading " + component.Name + "..."));
-
-                  foreach (ComponentFile file in component.Files)
-                  {
-                     string convertedPath = file.Path.Replace("\\", "/");
-                     Directory.CreateDirectory(Path.GetDirectoryName(targetDir + "\\" + file.Path));
-
-                     string url = this.profile.settings.ewamUpdateServerURL + "/" +
-                        package.Id + "/" +
-                        convertedPath;
-
-                     wc.DownloadFile(url, targetDir + "\\" + file.Path);
-
-                     currentProgress++;
-                     gui.Dispatcher.BeginInvoke(new Action(() => progressBar.Value = ((double)currentProgress / (double)progressAmount) * 100.0));
-                  }
-               }
+               targetDir = NormalizePath(folderBrowser.SelectedPath);
             }
+            else
+            {
+               return;
+            }
+
+            Package selectedPackage = (Package)lbPackageList.SelectedItem;
+            Package package = new Package();
+            package.Description = selectedPackage.Description;
+            package.Id = selectedPackage.Id;
+            package.Name = selectedPackage.Name;
+            package.Type = selectedPackage.Type;
+            package.Version = selectedPackage.Version;
+
+            package.Components = new PackageComponent[lbComponentList.SelectedItems.Count];
+            lbComponentList.SelectedItems.CopyTo(package.Components, 0);
+
+            this.packageDownloadManager.AddDownloadTask(package, targetDir);
          }
          catch (Exception exception)
          {
@@ -1664,6 +1557,7 @@ namespace eWamLauncher
                System.Windows.MessageBoxButton.OK,
                System.Windows.MessageBoxImage.Error);
          }
+
       }
 
       #endregion

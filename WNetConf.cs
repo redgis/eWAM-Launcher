@@ -8,27 +8,50 @@ using System.Collections.ObjectModel;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
-
+using System;
+using System.Xml.Serialization;
 
 namespace eWamLauncher
 {
 
    [DataContract(Name = "WNetConf", Namespace = "http://www.wyde.com")]
-   public class WNetConf : INotifyPropertyChanged
+   public class WNetConf : ICloneable, INotifyPropertyChanged
    {
-      public WNetConf(WydeNetWorkConfiguration wNetConf = null)
+      public WNetConf(WydeNetWorkConfiguration wydeNetworkConf = null)
       {
          this.services = new ObservableCollection<WWService>();
 
-         if (wNetConf == null)
-            return;
-
-         this.security = wNetConf.ServicesManager.Security;
-         this.traceConfig = wNetConf.ServicesManager.TraceConfig;
-
-         foreach (ServerConfigurationService serverService in wNetConf.ServicesManager.Services)
+         if (wydeNetworkConf == null)
          {
-            foreach (ClientConfigurationService clientService in wNetConf.ClientConfiguration.Services)
+            this.serverSecurity = new ConfigurationSecurity();
+            this.clientSecurity = new ConfigurationSecurity();
+            this.traceConfig = new ServerConfigurationTraceConfig();
+            return;
+         }
+
+         if (wydeNetworkConf.ClientConfiguration == null)
+         {
+            this.clientSecurity = new ConfigurationSecurity();
+         }
+         else
+         {
+            this.clientSecurity = wydeNetworkConf.ClientConfiguration.Security;
+         }
+
+         if (wydeNetworkConf.ServicesManager == null)
+         {
+            this.serverSecurity = new ConfigurationSecurity();
+            this.traceConfig = new ServerConfigurationTraceConfig();
+         }
+         else
+         {
+            this.serverSecurity = wydeNetworkConf.ServicesManager.Security;
+            this.traceConfig = wydeNetworkConf.ServicesManager.TraceConfig;
+         }
+
+         foreach (ServerConfigurationService serverService in wydeNetworkConf.ServicesManager.Services)
+         {
+            foreach (ClientConfigurationService clientService in wydeNetworkConf.ClientConfiguration.Services)
             {
                if (serverService.Name == clientService.Name)
                {
@@ -40,42 +63,113 @@ namespace eWamLauncher
          }
       }
 
+      public object Clone()
+      {
+         WNetConf clone = (WNetConf)this.MemberwiseClone();
+
+         clone.services = new ObservableCollection<WWService>();
+
+         foreach (WWService service in this.services)
+         {
+            clone.services.Add((WWService)service.Clone());
+         }
+
+         return clone;
+      }
 
       private ObservableCollection<WWService> _services;
       [DataMember()] public ObservableCollection<WWService> services { get { return _services; } set { _services = value; this.NotifyPropertyChanged(); } }
 
-      private ConfigurationSecurity _security;
-      [DataMember()] public ConfigurationSecurity security { get { return _security; } set { _security = value; this.NotifyPropertyChanged(); } }
+      private ConfigurationSecurity _clientSecurity;
+      [Description("Security Settings.")]
+      [DisplayName("Security Settings.")]
+      [DataMember()] public ConfigurationSecurity clientSecurity { get { return _clientSecurity; } set { _clientSecurity = value; this.NotifyPropertyChanged(); } }
+
+      private ConfigurationSecurity _serverSecurity;
+      [Description("Security Settings.")]
+      [DisplayName("Security Settings.")]
+      [DataMember()] public ConfigurationSecurity serverSecurity { get { return _serverSecurity; } set { _serverSecurity = value; this.NotifyPropertyChanged(); } }
 
       private ServerConfigurationTraceConfig _traceConfig;
+      [Description("Global Trace Settings.")]
+      [DisplayName("Global Trace Settings.")]
       [DataMember()] public ServerConfigurationTraceConfig traceConfig { get { return _traceConfig; } set { _traceConfig = value; this.NotifyPropertyChanged(); } }
 
 
+      public enum eNetConf
+      {
+         Full,
+         Client,
+         WSMISAPI,
+         Server,
+         SingleService
+      }
 
-      public WydeNetWorkConfiguration GetWydeNetConf()
+      public WydeNetWorkConfiguration GetWydeNetConf(eNetConf outputType, WWService service)
       {
          WydeNetWorkConfiguration result = new WydeNetWorkConfiguration();
 
-         result.ClientConfiguration = this.GetClientConfiguration();
-         
-         result.ServicesManager = this.GetServerConfiguration();
+
+         switch (outputType)
+         {
+            case eNetConf.Full:
+               result.ClientConfiguration = this.GetClientConfiguration(outputType, service);
+               result.ServicesManager = this.GetServerConfiguration();
+               break;
+
+            case eNetConf.SingleService:
+            case eNetConf.Client:
+            case eNetConf.WSMISAPI:
+               result.ClientConfiguration = this.GetClientConfiguration(outputType, service);
+               break;
+
+            case eNetConf.Server:
+               result.ServicesManager = this.GetServerConfiguration();
+               break;
+
+            default:
+               break;
+         }
 
          return result;
       }
 
-      public ClientConfiguration GetClientConfiguration()
+      public ClientConfiguration GetClientConfiguration(eNetConf outputType, WWService service)
       {
          ClientConfiguration result = new ClientConfiguration();
 
-         result.Security = this.security;
+         result.Security = this.clientSecurity;
 
-         List<ClientConfigurationService> clientServices = new List<ClientConfigurationService>();
-         foreach (WWService simplifiedService in this.services)
+         switch (outputType)
          {
-            clientServices.Add(simplifiedService.GetClientService());
-         }
+            case eNetConf.SingleService:
+               result.Services.Add(service.GetClientService(outputType));
+               break;
 
-         result.Services = clientServices.ToArray();
+            case eNetConf.Full:
+            case eNetConf.Client:
+               foreach (WWService simplifiedService in this.services)
+               {
+                  result.Services.Add(simplifiedService.GetClientService(outputType));
+               }
+               break;
+
+            case eNetConf.WSMISAPI:
+               foreach (WWService simplifiedService in this.services)
+               {
+                  if (simplifiedService.clientService != null && simplifiedService.clientService.HttpHost != null &&
+                     simplifiedService.clientService.HttpHost != "")
+                  {
+                     result.Services.Add(simplifiedService.GetClientService(outputType));
+                  }
+               }
+               break;
+
+            case eNetConf.Server:
+            default:
+               break;
+         }
+         
 
          return result;
       }
@@ -84,16 +178,13 @@ namespace eWamLauncher
       {
          ServerConfiguration result = new ServerConfiguration();
 
-         result.Security = this.security;
+         result.Security = this.serverSecurity;
          result.TraceConfig = this.traceConfig;
 
-         List<ServerConfigurationService> serverServices = new List<ServerConfigurationService>();
          foreach (WWService simplifiedService in this.services)
          {
-            serverServices.Add(simplifiedService.GetServerService());
+            result.Services.Add(simplifiedService.GetServerService());
          }
-
-         result.Services = serverServices.ToArray();
 
          return result;
       }
@@ -112,10 +203,115 @@ namespace eWamLauncher
       }
    }
 
+   //[DataContract(Name = "WWService", Namespace = "http://www.wyde.com")]
+   //public class WWService : ICloneable, INotifyPropertyChanged
+   //{
+   //   public event PropertyChangedEventHandler PropertyChanged;
+
+   //   // This method is called by the Set accessor of each property.
+   //   // The CallerMemberName attribute that is applied to the optional propertyName
+   //   // parameter causes the property name of the caller to be substituted as an argument.
+   //   private void NotifyPropertyChanged(string propertyName = "")
+   //   {
+   //      if (this.PropertyChanged != null)
+   //      {
+   //         this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+   //      }
+   //   }
+
+   //   public object Clone()
+   //   {
+   //      WWService clone = (WWService)this.MemberwiseClone();
+
+   //      return clone;
+   //   }
+
+
+   //   private ClientConfigurationService _clientService;
+
+   //   [ExpandableObject]
+   //   [DataMember()] public ClientConfigurationService clientService { get { return _clientService; } set { _clientService = value; this.NotifyPropertyChanged(); } }
+
+   //   private ServerConfigurationService _serverService;
+
+   //   [ExpandableObject]
+   //   [DataMember()] public ServerConfigurationService serverService { get { return _serverService; } set { _serverService = value; this.NotifyPropertyChanged(); } }
+
+
+   //   public WWService(ClientConfigurationService clientService = null, ServerConfigurationService serverService = null)
+   //   {
+   //      this.clientService = clientService;
+   //      this.serverService = serverService;
+   //   }
+
+   //}
+
 
    [DataContract(Name = "WWService", Namespace = "http://www.wyde.com")]
-   public class WWService : INotifyPropertyChanged
+   public class WWService : ICloneable, INotifyPropertyChanged
    {
+      public event PropertyChangedEventHandler PropertyChanged;
+
+      // This method is called by the Set accessor of each property.
+      // The CallerMemberName attribute that is applied to the optional propertyName
+      // parameter causes the property name of the caller to be substituted as an argument.
+      private void NotifyPropertyChanged(string propertyName = "")
+      {
+         if (this.PropertyChanged != null)
+         {
+            this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+         }
+      }
+
+      public WWService(ClientConfigurationService clientService = null, ServerConfigurationService serverService = null)
+      {
+         if (clientService != null)
+            this.clientService = new WWClientService(clientService);
+
+         if (serverService != null)
+         {
+            this.serverService = new WWServerService(serverService);
+            this.Name = serverService.Name;
+            this.Alias = serverService.Aliases;
+         }
+      }
+
+      public object Clone()
+      {
+         WWService clone = (WWService)this.MemberwiseClone();
+
+         return clone;
+      }
+
+      private WWClientService _clientService;
+      [DataMember()] public WWClientService clientService { get { return _clientService; } set { _clientService = value; this.NotifyPropertyChanged(); } }
+
+      private WWServerService _serverService;
+      [DataMember()] public WWServerService serverService { get { return _serverService; } set { _serverService = value; this.NotifyPropertyChanged(); } }
+
+
+
+      public ClientConfigurationService GetClientService(WNetConf.eNetConf outputType)
+      {
+         if (this.clientService == null) return null;
+
+         ClientConfigurationService result = this.clientService.GetClientService(outputType);
+         result.Name = this.Name;
+         result.Aliases = this.Alias;
+         return result;
+      }
+
+      public ServerConfigurationService GetServerService()
+      {
+         if (this.serverService == null) return null;
+
+         ServerConfigurationService result = this.serverService.GetServerService();
+         result.Name = this.Name;
+         result.Aliases = this.Alias;
+         return result;
+      }
+
+
       //private ClientConfigurationService _clientService;
 
       //[ExpandableObject]
@@ -131,16 +327,10 @@ namespace eWamLauncher
 
       private string aliasField;
 
-      private int emergencyField;
-      
-      private int compressionField;
-
-      private int encryptionField;
-
-      private ConfigurationSecurity securityField;
-
       [Category("Basic settings")]
-      [DataMember()] public string Name
+      [Description("The name of the service.  This name is the one used to invoke a given service.")]
+      [DataMember()]
+      public string Name
       {
          get
          {
@@ -153,7 +343,10 @@ namespace eWamLauncher
       }
 
       [Category("Basic settings")]
-      [DataMember()] public string Alias
+      [Description("Name of the service on the server machine.If this field is blank, then the " +
+         "Name field is used for the service name on the server machine.")]
+      [DataMember()]
+      public string Alias
       {
          get
          {
@@ -164,84 +357,164 @@ namespace eWamLauncher
             this.aliasField = value;
          }
       }
+   }
 
-      [Category("Basic settings")]
-      [DataMember()] public int Emergency
+   [DataContract(Name = "WWClientService", Namespace = "http://www.wyde.com")]
+   public class WWClientService : ICloneable, INotifyPropertyChanged
+   {
+
+      public event PropertyChangedEventHandler PropertyChanged;
+
+      // This method is called by the Set accessor of each property.
+      // The CallerMemberName attribute that is applied to the optional propertyName
+      // parameter causes the property name of the caller to be substituted as an argument.
+      private void NotifyPropertyChanged(string propertyName = "")
       {
-         get
+         if (this.PropertyChanged != null)
          {
-            return this.emergencyField;
-         }
-         set
-         {
-            this.emergencyField = value;
+            this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
          }
       }
 
-      [Category("Basic settings")]
-      public int Compression
+      public WWClientService(ClientConfigurationService clientService = null)
       {
-         get
+
+         if (clientService != null)
          {
-            return this.compressionField;
-         }
-         set
-         {
-            this.compressionField = value;
+            if (clientService.ServicesManagers != null)
+            {
+               if (clientService.ServicesManagers.Count() > 0)
+               {
+                  this.Host = clientService.ServicesManagers[0].Host;
+                  this.Port = clientService.ServicesManagers[0].Port;
+                  this.HttpHost = clientService.ServicesManagers[0].HttpHost;
+                  this.HttpPort = clientService.ServicesManagers[0].HttpPort;
+                  this.HttpAdditionalHeaders = clientService.ServicesManagers[0].HttpAdditionalHeaders;
+                  this.ProxyHost = clientService.ServicesManagers[0].ProxyHost;
+                  this.ProxyPort = clientService.ServicesManagers[0].ProxyPort;
+                  this.Extension = clientService.ServicesManagers[0].Extension;
+                  this.Emergency = clientService.ServicesManagers[0].Emergency;
+                  this.Compression = clientService.ServicesManagers[0].Compression;
+                  this.ConnectTimeout = clientService.ServicesManagers[0].ConnectTimeout;
+                  this.TimeBeforePolling = clientService.ServicesManagers[0].TimeBeforePolling;
+                  this.NbMaxConcurrentRequests = clientService.ServicesManagers[0].NbMaxConcurrentRequests;
+               }
+            }
+
+            this.Security = clientService.Security;
          }
       }
 
-      [Category("Basic settings")]
-      [DataMember()] public int Encryption
+      public object Clone()
       {
-         get
-         {
-            return this.encryptionField;
-         }
-         set
-         {
-            this.encryptionField = value;
-         }
+         WWClientService clone = (WWClientService)this.MemberwiseClone();
+         return clone;
       }
 
-      [Category("Basic settings")]
-      [Description("This property overrides global security settings.")]
-      [ExpandableObject]
-      [DataMember()] public ConfigurationSecurity Security
+      public ClientConfigurationService GetClientService(WNetConf.eNetConf outputType)
       {
-         get
+         ClientConfigurationService result = new ClientConfigurationService();
+
+         result.Security = this.Security;
+
+         result.ServicesManagers = new ObservableCollection<ClientConfigurationServicesManager>();
+         ClientConfigurationServicesManager servicesManager = new ClientConfigurationServicesManager();
+
+         switch (outputType)
          {
-            return this.securityField;
+            case WNetConf.eNetConf.Full:
+               servicesManager.Host = this.Host;
+               servicesManager.Port = this.Port;
+               servicesManager.HttpHost = this.HttpHost;
+               servicesManager.HttpPort = this.HttpPort;
+               servicesManager.HttpAdditionalHeaders = this.HttpAdditionalHeaders;
+               servicesManager.ProxyHost = this.ProxyHost;
+               servicesManager.ProxyPort = this.ProxyPort;
+               servicesManager.Extension = this.Extension;
+               break;
+
+            case WNetConf.eNetConf.SingleService:
+            case WNetConf.eNetConf.Client:
+               if (this.HttpHost != null && this.HttpHost != "")
+               {
+                  servicesManager.Host = null;
+                  servicesManager.HttpHost = this.HttpHost;
+                  servicesManager.HttpPort = this.HttpPort;
+                  servicesManager.HttpAdditionalHeaders = this.HttpAdditionalHeaders;
+                  servicesManager.ProxyHost = this.ProxyHost;
+                  servicesManager.ProxyPort = this.ProxyPort;
+                  servicesManager.Extension = this.Extension;
+               }
+               else
+               {
+                  servicesManager.HttpHost = null;
+                  servicesManager.Extension = null;
+                  servicesManager.ProxyHost = null;
+                  servicesManager.HttpAdditionalHeaders = null;
+                  servicesManager.Host = this.Host;
+                  servicesManager.Port = this.Port;
+               }
+               break;
+
+            case WNetConf.eNetConf.WSMISAPI:
+               servicesManager.HttpHost = null;
+               servicesManager.Extension = null;
+               servicesManager.ProxyHost = null;
+               servicesManager.HttpAdditionalHeaders = null;
+               servicesManager.Host = this.Host;
+               servicesManager.Port = this.Port;
+               break;
+
+            case WNetConf.eNetConf.Server:
+            default:
+               break;
          }
-         set
-         {
-            this.securityField = value;
-         }
+
+         servicesManager.Compression = this.Compression;
+         servicesManager.Emergency = this.Emergency;
+         servicesManager.TimeBeforePolling = this.TimeBeforePolling;
+         servicesManager.NbMaxConcurrentRequests = this.NbMaxConcurrentRequests;
+         servicesManager.ConnectTimeout = this.ConnectTimeout;
+
+         servicesManager.Security = this.Security;
+
+         result.ServicesManagers.Add(servicesManager);
+
+         return result;
       }
-
-
+      
 
       private string httpHostField;
 
       private int httpPortField;
 
-      private string extensionField;
-
       private string proxyHostField;
 
       private int proxyPortField;
+
+      private string httpAdditionalHeadersField;
+
+      private string extensionField;
 
       private string hostField;
 
       private int portField;
 
+      private int emergencyField;
+
+      private eCompression compressionField;
+
       private int connectTimeoutField;
 
       private int timeBeforePollingField;
 
-      [Category("Client settings")]
-      [Description("This property is the server host name of the HTTP tunnel (\"rebond\").")]
-      [DataMember()] public string HttpHost
+      private int nbMaxConcurrentRequestsField;
+
+      private ConfigurationSecurity securityField;
+
+
+      [DefaultValue("")]      [Description("Name of host computer of the HTTP server.")]      [DataMember()]
+      public string HttpHost
       {
          get
          {
@@ -253,9 +526,10 @@ namespace eWamLauncher
          }
       }
 
-      [Category("Client settings")]
-      [Description("This property is the server port of the HTTP tunnel (\"rebond\").")]
-      [DataMember()] public int HttpPort
+      [DefaultValue(0)]
+      [Description("Port on host computer of the HTTP server.")]
+      [DataMember()]
+      public int HttpPort
       {
          get
          {
@@ -267,23 +541,10 @@ namespace eWamLauncher
          }
       }
 
-      [Category("Client settings")]
-      [Description("This property is the server path of WSMISAPI.dll for HTTP tunnel (\"rebond\").")]
-      [DataMember()] public string Extension
-      {
-         get
-         {
-            return this.extensionField;
-         }
-         set
-         {
-            this.extensionField = value;
-         }
-      }
-
-      [Category("Client settings")]
-      [Description("This property is the host name of the proxy server.")]
-      [DataMember()] public string ProxyHost
+      [DefaultValue("")]
+      [Description("Name of any proxy computer used to attain the HTTP server.")]
+      [DataMember()]
+      public string ProxyHost
       {
          get
          {
@@ -295,9 +556,10 @@ namespace eWamLauncher
          }
       }
 
-      [Category("Client settings")]
-      [Description("This property is the port of the proxy server.")]
-      [DataMember()] public int ProxyPort
+      [DefaultValue(0)]
+      [Description("Port on proxy computer used to attain the HTTP server.")]
+      [DataMember()]
+      public int ProxyPort
       {
          get
          {
@@ -309,9 +571,44 @@ namespace eWamLauncher
          }
       }
 
-      [Category("Client settings")]
-      [Description("This property is the host name of the applicative server (Wyseman).")]
-      [DataMember()] public string Host
+      [DefaultValue("")]
+      [Description("By default set to false (value 0). Set to true (value 1) means wydeweb's " +
+         "requests will contain the Content-Type header and the Cookie header (that contains " +
+         "the session id).")]
+      [DataMember()]
+      public string HttpAdditionalHeaders
+      {
+         get
+         {
+            return this.httpAdditionalHeadersField;
+         }
+         set
+         {
+            this.httpAdditionalHeadersField = value;
+         }
+      }
+
+      [DefaultValue("")]
+      [Description("DLL on HTTP server that the HTTP server calls to communicate with WSM on " +
+         "the server.  By default, this DLL is installed on the server in the directory " +
+         "'scripts/wyseman/wsmisapi.dll'.")]
+      [DataMember()]
+      public string Extension
+      {
+         get
+         {
+            return this.extensionField;
+         }
+         set
+         {
+            this.extensionField = value;
+         }
+      }
+
+      [DefaultValue("localhost")]
+      [Description("Name of host computer where WSM executes.")]
+      [DataMember()]
+      public string Host
       {
          get
          {
@@ -323,9 +620,10 @@ namespace eWamLauncher
          }
       }
 
-      [Category("Client settings")]
-      [Description("This property is the port of the applicative server (Wyseman).")]
-      [DataMember()] public int Port
+      [DefaultValue(0)]
+      [Description("Port on host computer through which communication occurs.")]
+      [DataMember()]
+      public int Port
       {
          get
          {
@@ -338,7 +636,48 @@ namespace eWamLauncher
       }
 
       [Category("Client settings")]
-      [DataMember()] public int ConnectTimeout
+      [Description("")]
+      [DataMember()]
+      public int Emergency
+      {
+         get
+         {
+            return this.emergencyField;
+         }
+         set
+         {
+            this.emergencyField = value;
+         }
+      }
+
+      [Category("Client settings")]
+      [Description("Data is exchanged between the clients and the WSM servers. This data can " +
+         "be compressed to minimize network traffic.  You can specify either at the client side " +
+         "or the server side the level of compression to use (0 for no encryption and 9 for " +
+         "maximum encryption). For a given client executing the process, the highest level of " +
+         "compression, either that specified by the client or that specified by the server, is " +
+         "used. Experience has proven that for typical applications, a compression level of 1 " +
+         "suits well. This compression level offers a good balance between network traffic " +
+         "reduction and performance, with very little time consumed in compressing and " +
+         "decompressing.More data intensive services may opt for a higher compression level. " +
+         "WSM uses ZLIB compression.")]
+      [DataMember()]
+      public eCompression Compression
+      {
+         get
+         {
+            return this.compressionField;
+         }
+         set
+         {
+            this.compressionField = value;
+         }
+      }
+
+      [Category("Client settings")]
+      [Description("Time of inactivity after which the connection will be closed by the server.")]
+      [DataMember()]
+      public int ConnectTimeout
       {
          get
          {
@@ -351,7 +690,9 @@ namespace eWamLauncher
       }
 
       [Category("Client settings")]
-      [DataMember()] public int TimeBeforePolling
+      [Description("")]
+      [DataMember()]
+      public int TimeBeforePolling
       {
          get
          {
@@ -363,59 +704,10 @@ namespace eWamLauncher
          }
       }
 
-
-
-
-      private string commandLineField;
-
-      private int nbMaxProcessesField;
-
-      private int nbMaxConcurrentRequestsField;
-
-      private bool useResponsiveProcessesOnlyField;
-
-      private string currentDirectoryField;
-
-      private string userNameField;
-
-      private string userDomainField;
-
-      private string userPasswordField;
-
-      private NetConfEnvironmentVariable[] environmentVariablesField;
-
-      private ServerConfigurationProcessManagement processManagementField;
-
-      private ServerConfigurationLoadBalancing loadBalancingField;
-
-      [Category("Server settings")]
-      [DataMember()] public string CommandLine
-      {
-         get
-         {
-            return this.commandLineField;
-         }
-         set
-         {
-            this.commandLineField = value;
-         }
-      }
-
-      [Category("Server settings")]
-      [DataMember()] public int NbMaxProcesses
-      {
-         get
-         {
-            return this.nbMaxProcessesField;
-         }
-         set
-         {
-            this.nbMaxProcessesField = value;
-         }
-      }
-
-      [Category("Server settings")]
-      [DataMember()] public int NbMaxConcurrentRequests
+      [Category("Client settings")]
+      [Description("A given client request is assigned to a thread. Multiple simultaneous requests can thus be processed.  Note that the number of threads isn't necessarily equal to the number of current sessions, but rather to the number of requests that at any given time are being executed simultaneously.")]
+      [DataMember()]
+      public int NbMaxConcurrentRequests
       {
          get
          {
@@ -427,160 +719,79 @@ namespace eWamLauncher
          }
       }
 
-      [Category("Server settings")]
-      [DataMember()] public bool UseResponsiveProcessesOnly
-      {
-         get
-         {
-            return this.useResponsiveProcessesOnlyField;
-         }
-         set
-         {
-            this.useResponsiveProcessesOnlyField = value;
-         }
-      }
-
-      [Category("Server settings")]
-      [DataMember()] public string CurrentDirectory
-      {
-         get
-         {
-            return this.currentDirectoryField;
-         }
-         set
-         {
-            this.currentDirectoryField = value;
-         }
-      }
-
-      [Category("Server settings")]
-      [DataMember()] public string UserName
-      {
-         get
-         {
-            return this.userNameField;
-         }
-         set
-         {
-            this.userNameField = value;
-         }
-      }
-
-      [Category("Server settings")]
-      [DataMember()] public string UserDomain
-      {
-         get
-         {
-            return this.userDomainField;
-         }
-         set
-         {
-            this.userDomainField = value;
-         }
-      }
-
-      [Category("Server settings")]
-      [DataMember()] public string UserPassword
-      {
-         get
-         {
-            return this.userPasswordField;
-         }
-         set
-         {
-            this.userPasswordField = value;
-         }
-      }
-
-      [Category("Server settings")]
-      [System.Xml.Serialization.XmlArrayItemAttribute("Var", IsNullable = true)]
-      [DataMember()] public NetConfEnvironmentVariable[] EnvironmentVariables
-      {
-         get
-         {
-            return this.environmentVariablesField;
-         }
-         set
-         {
-            this.environmentVariablesField = value;
-         }
-      }
-
-      [Category("Server settings")]
+      [Category("Client settings")]
+      [Description("This property overrides global security settings.")]
       [ExpandableObject]
-      [DataMember()] public ServerConfigurationProcessManagement ProcessManagement
+      [DataMember()]
+      public ConfigurationSecurity Security
       {
          get
          {
-            return this.processManagementField;
+            return this.securityField;
          }
          set
          {
-            this.processManagementField = value;
+            this.securityField = value;
          }
       }
 
-      [Category("Server settings")]
-      [ExpandableObject]
-      [DataMember()] public ServerConfigurationLoadBalancing LoadBalancing
+   }
+
+   [DataContract(Name = "WWServerService", Namespace = "http://www.wyde.com")]
+   public class WWServerService : ICloneable, INotifyPropertyChanged
+   {
+      public event PropertyChangedEventHandler PropertyChanged;
+
+      // This method is called by the Set accessor of each property.
+      // The CallerMemberName attribute that is applied to the optional propertyName
+      // parameter causes the property name of the caller to be substituted as an argument.
+      private void NotifyPropertyChanged(string propertyName = "")
       {
-         get
+         if (this.PropertyChanged != null)
          {
-            return this.loadBalancingField;
-         }
-         set
-         {
-            this.loadBalancingField = value;
+            this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
          }
       }
 
-
-      public ClientConfigurationService GetClientService()
+      public WWServerService(ServerConfigurationService serverService = null)
       {
-         ClientConfigurationService result = new ClientConfigurationService();
 
-         result.Name = this.Name;
-         result.Aliases = this.Alias;
-         result.Security = this.Security;
-         
-         result.ServicesManagers = new ClientConfigurationServicesManager[1];
-         result.ServicesManagers[0] = new ClientConfigurationServicesManager();
-
-         result.ServicesManagers[0].Compression = this.Compression;
-         result.ServicesManagers[0].Emergency = this.Emergency;
-         result.ServicesManagers[0].TimeBeforePolling = this.TimeBeforePolling;
-         result.ServicesManagers[0].NbMaxConcurrentRequests = this.NbMaxConcurrentRequests;
-         result.ServicesManagers[0].ConnectTimeout = this.ConnectTimeout;
-
-         if (this.HttpHost != null && this.HttpHost != "")
+         if (serverService != null)
          {
-            result.ServicesManagers[0].Host = null;
-            result.ServicesManagers[0].HttpHost = this.HttpHost;
-            result.ServicesManagers[0].HttpPort = this.HttpPort;
-            result.ServicesManagers[0].Extension = this.Extension;
-         }
-         else
-         {
-            result.ServicesManagers[0].HttpHost = null;
-            result.ServicesManagers[0].Extension = null;
-            result.ServicesManagers[0].Host = this.Host;
-            result.ServicesManagers[0].Port = this.Port;
-         }
-         
-         result.ServicesManagers[0].Security = this.Security;
-         result.ServicesManagers[0].Alias = this.Alias;
-         result.ServicesManagers[0].ProxyHost = this.ProxyHost;
-         result.ServicesManagers[0].ProxyPort = this.ProxyPort;
+            this.Compression = serverService.Compression;
+            this.Encryption = serverService.Encryption;
 
-         return result;
+            if (serverService.Process != null)
+            {
+               //this.Process = serverService.Process;
+
+               this.CommandLine = serverService.Process.CommandLine;
+               this.CurrentDirectory = serverService.Process.CurrentDirectory;
+               this.EnvironmentVariables = new ObservableCollection<NetConfEnvironmentVariable>();
+               this.EnvironmentVariables = serverService.Process.EnvironmentVariables;
+               this.LoadBalancing = serverService.Process.LoadBalancing;
+               this.NbMaxConcurrentRequests = serverService.Process.NbMaxConcurrentRequests;
+               this.NbMaxProcesses = serverService.Process.NbMaxProcesses;
+               this.UseResponsiveProcessesOnly = serverService.Process.UseResponsiveProcessesOnly;
+               this.UserDomain = serverService.Process.UserDomain;
+               this.UserName = serverService.Process.UserName;
+               this.UserPassword = serverService.Process.UserPassword;
+               this.ProcessManagement = serverService.Process.ProcessManagement;
+            }
+         }
       }
-      
+
+      public object Clone()
+      {
+         WWService clone = (WWService)this.MemberwiseClone();
+
+         return clone;
+      }
+
       public ServerConfigurationService GetServerService()
       {
          ServerConfigurationService result = new ServerConfigurationService();
-
-         result.Name = this.Name;
-         result.Aliases = this.Alias;
+         
          result.Compression = this.Compression;
          result.Encryption = this.Encryption;
          result.EnvironmentVariables = this.EnvironmentVariables;
@@ -601,90 +812,263 @@ namespace eWamLauncher
          return result;
       }
 
-      public event PropertyChangedEventHandler PropertyChanged;
+      private string commandLineField;
 
-      // This method is called by the Set accessor of each property.
-      // The CallerMemberName attribute that is applied to the optional propertyName
-      // parameter causes the property name of the caller to be substituted as an argument.
-      private void NotifyPropertyChanged(string propertyName = "")
+      private int nbMaxProcessesField;
+
+      private int nbMaxConcurrentRequestsField;
+
+      private eYesNo useResponsiveProcessesOnlyField;
+
+      private string currentDirectoryField;
+
+      private string userNameField;
+
+      private string userDomainField;
+
+      private string userPasswordField;
+
+      private ObservableCollection<NetConfEnvironmentVariable> environmentVariablesField;
+
+      private ServerConfigurationProcessManagement processManagementField;
+
+      private ServerConfigurationLoadBalancing loadBalancingField;
+
+      //private ConfigurationSecurity securityField;
+
+      private eCompression compressionField;
+
+      private eYesNo encryptionField;
+
+      [Category("Server settings")]
+      [Description("Command line to launch when process is invoked. This command line includes the executable and any parameters, just as if you were launching the service from the DOS command line.")]
+      [DataMember()]
+      public string CommandLine
       {
-         if (this.PropertyChanged != null)
+         get
          {
-            this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            return this.commandLineField;
+         }
+         set
+         {
+            this.commandLineField = value;
          }
       }
 
-      public WWService(ClientConfigurationService clientService = null, ServerConfigurationService serverService = null)
+      [Category("Server settings")]
+      [Description("It can be advisable to separate execution of client's requests into several processes. This way, not all client execution runs in the same Windows process, and any problem such as a crash will have limited damage on the executing sessions. This number is the maximum number of processes that this service will have running at one time.")]
+      [DataMember()]
+      public int NbMaxProcesses
       {
-
-         if (clientService != null)
+         get
          {
-            if (clientService.ServicesManagers != null)
-            {
-               if (clientService.ServicesManagers.Count() > 0)
-               {
-                  this.Host = clientService.ServicesManagers[0].Host;
-                  this.Port = clientService.ServicesManagers[0].Port;
-                  this.HttpHost = clientService.ServicesManagers[0].HttpHost;
-                  this.HttpPort = clientService.ServicesManagers[0].HttpPort;
-                  this.Extension = clientService.ServicesManagers[0].Extension;
-                  this.ProxyHost = clientService.ServicesManagers[0].ProxyHost;
-                  this.ProxyPort = clientService.ServicesManagers[0].ProxyPort;
-                  this.Emergency = clientService.ServicesManagers[0].Emergency;
-                  this.Alias = clientService.ServicesManagers[0].Alias;
-                  this.ConnectTimeout = clientService.ServicesManagers[0].ConnectTimeout;
-                  this.TimeBeforePolling = clientService.ServicesManagers[0].TimeBeforePolling;
-               }
-            }
-
-            this.Security = clientService.Security;
+            return this.nbMaxProcessesField;
          }
-
-         if (serverService != null)
+         set
          {
-            this.Name = serverService.Name;
-            this.Compression = serverService.Compression;
-            this.Encryption = serverService.Encryption;
-
-            if (serverService.Process != null)
-            {
-               //this.Process = serverService.Process;
-
-               CommandLine = serverService.Process.CommandLine;
-               CurrentDirectory = serverService.Process.CurrentDirectory;
-               EnvironmentVariables = serverService.Process.EnvironmentVariables;
-               LoadBalancing = serverService.Process.LoadBalancing;
-               NbMaxConcurrentRequests = serverService.Process.NbMaxConcurrentRequests;
-               NbMaxProcesses = serverService.Process.NbMaxProcesses;
-               UseResponsiveProcessesOnly = serverService.Process.UseResponsiveProcessesOnly;
-               UserDomain = serverService.Process.UserDomain;
-               UserName = serverService.Process.UserName;
-               UserPassword = serverService.Process.UserPassword;
-               ProcessManagement = serverService.Process.ProcessManagement;
-            }
+            this.nbMaxProcessesField = value;
          }
       }
 
-      //public object Clone()
+      [Category("Server settings")]
+      [Description("A given client request is assigned to a thread. Multiple simultaneous requests can thus be processed.  Note that the number of threads isn't necessarily equal to the number of current sessions, but rather to the number of requests that at any given time are being executed simultaneously.")]
+      [DataMember()]
+      public int NbMaxConcurrentRequests
+      {
+         get
+         {
+            return this.nbMaxConcurrentRequestsField;
+         }
+         set
+         {
+            this.nbMaxConcurrentRequestsField = value;
+         }
+      }
+
+      [Category("Server settings")]
+      [Description("")]
+      [DataMember()]
+      public eYesNo UseResponsiveProcessesOnly
+      {
+         get
+         {
+            return this.useResponsiveProcessesOnlyField;
+         }
+         set
+         {
+            this.useResponsiveProcessesOnlyField = value;
+         }
+      }
+
+      [Category("Server settings")]
+      [Description("The directory the service is to be switched to before launching it.")]
+      [DataMember()]
+      public string CurrentDirectory
+      {
+         get
+         {
+            return this.currentDirectoryField;
+         }
+         set
+         {
+            this.currentDirectoryField = value;
+         }
+      }
+
+      [Category("Server settings")]
+      [Description("User name of system account authorized to launch the service.")]
+      [DataMember()]
+      public string UserName
+      {
+         get
+         {
+            return this.userNameField;
+         }
+         set
+         {
+            this.userNameField = value;
+         }
+      }
+
+      [Category("Server settings")]
+      [Description("Reserved for future use.")]
+      [DataMember()]
+      public string UserDomain
+      {
+         get
+         {
+            return this.userDomainField;
+         }
+         set
+         {
+            this.userDomainField = value;
+         }
+      }
+
+      [Category("Server settings")]
+      [DataMember()]
+      [Description("Password of system account authorized to launch the service.")]
+      public string UserPassword
+      {
+         get
+         {
+            return this.userPasswordField;
+         }
+         set
+         {
+            this.userPasswordField = value;
+         }
+      }
+
+      [Category("Server settings")]
+      [Description("Environment Variables embeded in this service's process.")]
+      [System.Xml.Serialization.XmlArrayItemAttribute("Var", IsNullable = true)]
+      [DataMember()]
+      public ObservableCollection<NetConfEnvironmentVariable> EnvironmentVariables
+      {
+         get
+         {
+            return this.environmentVariablesField;
+         }
+         set
+         {
+            this.environmentVariablesField = value;
+         }
+      }
+
+      [Category("Server settings")]
+      [Description("Handles how and when the process is stopped.")]
+      [ExpandableObject]
+      [DataMember()]
+      public ServerConfigurationProcessManagement ProcessManagement
+      {
+         get
+         {
+            return this.processManagementField;
+         }
+         set
+         {
+            this.processManagementField = value;
+         }
+      }
+
+      [Category("Server settings")]
+      [Description("Defines how to divide sessions among processes.")]
+      [ExpandableObject]
+      [DataMember()]
+      public ServerConfigurationLoadBalancing LoadBalancing
+      {
+         get
+         {
+            return this.loadBalancingField;
+         }
+         set
+         {
+            this.loadBalancingField = value;
+         }
+      }
+
+
+      //[Category("Server settings")]
+      //[Description("This property overrides global security settings.")]
+      //[ExpandableObject]
+      //[DataMember()]
+      //public ConfigurationSecurity Security
       //{
-      //   WWService clone = (WWService)this.MemberwiseClone();
-
-      //   clone.EnvironmentVariables
-      //   clone.environmentVariables = new ObservableCollection<EnvironmentVariable>();
-      //   clone.launchers = new ObservableCollection<Launcher>();
-
-      //   foreach (var variable in this.EnvironmentVariables)
+      //   get
       //   {
-      //      clone.EnvironmentVariables.Add(variable.Clone());
+      //      return this.securityField;
       //   }
-
-      //   foreach (Launcher launcher in this.launchers)
+      //   set
       //   {
-      //      clone.launchers.Add((Launcher)launcher.Clone());
+      //      this.securityField = value;
       //   }
-
-      //   return clone;
       //}
 
+      [Category("Server settings")]
+      [Description("Data is exchanged between the clients and the WSM servers. This data can " +
+         "be compressed to minimize network traffic.  You can specify either at the client side " +
+         "or the server side the level of compression to use (0 for no encryption and 9 for " +
+         "maximum encryption). For a given client executing the process, the highest level of " +
+         "compression, either that specified by the client or that specified by the server, is " +
+         "used. Experience has proven that for typical applications, a compression level of 1 " +
+         "suits well. This compression level offers a good balance between network traffic " +
+         "reduction and performance, with very little time consumed in compressing and " +
+         "decompressing.More data intensive services may opt for a higher compression level. " +
+         "WSM uses ZLIB compression.")]
+      [DataMember()]
+      public eCompression Compression
+      {
+         get
+         {
+            return this.compressionField;
+         }
+         set
+         {
+            this.compressionField = value;
+         }
+      }
+
+      [Category("Server settings")]
+      [Description("Data is exchanged between the clients and the WSM servers. This data can " +
+         "be encrypted. You specify at the client side whether to activate encryption or not, and " +
+         "at the server end whether encryption is required or not. WSM uses the SSPI encryption " +
+         "technique, which has minimal impact on performance. For data encryption, the client " +
+         "might need to identify himself with the server.")]
+      [DataMember()]
+      public eYesNo Encryption
+      {
+         get
+         {
+            return this.encryptionField;
+         }
+         set
+         {
+            this.encryptionField = value;
+         }
+      }
    }
+
 }
+
+

@@ -158,6 +158,24 @@ namespace eWamLauncher
             }
          }
 
+         //Try loading WNetConf
+         try
+         {
+            string wNetConfIniPath = this.environment.ResolveVariable("WYDE-NETCONF");
+            this.ImportWNetConf(wNetConfIniPath);
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong Importing WydeWeb configuration.\n" +
+               "Try importing manualy.\n\n" + exception.Message,
+               "Error importing WydeWeb configuration",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
+
          return this.environment;
       }
 
@@ -270,7 +288,7 @@ namespace eWamLauncher
 
          foreach(EnvironmentVariable envVar in this.environment.environmentVariables)
          {
-            envVar.value = this.ReplaceDPandCDwithPath(envVar.value, path);
+            envVar.value = this.ReplaceDPandCDwithPath(envVar.value, path + "\\");
          }
 
          this.environment.ExpandAllEnvVariables();
@@ -318,6 +336,29 @@ namespace eWamLauncher
          }
 
          return this.environment.launchers;
+      }
+
+      public void ImportWNetConf(string path)
+      {
+         try
+         {
+            if (!File.Exists(path))
+            {
+               System.Windows.MessageBox.Show(
+                  "WNetConf.ini file not found : " + path + " \n\n" +
+                  "Please try importing manually.",
+                  "WydeWeb configuration not imported",
+                  System.Windows.MessageBoxButton.OK);
+               throw new FileNotFoundException("file not found : " + path);
+            }
+
+            WydeNetWorkConfiguration rawNetConf = WydeNetWorkConfiguration.CreateFromWNetConfIni(path);
+            this.environment.wNetConf = new WNetConf(rawNetConf);
+         }
+         catch (FileNotFoundException exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+         }
       }
    }
 }

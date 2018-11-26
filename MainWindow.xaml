@@ -20,6 +20,11 @@
    </Window.CommandBindings>
 
    <Window.Resources>
+
+      <DataTemplate x:Key="PackageDownloadInfoTemplate" DataType="{x:Type local:PackageDownloadInfo}">
+         <localviews:PackageDownloadView />
+      </DataTemplate>
+
       <DataTemplate DataType="{x:Type local:WWService}">
          <localviews:WWServiceView />
       </DataTemplate>
@@ -89,7 +94,7 @@
          TrayToolTip="{StaticResource TrayToolTip}" />
 
       <TabControl TabStripPlacement="Left">
-         <TabItem Header="Environments  " VerticalContentAlignment="Stretch" VerticalAlignment="Stretch">
+         <TabItem Header="Environments  ">
             <Grid>
                <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="210" MinWidth="150"/>
@@ -171,6 +176,7 @@
                   <WrapPanel Orientation="Horizontal" Margin="0,2" DockPanel.Dock="Bottom">
                      <Button Click="OnRefreshPackages" Content="Refresh Package List" Margin="2,2"/>
                      <Button Click="OnImportSelectedPackage" Content="Import Selected Package" Margin="2,2"/>
+                     <Button Click="OnImportSelectedComponents" Content="Import Selected Components" Margin="2,2"/>
                   </WrapPanel>
 
                   <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch" DockPanel.Dock="Top"
@@ -183,8 +189,7 @@
                </DockPanel>
                <GridSplitter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" Background="IndianRed"/>
                <DockPanel Grid.Column="2" VerticalAlignment="Stretch">
-                  <WrapPanel Orientation="Horizontal" Margin="0,2" DockPanel.Dock="Bottom">
-                  </WrapPanel>
+
                   <Grid>
                      <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="200" MinWidth="150"/>
@@ -193,21 +198,21 @@
                      </Grid.ColumnDefinitions>
 
                      <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0"
-                                 x:Name="lbComponentList"
-                                 ItemsSource="{Binding SelectedItem.Components, ElementName=lbPackageList, Mode=TwoWay}"
-                                 SelectedIndex="0"
-                                 DisplayMemberPath="Name"
-                                 MinWidth="120"
-                                 MinHeight="200"
-                                 Margin="5"
-                                 SelectionMode="Single" />
-                                 <!--SelectionMode="Multiple"-->
+                        x:Name="lbComponentList"
+                        ItemsSource="{Binding SelectedItem.Components, ElementName=lbPackageList, Mode=TwoWay}"
+                        SelectedIndex="0"
+                        DisplayMemberPath="Name"
+                        MinWidth="120"
+                        MinHeight="200"
+                        Margin="5"
+                        SelectionMode="Multiple" />
+                        <!--SelectionMode="Single" />-->
 
                      <GridSplitter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" Background="IndianRed"/>
                      <Grid Grid.Column="2">
                         <Grid.ColumnDefinitions>
                            <ColumnDefinition Width="*"/>
-                           <ColumnDefinition Width="250"/>
+                           <ColumnDefinition Width="350"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                            <RowDefinition Height="*"/>
@@ -226,25 +231,45 @@
                                  MinHeight="200"
                                  Margin="5" />
 
-                        <StackPanel Orientation="Vertical" x:Name="stkpProgressBars" Grid.Column="1" 
-                                    HorizontalAlignment="Stretch" Margin="1" />
+                        <StackPanel Orientation="Vertical" Grid.Column="1">
 
-                        <!--<Label Content="Name: " Grid.Column="0" Grid.Row="0"/>
-                        <TextBox Text="{Binding SelectedItem.name, ElementName=lbLauncherList, Mode=TwoWay}" Grid.Column="1" Grid.Row="0" Margin="5"/>
-                        <Label Content="Program: " Grid.Column="0" Grid.Row="1"/>
-                        <TextBox Text="{Binding SelectedItem.program, ElementName=lbLauncherList, Mode=TwoWay}" Grid.Column="1" Grid.Row="1" Margin="5"/>
-                        <Label Content="Arguments: " Grid.Column="0" Grid.Row="2"/>
-                        <TextBox Text="{Binding SelectedItem.arguments, ElementName=lbLauncherList, Mode=TwoWay}" TextWrapping="Wrap" Grid.Column="1" Grid.Row="2" Margin="5"/>
-                        <Label Content="Binary set: " Grid.Column="0" Grid.Row="3"/>
+                           <StackPanel Orientation="Vertical" DockPanel.Dock="Top" Margin="10">
+                              <Label Content="Package descrtiption" FontSize="15" FontWeight="Bold"/>
+                              <StackPanel Orientation="Horizontal">
+                                 <Label Content="Name : " FontWeight="Bold"/>
+                                 <Label Content="{Binding SelectedItem.Name, ElementName=lbPackageList}" />
+                              </StackPanel>
+                              <WrapPanel>
+                                 <Label Content="Description : " FontWeight="Bold"/>
+                                 <TextBlock Text="{Binding SelectedItem.Description, ElementName=lbPackageList}" TextWrapping="WrapWithOverflow" VerticalAlignment="Center" TextAlignment="Justify" />
+                              </WrapPanel>
+                              <StackPanel Orientation="Horizontal">
+                                 <Label Content="Unique ID: " FontWeight="Bold"/>
+                                 <Label Content="{Binding SelectedItem.Id, ElementName=lbPackageList}" />
+                              </StackPanel>
+                              <StackPanel Orientation="Horizontal">
+                                 <Label Content="Product : " FontWeight="Bold"/>
+                                 <Label Content="{Binding SelectedItem.Type, ElementName=lbPackageList}" />
+                              </StackPanel>
+                              <StackPanel Orientation="Horizontal">
+                                 <Label Content="Version : " FontWeight="Bold"/>
+                                 <Label Content="{Binding SelectedItem.Version, ElementName=lbPackageList}" />
+                              </StackPanel>
+                              
+                           </StackPanel>
+                           
+                           <ListView x:Name="lbDownloadList" ItemsSource="{Binding packageDownloadManager.downloads}"
+                                    ItemTemplate="{StaticResource PackageDownloadInfoTemplate}"
+                                    HorizontalContentAlignment="Stretch" HorizontalAlignment="Stretch" 
+                                    VerticalAlignment="Stretch" VerticalContentAlignment="Stretch">
+                              <ListView.ItemContainerStyle>
+                                 <Style TargetType="{x:Type ListViewItem}">
+                                    <Setter Property="Focusable" Value="False"/>
+                                 </Style>
+                              </ListView.ItemContainerStyle>
+                           </ListView>
+                        </StackPanel>
 
-                        <ComboBox ItemsSource="{Binding SelectedItem.binariesSets, ElementName=cbEwam, Mode=TwoWay}"
-                                       DisplayMemberPath="name"
-                                       SelectedItem="{Binding SelectedItem.binariesSet, ElementName=lbLauncherList, Mode=TwoWay}"
-                                       Grid.Column="1" Grid.Row="3" Margin="5"/>
-                        <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="4">
-                           <Button Click="OnExecuteLauncher" Content="Start" HorizontalAlignment="Left" Margin="5"/>
-                           <Button Click="OnConsoleExecuteLauncher" Content="Console start" HorizontalAlignment="Left" Margin="5"/>
-                        </StackPanel>-->
                      </Grid>
                      
                   </Grid>

@@ -46,6 +46,9 @@ namespace eWamLauncher
       private WNetConf _wNetConf;
       [DataMember()] public WNetConf wNetConf { get { return _wNetConf; } set { _wNetConf = value; NotifyPropertyChanged(); } }
 
+      //private WydeNetWorkConfiguration _wydeNetConf;
+      //[DataMember()] public WydeNetWorkConfiguration wydeNetConf { get { return _wydeNetConf; } set { _wydeNetConf = value; NotifyPropertyChanged(); } }
+
 
       public ObservableCollection<Process> processes { get; set; }
 
@@ -88,8 +91,7 @@ namespace eWamLauncher
 
          return clone;
       }
-
-
+      
       public void RestoreReferenceEwam(IEnumerable<Ewam> referenceEwams)
       {
          if (this.ewam == null)

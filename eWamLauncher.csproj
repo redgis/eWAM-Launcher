@@ -137,12 +137,18 @@
     <Compile Include="EnvironmentVariable.cs" />
     <Compile Include="Ewam.cs" />
     <Compile Include="Launcher.cs" />
+    <Compile Include="PackageDownloadInfo.cs" />
+    <Compile Include="PackageDownloadManager.cs" />
     <Compile Include="Profile.cs" />
+    <Compile Include="SubTask.cs" />
     <Compile Include="Views\EnvironmentView.xaml.cs">
       <DependentUpon>EnvironmentView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\EwamView.xaml.cs">
       <DependentUpon>EwamView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PackageDownloadView.xaml.cs">
+      <DependentUpon>PackageDownloadView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
@@ -178,6 +184,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\EwamView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\PackageDownloadView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
