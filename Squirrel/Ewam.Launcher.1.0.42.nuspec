@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>Ewam.Launcher</id>
+        <version>1.0.42</version>
+        <title>EwamLauncher</title>
+        <authors>Regis Martinez</authors>
+        <owners>Mphasis Wyde</owners>
+        <projectUrl>http://regismt470p.wyde.paris.local/wLauncherUpdate/</projectUrl>
+        <iconUrl>http://regismt470p.wyde.paris.local/wLauncherUpdate/icon.ico</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>eWAM Environment manager and launcher</description>
+        <summary>eWAM Environment manager and launcher</summary>
+        <releaseNotes>## Whats new
+
+* Squirel Updater SharpCompress dependency fix (v &lt;= 0.20, v0.22 was failing)</releaseNotes>
+    </metadata>
+    <files>
+        <file src="..\bin\Release\ControlzEx.dll" target="lib\net45\ControlzEx.dll" />
+        <file src="..\bin\Release\DeltaCompressionDotNet.dll" target="lib\net45\DeltaCompressionDotNet.dll" />
+        <file src="..\bin\Release\DeltaCompressionDotNet.MsDelta.dll" target="lib\net45\DeltaCompressionDotNet.MsDelta.dll" />
+        <file src="..\bin\Release\DeltaCompressionDotNet.PatchApi.dll" target="lib\net45\DeltaCompressionDotNet.PatchApi.dll" />
+        <file src="..\bin\Release\eWamLauncher.exe" target="lib\net45\eWamLauncher.exe" />
+        <file src="..\bin\Release\eWamLauncher.exe.config" target="lib\net45\eWamLauncher.exe.config" />
+        <file src="..\bin\Release\eWamLauncher.vshost.exe" target="lib\net45\eWamLauncher.vshost.exe" />
+        <file src="..\bin\Release\Hardcodet.Wpf.TaskbarNotification.dll" target="lib\net45\Hardcodet.Wpf.TaskbarNotification.dll" />
+        <file src="..\bin\Release\log4net.config" target="lib\net45\log4net.config" />
+        <file src="..\bin\Release\log4net.dll" target="lib\net45\log4net.dll" />
+        <file src="..\bin\Release\MahApps.Metro.dll" target="lib\net45\MahApps.Metro.dll" />
+        <file src="..\bin\Release\Mono.Cecil.dll" target="lib\net45\Mono.Cecil.dll" />
+        <file src="..\bin\Release\Mono.Cecil.Mdb.dll" target="lib\net45\Mono.Cecil.Mdb.dll" />
+        <file src="..\bin\Release\Mono.Cecil.Pdb.dll" target="lib\net45\Mono.Cecil.Pdb.dll" />
+        <file src="..\bin\Release\Mono.Cecil.Rocks.dll" target="lib\net45\Mono.Cecil.Rocks.dll" />
+        <file src="..\bin\Release\NuGet.Squirrel.dll" target="lib\net45\NuGet.Squirrel.dll" />
+        <file src="..\bin\Release\SharpCompress.dll" target="lib\net45\SharpCompress.dll" />
+        <file src="..\bin\Release\Splat.dll" target="lib\net45\Splat.dll" />
+        <file src="..\bin\Release\Squirrel.dll" target="lib\net45\Squirrel.dll" />
+        <file src="..\bin\Release\System.Windows.Interactivity.dll" target="lib\net45\System.Windows.Interactivity.dll" />
+        <file src="..\bin\Release\Xceed.Wpf.AvalonDock.dll" target="lib\net45\Xceed.Wpf.AvalonDock.dll" />
+        <file src="..\bin\Release\Xceed.Wpf.AvalonDock.Themes.Aero.dll" target="lib\net45\Xceed.Wpf.AvalonDock.Themes.Aero.dll" />
+        <file src="..\bin\Release\Xceed.Wpf.AvalonDock.Themes.Metro.dll" target="lib\net45\Xceed.Wpf.AvalonDock.Themes.Metro.dll" />
+        <file src="..\bin\Release\Xceed.Wpf.AvalonDock.Themes.VS2010.dll" target="lib\net45\Xceed.Wpf.AvalonDock.Themes.VS2010.dll" />
+        <file src="..\bin\Release\Xceed.Wpf.DataGrid.dll" target="lib\net45\Xceed.Wpf.DataGrid.dll" />
+        <file src="..\bin\Release\Xceed.Wpf.Toolkit.dll" target="lib\net45\Xceed.Wpf.Toolkit.dll" />
+    </files>
+</package>

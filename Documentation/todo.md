@@ -8,6 +8,7 @@
 - [x] Command / Menu to export an entire environment or binary set
 - [x] Added logging feature
 - [x] Show log in a window, in the UI
+- [ ] Backup configuration on launch
 
 ## WydeWeb configuration
 - [x] Import configuration from wNetConf.ini, wNetConf.xml

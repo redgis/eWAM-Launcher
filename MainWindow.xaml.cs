@@ -173,7 +173,8 @@ namespace eWamLauncher
          }
       }
 
-      private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+      private static readonly ILog log = 
+         LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
       #endregion
 
@@ -233,8 +234,11 @@ namespace eWamLauncher
 
       protected override void OnStateChanged(EventArgs e)
       {
-         if (WindowState == System.Windows.WindowState.Minimized)
+         if (WindowState == System.Windows.WindowState.Minimized &&
+             this.profile.settings.minimizeToTray)
+         {
             this.Hide();
+         }
 
          base.OnStateChanged(e);
       }

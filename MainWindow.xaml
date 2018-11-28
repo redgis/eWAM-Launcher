@@ -10,7 +10,7 @@
    mc:Ignorable="d"
    IconEdgeMode="Aliased"
    Title="eWAM Launcher" Height="600" Width="1200" ResizeMode="CanResizeWithGrip">
-        
+
    <Window.CommandBindings>
       <CommandBinding Command="Open" Executed="OpenConfiguration" CanExecute="OpenConfiguration_CanExecute" />
       <CommandBinding Command="Save" Executed="SaveConfiguration" CanExecute="SaveConfiguration_CanExecute" />

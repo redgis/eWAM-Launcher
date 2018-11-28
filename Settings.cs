@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -66,8 +67,11 @@ namespace eWamLauncher
       [Description("URL of the package repository containing the package-index.xml file.")]
       [DataMember()] public string ewamUpdateServerURL { get { return _ewamUpdateServerURL; } set { _ewamUpdateServerURL = value; NotifyPropertyChanged(); } }
 
-
-
+      private bool _minimizeToTray;
+      [Category("eWamLauncher settings")]
+      [DisplayName("Minimize to systray")]
+      [Description("When enabled, the application will minimize itself to systray. Double click on icon to restore.")]
+      [DataMember()] public bool minimizeToTray { get { return _minimizeToTray; } set { _minimizeToTray = value; NotifyPropertyChanged(); } }
 
       //private string _ewamdlls;
       //[DataMember()] public string ewamdlls { get { return _ewamdlls; } set { _ewamdlls = value; NotifyPropertyChanged(); } }
@@ -106,6 +110,8 @@ namespace eWamLauncher
 
          this.launcherUpdateServerURL = @"http://regismt470p.wyde.paris.local/wLauncherUpdate/";
          this.ewamUpdateServerURL = @"http://regismt470p.wyde.paris.local/eWamUpdate/";
+
+         this.minimizeToTray = true;
       }
    }
 }

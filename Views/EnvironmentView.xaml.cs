@@ -332,6 +332,32 @@ namespace eWamLauncher.Views
          }
       }
 
+      private void SetEnvVarToProcessInfo(ProcessStartInfo startInfo, 
+         string VarName, string VarValue)
+      {
+         if (startInfo.EnvironmentVariables.ContainsKey(VarName))
+         {
+            startInfo.EnvironmentVariables[VarName] = VarValue;
+         }
+         else
+         {
+            startInfo.EnvironmentVariables.Add(VarName, VarValue);
+         }
+      }
+
+      private void AppendEnvVarToProcessInfo(ProcessStartInfo startInfo,
+         string VarName, string VarValue)
+      {
+         if (startInfo.EnvironmentVariables.ContainsKey(VarName))
+         {
+            startInfo.EnvironmentVariables[VarName] += VarValue;
+         }
+         else
+         {
+            startInfo.EnvironmentVariables.Add(VarName, VarValue);
+         }
+      }
+
       private ProcessStartInfo GetPreparedProcessInfo(Launcher launcher)
       {
          // Before anything, make sure all env. variable are up to date !
@@ -368,34 +394,25 @@ namespace eWamLauncher.Views
          }
 
          pathVariable += System.Environment.GetEnvironmentVariable("PATH");
-
-         if (startInfo.EnvironmentVariables.ContainsKey("PATH"))
-         {
-            startInfo.EnvironmentVariables["PATH"] = pathVariable;
-         }
-         else
-         {
-            startInfo.EnvironmentVariables.Add("PATH", pathVariable);
-         }
+         SetEnvVarToProcessInfo(startInfo, "PATH", pathVariable);
 
          // Put CppDll Folders in WYDE-DLL
          string[] cppdlls = environment.binariesSet.cppdllPathes.Split(delimiters);
-         startInfo.EnvironmentVariables.Add("WYDE-DLL", environment.ewam.basePath + "\\" + cppdlls[0]);
+         SetEnvVarToProcessInfo(startInfo, "WYDE - DLL", environment.ewam.basePath + "\\" + cppdlls[0]);
 
          // TODO : to use when WYDE-DLL support ';' seperated list of pathes.
          //string cppdlls = launcher.binariesSet.cppdllPathes.Replace('\n', ';');
          //startInfo.EnvironmentVariables.Add("WYDE-DLL", cppdlls);
-
          //startInfo.EnvironmentVariables.Add("WYDE-ROOT", ((Environment)this.DataContext).ewam.basePath);
-         startInfo.EnvironmentVariables.Add("WYDE-ROOT",
-            ((Environment)this.DataContext).GetEnvironmentVariable("WYDE-ROOT").value);
-         startInfo.EnvironmentVariables.Add("WF-ROOT",
-            ((Environment)this.DataContext).GetEnvironmentVariable("WF-ROOT").value);
-         startInfo.EnvironmentVariables.Add("ENV-ROOT",
-            ((Environment)this.DataContext).GetEnvironmentVariable("ENV-ROOT").value);
-         startInfo.EnvironmentVariables.Add("WYDE-TGV",
-            ((Environment)this.DataContext).GetEnvironmentVariable("WYDE-TGV").value);
 
+         SetEnvVarToProcessInfo(startInfo, "WYDE-ROOT",
+            ((Environment)this.DataContext).GetEnvironmentVariable("WYDE-ROOT").value);
+         SetEnvVarToProcessInfo(startInfo, "WF-ROOT",
+            ((Environment)this.DataContext).GetEnvironmentVariable("WF-ROOT").value);
+         SetEnvVarToProcessInfo(startInfo, "ENV-ROOT",
+            ((Environment)this.DataContext).GetEnvironmentVariable("ENV-ROOT").value);
+         SetEnvVarToProcessInfo(startInfo, "WYDE-TGV",
+            ((Environment)this.DataContext).GetEnvironmentVariable("WYDE-TGV").value);
 
          // Set all other environment variables
          foreach (EnvironmentVariable variable in
@@ -403,14 +420,7 @@ namespace eWamLauncher.Views
          {
             if (variable.name == "PATH") continue;
 
-            if (startInfo.EnvironmentVariables.ContainsKey(variable.name))
-            {
-               startInfo.EnvironmentVariables[variable.name] += variable.result;
-            }
-            else
-            {
-               startInfo.EnvironmentVariables.Add(variable.name, variable.result);
-            }
+            AppendEnvVarToProcessInfo(startInfo, variable.name, variable.result);
          }
 
          // Find the path to our exe
@@ -448,7 +458,7 @@ namespace eWamLauncher.Views
             dummyLauncher.program = "cmd.exe";
             dummyLauncher.arguments = "/K \"" + launcher.program + " " + ((Environment)this.DataContext).ExpandString(launcher.arguments) + "\"";
 
-            ProcessStartInfo startInfo = this.GetPreparedProcessInfo(launcher);
+            ProcessStartInfo startInfo = this.GetPreparedProcessInfo(dummyLauncher);
             Process newProcess = Process.Start(startInfo);
          }
          catch (Exception exception)
@@ -844,16 +854,19 @@ namespace eWamLauncher.Views
 
             OpenFileDialog fileBrowser = new OpenFileDialog();
 
-            fileBrowser.Filter = "WNetConf file|wNetConf.ini";
+            fileBrowser.Filter = "WNetConf file|*.ini|Any file|*.*";
             fileBrowser.FilterIndex = 1;
             fileBrowser.RestoreDirectory = true;
             fileBrowser.CheckFileExists = false;
             fileBrowser.Title = "Export";
 
             environment.ExpandAllEnvVariables();
-            fileBrowser.InitialDirectory = System.IO.Path.GetDirectoryName(
-               environment.GetEnvironmentVariable("WYDE-NETCONF").result);
-            fileBrowser.FileName = "wnetconf.ini";
+            EnvironmentVariable wNetConfVar = environment.GetEnvironmentVariable("WYDE-NETCONF");
+            if (wNetConfVar != null)
+            {
+               fileBrowser.InitialDirectory = System.IO.Path.GetDirectoryName(wNetConfVar.result);
+               fileBrowser.FileName = "wnetconf.ini";
+            }
 
             if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
