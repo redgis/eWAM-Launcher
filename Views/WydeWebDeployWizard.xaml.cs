@@ -16,19 +16,13 @@ using System.Windows.Shapes;
 namespace eWamLauncher.Views
 {
    /// <summary>
-   /// Interaction logic for SettingsView.xaml
+   /// Interaction logic for WydeWebDeployWizard.xaml
    /// </summary>
-   public partial class SettingsView : UserControl
+   public partial class WydeWebDeployWizard : NavigationWindow
    {
-      public SettingsView()
+      public WydeWebDeployWizard()
       {
          InitializeComponent();
-      }
-
-      private void OnAutoDetectVisualStudios(object sender, RoutedEventArgs e)
-      {
-         Settings _settings = (Settings)this.DataContext;
-         _settings.AutoDetectVisualStudios();
       }
    }
 }

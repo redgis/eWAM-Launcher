@@ -390,7 +390,7 @@ namespace eWamLauncher.Views
 
          if (((Environment)this.DataContext).GetEnvironmentVariable("PATH") != null)
          {
-            pathVariable += ((Environment)this.DataContext).GetEnvironmentVariable("PATH").result + ";";
+            pathVariable += ((Environment)this.DataContext).additionalPath + ";";
          }
 
          pathVariable += System.Environment.GetEnvironmentVariable("PATH");
@@ -398,7 +398,7 @@ namespace eWamLauncher.Views
 
          // Put CppDll Folders in WYDE-DLL
          string[] cppdlls = environment.binariesSet.cppdllPathes.Split(delimiters);
-         SetEnvVarToProcessInfo(startInfo, "WYDE - DLL", environment.ewam.basePath + "\\" + cppdlls[0]);
+         SetEnvVarToProcessInfo(startInfo, "WYDE-DLL", environment.ewam.basePath + "\\" + cppdlls[0]);
 
          // TODO : to use when WYDE-DLL support ';' seperated list of pathes.
          //string cppdlls = launcher.binariesSet.cppdllPathes.Replace('\n', ';');
@@ -418,8 +418,6 @@ namespace eWamLauncher.Views
          foreach (EnvironmentVariable variable in
             ((Environment)this.DataContext).environmentVariables)
          {
-            if (variable.name == "PATH") continue;
-
             AppendEnvVarToProcessInfo(startInfo, variable.name, variable.result);
          }
 
@@ -451,14 +449,42 @@ namespace eWamLauncher.Views
 
          try
          {
+            Environment env = (Environment)this.DataContext;
+
             Launcher launcher = (Launcher)lbLauncherList.SelectedItem;
             Launcher dummyLauncher = new Launcher();
 
             dummyLauncher.name = launcher.name;
             dummyLauncher.program = "cmd.exe";
-            dummyLauncher.arguments = "/K \"" + launcher.program + " " + ((Environment)this.DataContext).ExpandString(launcher.arguments) + "\"";
+
+            if (env.useVS)
+            {
+               string vsCmd = "";
+
+               switch (env.VsPlateform)
+               {
+                  case eVsPlateform.x86:
+                     vsCmd = Path.Combine(env.associatedVS.basePath, env.associatedVS.vcvarSubPath32);
+                     break;
+                  case eVsPlateform.x64:
+                     vsCmd = Path.Combine(env.associatedVS.basePath, env.associatedVS.vcvarSubPath64);
+                     break;
+                  default:
+                     break;
+               }
+
+               dummyLauncher.arguments = "/K \"\"" + vsCmd + "\" && " + launcher.program + " " +
+                  ((Environment)this.DataContext).ExpandString(launcher.arguments) + "\"";
+            }
+            else
+            {
+               dummyLauncher.arguments = "/K \"" + launcher.program + " " +
+                  ((Environment)this.DataContext).ExpandString(launcher.arguments) + "\"";
+            }
 
             ProcessStartInfo startInfo = this.GetPreparedProcessInfo(dummyLauncher);
+            startInfo.WorkingDirectory = env.envRoot;
+
             Process newProcess = Process.Start(startInfo);
          }
          catch (Exception exception)
@@ -630,9 +656,30 @@ namespace eWamLauncher.Views
 
             dummyLauncher.name = launcher.name;
             dummyLauncher.program = "cmd.exe";
-            dummyLauncher.arguments = "/K \"cd /d " + environment.envRoot + "\"";
+            dummyLauncher.arguments = "";
+
+            if (environment.useVS)
+            {
+               string vsCmd = "";
+
+               switch (environment.VsPlateform)
+               {
+                  case eVsPlateform.x86:
+                     vsCmd = Path.Combine(environment.associatedVS.basePath, environment.associatedVS.vcvarSubPath32);
+                     break;
+                  case eVsPlateform.x64:
+                     vsCmd = Path.Combine(environment.associatedVS.basePath, environment.associatedVS.vcvarSubPath64);
+                     break;
+                  default:
+                     break;
+               }
+
+               dummyLauncher.arguments = "/K \"\"" + vsCmd + "\"\"";
+            }
 
             ProcessStartInfo startInfo = this.GetPreparedProcessInfo(dummyLauncher);
+            startInfo.WorkingDirectory = environment.envRoot;
+
             Process newProcess = Process.Start(startInfo);
          }
          catch (Exception exception)

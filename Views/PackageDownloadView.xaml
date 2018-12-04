@@ -10,12 +10,12 @@
    <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch">
       
       <DockPanel Margin="2" HorizontalAlignment="Stretch">
-         <Label Content="{Binding package.Description}" FontWeight="Bold" />
+         <Label Content="{Binding package.Name}" FontWeight="Bold" />
          <Button Click="OnCancel" Background="Transparent" HorizontalAlignment="Right">X</Button>
       </DockPanel>
       <StackPanel Orientation="Horizontal">
-         <Label Content="{Binding description}" />
-         <Label Content="-" />
+         <!--<Label Content="{Binding description}" />-->
+         <Label Content="Total progress: " />
          <Label Content="{Binding overallprogress}" />
          <Label Content="%" />
       </StackPanel>

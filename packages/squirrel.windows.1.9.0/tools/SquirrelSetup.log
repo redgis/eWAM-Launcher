@@ -495,3 +495,147 @@ Usage: WriteZipToSetup [Setup.exe template] [Zip File]
 2018-11-27 18:01:33> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.DataGrid.dll hasn't changed, writing dummy file
 2018-11-27 18:01:33> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.Toolkit.dll hasn't changed, writing dummy file
 2018-11-27 18:01:33> Program: Building embedded zip file for Setup.exe
+2018-11-28 18:11:11> Program: Starting Squirrel Updater: --releasify Squirrel\Ewam.Launcher.1.0.44.nupkg --releaseDir=Squirrel\Releases\ --packagesDir=packages\
+2018-11-28 18:11:11> Program: Bootstrapper EXE found at:D:\Desktop\Work\eWAM Devs\2017-11-27 - eWAM_Tools\eWAM-Launcher\packages\squirrel.windows.1.9.0\tools\Setup.exe
+2018-11-28 18:11:11> Program: Creating release package: D:\Desktop\Work\eWAM Devs\2017-11-27 - eWAM_Tools\eWAM-Launcher\Squirrel\Releases\Ewam.Launcher.1.0.44.nupkg
+2018-11-28 18:11:11> ReleasePackage: Creating release package: D:\Desktop\Work\eWAM Devs\2017-11-27 - eWAM_Tools\eWAM-Launcher\Squirrel\Releases\Ewam.Launcher.1.0.44.nupkg => D:\Desktop\Work\eWAM Devs\2017-11-27 - eWAM_Tools\eWAM-Launcher\Squirrel\Releases\Ewam.Launcher-1.0.44-full.nupkg
+2018-11-28 18:11:18> ReleasePackage: Extracting dependent packages: []
+2018-11-28 18:11:18> ReleasePackage: Removing unnecessary data
+2018-11-28 18:11:20> DeltaPackageBuilder: Extracting Squirrel\Releases\Ewam.Launcher-1.0.43-full.nupkg and D:\Desktop\Work\eWAM Devs\2017-11-27 - eWAM_Tools\eWAM-Launcher\Squirrel\Releases\Ewam.Launcher-1.0.44-full.nupkg into C:\Users\martinez_r\AppData\Local\SquirrelTemp\tempb
+2018-11-28 18:11:21> DeltaPackageBuilder: \lib\net45\ControlzEx.dll hasn't changed, writing dummy file
+2018-11-28 18:11:21> DeltaPackageBuilder: \lib\net45\DeltaCompressionDotNet.dll hasn't changed, writing dummy file
+2018-11-28 18:11:21> DeltaPackageBuilder: \lib\net45\DeltaCompressionDotNet.MsDelta.dll hasn't changed, writing dummy file
+2018-11-28 18:11:21> DeltaPackageBuilder: \lib\net45\DeltaCompressionDotNet.PatchApi.dll hasn't changed, writing dummy file
+2018-11-28 18:11:21> DeltaPackageBuilder: Delta patching C:\Users\martinez_r\AppData\Local\SquirrelTemp\tempa\lib\net45\eWamLauncher.exe => C:\Users\martinez_r\AppData\Local\SquirrelTemp\tempb\lib\net45\eWamLauncher.exe
+2018-11-28 18:11:22> DeltaPackageBuilder: \lib\net45\eWamLauncher.exe.config hasn't changed, writing dummy file
+2018-11-28 18:11:22> DeltaPackageBuilder: \lib\net45\eWamLauncher.vshost.exe hasn't changed, writing dummy file
+2018-11-28 18:11:22> DeltaPackageBuilder: \lib\net45\eWamLauncher.vshost_ExecutionStub.exe hasn't changed, writing dummy file
+2018-11-28 18:11:22> DeltaPackageBuilder: Delta patching C:\Users\martinez_r\AppData\Local\SquirrelTemp\tempa\lib\net45\eWamLauncher_ExecutionStub.exe => C:\Users\martinez_r\AppData\Local\SquirrelTemp\tempb\lib\net45\eWamLauncher_ExecutionStub.exe
+2018-11-28 18:11:23> DeltaPackageBuilder: \lib\net45\Hardcodet.Wpf.TaskbarNotification.dll hasn't changed, writing dummy file
+2018-11-28 18:11:23> DeltaPackageBuilder: \lib\net45\log4net.config hasn't changed, writing dummy file
+2018-11-28 18:11:23> DeltaPackageBuilder: \lib\net45\log4net.dll hasn't changed, writing dummy file
+2018-11-28 18:11:23> DeltaPackageBuilder: \lib\net45\MahApps.Metro.dll hasn't changed, writing dummy file
+2018-11-28 18:11:23> DeltaPackageBuilder: \lib\net45\Mono.Cecil.dll hasn't changed, writing dummy file
+2018-11-28 18:11:23> DeltaPackageBuilder: \lib\net45\Mono.Cecil.Mdb.dll hasn't changed, writing dummy file
+2018-11-28 18:11:23> DeltaPackageBuilder: \lib\net45\Mono.Cecil.Pdb.dll hasn't changed, writing dummy file
+2018-11-28 18:11:23> DeltaPackageBuilder: \lib\net45\Mono.Cecil.Rocks.dll hasn't changed, writing dummy file
+2018-11-28 18:11:23> DeltaPackageBuilder: \lib\net45\NuGet.Squirrel.dll hasn't changed, writing dummy file
+2018-11-28 18:11:23> DeltaPackageBuilder: \lib\net45\SharpCompress.dll hasn't changed, writing dummy file
+2018-11-28 18:11:23> DeltaPackageBuilder: \lib\net45\Splat.dll hasn't changed, writing dummy file
+2018-11-28 18:11:23> DeltaPackageBuilder: \lib\net45\Squirrel.dll hasn't changed, writing dummy file
+2018-11-28 18:11:23> DeltaPackageBuilder: \lib\net45\System.Windows.Interactivity.dll hasn't changed, writing dummy file
+2018-11-28 18:11:23> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.AvalonDock.dll hasn't changed, writing dummy file
+2018-11-28 18:11:23> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.AvalonDock.Themes.Aero.dll hasn't changed, writing dummy file
+2018-11-28 18:11:23> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.AvalonDock.Themes.Metro.dll hasn't changed, writing dummy file
+2018-11-28 18:11:23> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.AvalonDock.Themes.VS2010.dll hasn't changed, writing dummy file
+2018-11-28 18:11:23> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.DataGrid.dll hasn't changed, writing dummy file
+2018-11-28 18:11:23> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.Toolkit.dll hasn't changed, writing dummy file
+2018-11-28 18:11:24> Program: Building embedded zip file for Setup.exe
+2018-11-28 18:56:48> Program: Starting Squirrel Updater: --releasify Squirrel\Ewam.Launcher.1.0.45.nupkg --releaseDir=Squirrel\Releases\ --packagesDir=packages\
+2018-11-28 18:56:48> Program: Bootstrapper EXE found at:D:\Desktop\Work\eWAM Devs\2017-11-27 - eWAM_Tools\eWAM-Launcher\packages\squirrel.windows.1.9.0\tools\Setup.exe
+2018-11-28 18:56:48> Program: Creating release package: D:\Desktop\Work\eWAM Devs\2017-11-27 - eWAM_Tools\eWAM-Launcher\Squirrel\Releases\Ewam.Launcher.1.0.45.nupkg
+2018-11-28 18:56:48> ReleasePackage: Creating release package: D:\Desktop\Work\eWAM Devs\2017-11-27 - eWAM_Tools\eWAM-Launcher\Squirrel\Releases\Ewam.Launcher.1.0.45.nupkg => D:\Desktop\Work\eWAM Devs\2017-11-27 - eWAM_Tools\eWAM-Launcher\Squirrel\Releases\Ewam.Launcher-1.0.45-full.nupkg
+2018-11-28 18:56:56> ReleasePackage: Extracting dependent packages: []
+2018-11-28 18:56:56> ReleasePackage: Removing unnecessary data
+2018-11-28 18:56:57> DeltaPackageBuilder: Extracting Squirrel\Releases\Ewam.Launcher-1.0.44-full.nupkg and D:\Desktop\Work\eWAM Devs\2017-11-27 - eWAM_Tools\eWAM-Launcher\Squirrel\Releases\Ewam.Launcher-1.0.45-full.nupkg into C:\Users\martinez_r\AppData\Local\SquirrelTemp\tempb
+2018-11-28 18:56:58> DeltaPackageBuilder: \lib\net45\ControlzEx.dll hasn't changed, writing dummy file
+2018-11-28 18:56:58> DeltaPackageBuilder: \lib\net45\DeltaCompressionDotNet.dll hasn't changed, writing dummy file
+2018-11-28 18:56:58> DeltaPackageBuilder: \lib\net45\DeltaCompressionDotNet.MsDelta.dll hasn't changed, writing dummy file
+2018-11-28 18:56:58> DeltaPackageBuilder: \lib\net45\DeltaCompressionDotNet.PatchApi.dll hasn't changed, writing dummy file
+2018-11-28 18:56:58> DeltaPackageBuilder: Delta patching C:\Users\martinez_r\AppData\Local\SquirrelTemp\tempa\lib\net45\eWamLauncher.exe => C:\Users\martinez_r\AppData\Local\SquirrelTemp\tempb\lib\net45\eWamLauncher.exe
+2018-11-28 18:56:59> DeltaPackageBuilder: \lib\net45\eWamLauncher.exe.config hasn't changed, writing dummy file
+2018-11-28 18:56:59> DeltaPackageBuilder: \lib\net45\eWamLauncher.vshost.exe hasn't changed, writing dummy file
+2018-11-28 18:56:59> DeltaPackageBuilder: \lib\net45\eWamLauncher.vshost_ExecutionStub.exe hasn't changed, writing dummy file
+2018-11-28 18:56:59> DeltaPackageBuilder: Delta patching C:\Users\martinez_r\AppData\Local\SquirrelTemp\tempa\lib\net45\eWamLauncher_ExecutionStub.exe => C:\Users\martinez_r\AppData\Local\SquirrelTemp\tempb\lib\net45\eWamLauncher_ExecutionStub.exe
+2018-11-28 18:56:59> DeltaPackageBuilder: \lib\net45\Hardcodet.Wpf.TaskbarNotification.dll hasn't changed, writing dummy file
+2018-11-28 18:56:59> DeltaPackageBuilder: \lib\net45\log4net.config hasn't changed, writing dummy file
+2018-11-28 18:56:59> DeltaPackageBuilder: \lib\net45\log4net.dll hasn't changed, writing dummy file
+2018-11-28 18:56:59> DeltaPackageBuilder: \lib\net45\MahApps.Metro.dll hasn't changed, writing dummy file
+2018-11-28 18:56:59> DeltaPackageBuilder: \lib\net45\Mono.Cecil.dll hasn't changed, writing dummy file
+2018-11-28 18:56:59> DeltaPackageBuilder: \lib\net45\Mono.Cecil.Mdb.dll hasn't changed, writing dummy file
+2018-11-28 18:56:59> DeltaPackageBuilder: \lib\net45\Mono.Cecil.Pdb.dll hasn't changed, writing dummy file
+2018-11-28 18:56:59> DeltaPackageBuilder: \lib\net45\Mono.Cecil.Rocks.dll hasn't changed, writing dummy file
+2018-11-28 18:56:59> DeltaPackageBuilder: \lib\net45\NuGet.Squirrel.dll hasn't changed, writing dummy file
+2018-11-28 18:56:59> DeltaPackageBuilder: \lib\net45\SharpCompress.dll hasn't changed, writing dummy file
+2018-11-28 18:56:59> DeltaPackageBuilder: \lib\net45\Splat.dll hasn't changed, writing dummy file
+2018-11-28 18:56:59> DeltaPackageBuilder: \lib\net45\Squirrel.dll hasn't changed, writing dummy file
+2018-11-28 18:56:59> DeltaPackageBuilder: \lib\net45\System.Windows.Interactivity.dll hasn't changed, writing dummy file
+2018-11-28 18:56:59> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.AvalonDock.dll hasn't changed, writing dummy file
+2018-11-28 18:56:59> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.AvalonDock.Themes.Aero.dll hasn't changed, writing dummy file
+2018-11-28 18:56:59> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.AvalonDock.Themes.Metro.dll hasn't changed, writing dummy file
+2018-11-28 18:56:59> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.AvalonDock.Themes.VS2010.dll hasn't changed, writing dummy file
+2018-11-28 18:56:59> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.DataGrid.dll hasn't changed, writing dummy file
+2018-11-28 18:56:59> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.Toolkit.dll hasn't changed, writing dummy file
+2018-11-28 18:57:00> Program: Building embedded zip file for Setup.exe
+2018-11-29 18:47:59> Program: Starting Squirrel Updater: --releasify Squirrel\Ewam.Launcher.1.0.46.nupkg --releaseDir=Squirrel\Releases\ --packagesDir=packages\
+2018-11-29 18:47:59> Program: Bootstrapper EXE found at:D:\Desktop\Work\eWAM Devs\2017-11-27 - eWAM_Tools\eWAM-Launcher\packages\squirrel.windows.1.9.0\tools\Setup.exe
+2018-11-29 18:47:59> Program: Creating release package: D:\Desktop\Work\eWAM Devs\2017-11-27 - eWAM_Tools\eWAM-Launcher\Squirrel\Releases\Ewam.Launcher.1.0.46.nupkg
+2018-11-29 18:47:59> ReleasePackage: Creating release package: D:\Desktop\Work\eWAM Devs\2017-11-27 - eWAM_Tools\eWAM-Launcher\Squirrel\Releases\Ewam.Launcher.1.0.46.nupkg => D:\Desktop\Work\eWAM Devs\2017-11-27 - eWAM_Tools\eWAM-Launcher\Squirrel\Releases\Ewam.Launcher-1.0.46-full.nupkg
+2018-11-29 18:48:07> ReleasePackage: Extracting dependent packages: []
+2018-11-29 18:48:07> ReleasePackage: Removing unnecessary data
+2018-11-29 18:48:08> DeltaPackageBuilder: Extracting Squirrel\Releases\Ewam.Launcher-1.0.45-full.nupkg and D:\Desktop\Work\eWAM Devs\2017-11-27 - eWAM_Tools\eWAM-Launcher\Squirrel\Releases\Ewam.Launcher-1.0.46-full.nupkg into C:\Users\martinez_r\AppData\Local\SquirrelTemp\tempb
+2018-11-29 18:48:10> DeltaPackageBuilder: \lib\net45\ControlzEx.dll hasn't changed, writing dummy file
+2018-11-29 18:48:10> DeltaPackageBuilder: \lib\net45\DeltaCompressionDotNet.dll hasn't changed, writing dummy file
+2018-11-29 18:48:10> DeltaPackageBuilder: \lib\net45\DeltaCompressionDotNet.MsDelta.dll hasn't changed, writing dummy file
+2018-11-29 18:48:10> DeltaPackageBuilder: \lib\net45\DeltaCompressionDotNet.PatchApi.dll hasn't changed, writing dummy file
+2018-11-29 18:48:10> DeltaPackageBuilder: Delta patching C:\Users\martinez_r\AppData\Local\SquirrelTemp\tempa\lib\net45\eWamLauncher.exe => C:\Users\martinez_r\AppData\Local\SquirrelTemp\tempb\lib\net45\eWamLauncher.exe
+2018-11-29 18:48:10> DeltaPackageBuilder: \lib\net45\eWamLauncher.exe.config hasn't changed, writing dummy file
+2018-11-29 18:48:10> DeltaPackageBuilder: \lib\net45\eWamLauncher.vshost.exe hasn't changed, writing dummy file
+2018-11-29 18:48:10> DeltaPackageBuilder: \lib\net45\eWamLauncher.vshost_ExecutionStub.exe hasn't changed, writing dummy file
+2018-11-29 18:48:10> DeltaPackageBuilder: Delta patching C:\Users\martinez_r\AppData\Local\SquirrelTemp\tempa\lib\net45\eWamLauncher_ExecutionStub.exe => C:\Users\martinez_r\AppData\Local\SquirrelTemp\tempb\lib\net45\eWamLauncher_ExecutionStub.exe
+2018-11-29 18:48:11> DeltaPackageBuilder: \lib\net45\Hardcodet.Wpf.TaskbarNotification.dll hasn't changed, writing dummy file
+2018-11-29 18:48:11> DeltaPackageBuilder: \lib\net45\log4net.config hasn't changed, writing dummy file
+2018-11-29 18:48:11> DeltaPackageBuilder: \lib\net45\log4net.dll hasn't changed, writing dummy file
+2018-11-29 18:48:11> DeltaPackageBuilder: \lib\net45\MahApps.Metro.dll hasn't changed, writing dummy file
+2018-11-29 18:48:11> DeltaPackageBuilder: \lib\net45\Mono.Cecil.dll hasn't changed, writing dummy file
+2018-11-29 18:48:11> DeltaPackageBuilder: \lib\net45\Mono.Cecil.Mdb.dll hasn't changed, writing dummy file
+2018-11-29 18:48:11> DeltaPackageBuilder: \lib\net45\Mono.Cecil.Pdb.dll hasn't changed, writing dummy file
+2018-11-29 18:48:11> DeltaPackageBuilder: \lib\net45\Mono.Cecil.Rocks.dll hasn't changed, writing dummy file
+2018-11-29 18:48:11> DeltaPackageBuilder: \lib\net45\NuGet.Squirrel.dll hasn't changed, writing dummy file
+2018-11-29 18:48:11> DeltaPackageBuilder: \lib\net45\SharpCompress.dll hasn't changed, writing dummy file
+2018-11-29 18:48:11> DeltaPackageBuilder: \lib\net45\Splat.dll hasn't changed, writing dummy file
+2018-11-29 18:48:11> DeltaPackageBuilder: \lib\net45\Squirrel.dll hasn't changed, writing dummy file
+2018-11-29 18:48:11> DeltaPackageBuilder: \lib\net45\System.Windows.Interactivity.dll hasn't changed, writing dummy file
+2018-11-29 18:48:11> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.AvalonDock.dll hasn't changed, writing dummy file
+2018-11-29 18:48:11> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.AvalonDock.Themes.Aero.dll hasn't changed, writing dummy file
+2018-11-29 18:48:11> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.AvalonDock.Themes.Metro.dll hasn't changed, writing dummy file
+2018-11-29 18:48:11> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.AvalonDock.Themes.VS2010.dll hasn't changed, writing dummy file
+2018-11-29 18:48:11> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.DataGrid.dll hasn't changed, writing dummy file
+2018-11-29 18:48:11> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.Toolkit.dll hasn't changed, writing dummy file
+2018-11-29 18:48:11> Program: Building embedded zip file for Setup.exe
+2018-11-30 14:47:00> Program: Starting Squirrel Updater: --releasify Squirrel\Ewam.Launcher.1.0.47.nupkg --releaseDir=Squirrel\Releases\ --packagesDir=packages\
+2018-11-30 14:47:00> Program: Bootstrapper EXE found at:D:\Desktop\Work\eWAM Devs\2017-11-27 - eWAM_Tools\eWAM-Launcher\packages\squirrel.windows.1.9.0\tools\Setup.exe
+2018-11-30 14:47:00> Program: Creating release package: D:\Desktop\Work\eWAM Devs\2017-11-27 - eWAM_Tools\eWAM-Launcher\Squirrel\Releases\Ewam.Launcher.1.0.47.nupkg
+2018-11-30 14:47:00> ReleasePackage: Creating release package: D:\Desktop\Work\eWAM Devs\2017-11-27 - eWAM_Tools\eWAM-Launcher\Squirrel\Releases\Ewam.Launcher.1.0.47.nupkg => D:\Desktop\Work\eWAM Devs\2017-11-27 - eWAM_Tools\eWAM-Launcher\Squirrel\Releases\Ewam.Launcher-1.0.47-full.nupkg
+2018-11-30 14:47:08> ReleasePackage: Extracting dependent packages: []
+2018-11-30 14:47:08> ReleasePackage: Removing unnecessary data
+2018-11-30 14:47:10> DeltaPackageBuilder: Extracting Squirrel\Releases\Ewam.Launcher-1.0.46-full.nupkg and D:\Desktop\Work\eWAM Devs\2017-11-27 - eWAM_Tools\eWAM-Launcher\Squirrel\Releases\Ewam.Launcher-1.0.47-full.nupkg into C:\Users\martinez_r\AppData\Local\SquirrelTemp\tempb
+2018-11-30 14:47:11> DeltaPackageBuilder: \lib\net45\ControlzEx.dll hasn't changed, writing dummy file
+2018-11-30 14:47:11> DeltaPackageBuilder: \lib\net45\DeltaCompressionDotNet.dll hasn't changed, writing dummy file
+2018-11-30 14:47:11> DeltaPackageBuilder: \lib\net45\DeltaCompressionDotNet.MsDelta.dll hasn't changed, writing dummy file
+2018-11-30 14:47:11> DeltaPackageBuilder: \lib\net45\DeltaCompressionDotNet.PatchApi.dll hasn't changed, writing dummy file
+2018-11-30 14:47:11> DeltaPackageBuilder: Delta patching C:\Users\martinez_r\AppData\Local\SquirrelTemp\tempa\lib\net45\eWamLauncher.exe => C:\Users\martinez_r\AppData\Local\SquirrelTemp\tempb\lib\net45\eWamLauncher.exe
+2018-11-30 14:47:12> DeltaPackageBuilder: \lib\net45\eWamLauncher.exe.config hasn't changed, writing dummy file
+2018-11-30 14:47:12> DeltaPackageBuilder: \lib\net45\eWamLauncher.vshost.exe hasn't changed, writing dummy file
+2018-11-30 14:47:12> DeltaPackageBuilder: \lib\net45\eWamLauncher.vshost_ExecutionStub.exe hasn't changed, writing dummy file
+2018-11-30 14:47:12> DeltaPackageBuilder: Delta patching C:\Users\martinez_r\AppData\Local\SquirrelTemp\tempa\lib\net45\eWamLauncher_ExecutionStub.exe => C:\Users\martinez_r\AppData\Local\SquirrelTemp\tempb\lib\net45\eWamLauncher_ExecutionStub.exe
+2018-11-30 14:47:12> DeltaPackageBuilder: \lib\net45\Hardcodet.Wpf.TaskbarNotification.dll hasn't changed, writing dummy file
+2018-11-30 14:47:12> DeltaPackageBuilder: \lib\net45\log4net.config hasn't changed, writing dummy file
+2018-11-30 14:47:12> DeltaPackageBuilder: \lib\net45\log4net.dll hasn't changed, writing dummy file
+2018-11-30 14:47:12> DeltaPackageBuilder: \lib\net45\MahApps.Metro.dll hasn't changed, writing dummy file
+2018-11-30 14:47:12> DeltaPackageBuilder: \lib\net45\Mono.Cecil.dll hasn't changed, writing dummy file
+2018-11-30 14:47:12> DeltaPackageBuilder: \lib\net45\Mono.Cecil.Mdb.dll hasn't changed, writing dummy file
+2018-11-30 14:47:12> DeltaPackageBuilder: \lib\net45\Mono.Cecil.Pdb.dll hasn't changed, writing dummy file
+2018-11-30 14:47:12> DeltaPackageBuilder: \lib\net45\Mono.Cecil.Rocks.dll hasn't changed, writing dummy file
+2018-11-30 14:47:12> DeltaPackageBuilder: \lib\net45\NuGet.Squirrel.dll hasn't changed, writing dummy file
+2018-11-30 14:47:12> DeltaPackageBuilder: \lib\net45\SharpCompress.dll hasn't changed, writing dummy file
+2018-11-30 14:47:12> DeltaPackageBuilder: \lib\net45\Splat.dll hasn't changed, writing dummy file
+2018-11-30 14:47:12> DeltaPackageBuilder: \lib\net45\Squirrel.dll hasn't changed, writing dummy file
+2018-11-30 14:47:12> DeltaPackageBuilder: \lib\net45\System.Windows.Interactivity.dll hasn't changed, writing dummy file
+2018-11-30 14:47:12> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.AvalonDock.dll hasn't changed, writing dummy file
+2018-11-30 14:47:12> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.AvalonDock.Themes.Aero.dll hasn't changed, writing dummy file
+2018-11-30 14:47:12> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.AvalonDock.Themes.Metro.dll hasn't changed, writing dummy file
+2018-11-30 14:47:12> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.AvalonDock.Themes.VS2010.dll hasn't changed, writing dummy file
+2018-11-30 14:47:12> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.DataGrid.dll hasn't changed, writing dummy file
+2018-11-30 14:47:12> DeltaPackageBuilder: \lib\net45\Xceed.Wpf.Toolkit.dll hasn't changed, writing dummy file
+2018-11-30 14:47:13> Program: Building embedded zip file for Setup.exe

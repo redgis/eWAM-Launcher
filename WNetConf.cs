@@ -398,6 +398,11 @@ namespace eWamLauncher
                   this.ConnectTimeout = clientService.ServicesManagers[0].ConnectTimeout;
                   this.TimeBeforePolling = clientService.ServicesManagers[0].TimeBeforePolling;
                   this.NbMaxConcurrentRequests = clientService.ServicesManagers[0].NbMaxConcurrentRequests;
+                  this.TCP = clientService.ServicesManagers[0].TCP;
+                  if (this.TCP == null)
+                  {
+                     this.TCP = new ClientConfigurationTCP();
+                  }
                }
             }
 
@@ -475,6 +480,11 @@ namespace eWamLauncher
          servicesManager.TimeBeforePolling = this.TimeBeforePolling;
          servicesManager.NbMaxConcurrentRequests = this.NbMaxConcurrentRequests;
          servicesManager.ConnectTimeout = this.ConnectTimeout;
+         servicesManager.TCP = this.TCP;
+         if (servicesManager.TCP == null)
+         {
+            servicesManager.TCP = new ClientConfigurationTCP();
+         }
 
          servicesManager.Security = this.Security;
 
@@ -511,6 +521,8 @@ namespace eWamLauncher
       private int nbMaxConcurrentRequestsField;
 
       private ConfigurationSecurity securityField;
+
+      private ClientConfigurationTCP tcpField;
 
 
       [DefaultValue("")]      [Description("Name of host computer of the HTTP server.")]      [DataMember()]
@@ -734,6 +746,23 @@ namespace eWamLauncher
             this.securityField = value;
          }
       }
+
+      [Category("Client settings")]
+      [Description("TCP Keep alive settings.")]
+      [ExpandableObject]
+      [DataMember()]
+      public ClientConfigurationTCP TCP
+      {
+         get
+         {
+            return this.tcpField;
+         }
+         set
+         {
+            this.tcpField = value;
+         }
+      }
+
 
    }
 

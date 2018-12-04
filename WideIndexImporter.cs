@@ -277,9 +277,7 @@ namespace eWamLauncher
 
       private string pathField;
 
-      private string plateformField;
-
-      private string versionField;
+      private string hashField;
 
       /// <remarks/>
       [System.Xml.Serialization.XmlAttributeAttribute()]
@@ -297,29 +295,15 @@ namespace eWamLauncher
 
       /// <remarks/>
       [System.Xml.Serialization.XmlAttributeAttribute()]
-      public string Plateform
+      public string Hash
       {
          get
          {
-            return this.plateformField;
+            return this.hashField;
          }
          set
          {
-            this.plateformField = value;
-         }
-      }
-
-      /// <remarks/>
-      [System.Xml.Serialization.XmlAttributeAttribute()]
-      public string Version
-      {
-         get
-         {
-            return this.versionField;
-         }
-         set
-         {
-            this.versionField = value;
+            this.hashField = value;
          }
       }
 

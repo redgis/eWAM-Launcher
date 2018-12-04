@@ -16,6 +16,12 @@ using System.Windows.Forms;
 
 namespace eWamLauncher
 {
+   public enum eVsPlateform
+   {
+      x86,
+      x64
+   }
+
    [DataContract(Name = "Environment", Namespace = "http://www.wyde.com")]
    public class Environment : ICloneable, INotifyPropertyChanged
    {
@@ -30,6 +36,9 @@ namespace eWamLauncher
 
       private string _tgvSubPath;
       [DataMember()] public string tgvSubPath { get { return _tgvSubPath; } set { _tgvSubPath = value; NotifyPropertyChanged(); } }
+
+      private string _additionalPath;
+      [DataMember()] public string additionalPath { get { return _additionalPath; } set { _additionalPath = value; NotifyPropertyChanged(); } }
 
       private ObservableCollection<EnvironmentVariable> _environmentVariables;
       [DataMember()] public ObservableCollection<EnvironmentVariable> environmentVariables { get { return _environmentVariables; } set { _environmentVariables = value; NotifyPropertyChanged(); } }
@@ -48,6 +57,17 @@ namespace eWamLauncher
 
       //private WydeNetWorkConfiguration _wydeNetConf;
       //[DataMember()] public WydeNetWorkConfiguration wydeNetConf { get { return _wydeNetConf; } set { _wydeNetConf = value; NotifyPropertyChanged(); } }
+
+      private bool _useVS;
+      [DataMember()] public bool useVS { get { return _useVS; } set { _useVS = value; NotifyPropertyChanged(); } }
+      [DataMember()] public bool notUseVS { get { return !_useVS; } set { _useVS = !value; NotifyPropertyChanged(); } }
+
+      private VisualStudioDefinition _associatedVS;
+      [DataMember()] public VisualStudioDefinition associatedVS { get { return _associatedVS; } set { _associatedVS = value; NotifyPropertyChanged(); } }
+
+      private eVsPlateform _VsPlateform;
+      [DataMember()] public eVsPlateform VsPlateform { get { return _VsPlateform; } set { _VsPlateform = value; NotifyPropertyChanged(); } }
+
 
 
       public ObservableCollection<Process> processes { get; set; }
@@ -126,9 +146,35 @@ namespace eWamLauncher
          }
       }
 
+      public void RestoreReferenceVS(IEnumerable<VisualStudioDefinition> referenceVS)
+      {
+         if (this.associatedVS == null)
+            return;
+
+         //Restore VS
+         if (this.associatedVS != null)
+         {
+            foreach (VisualStudioDefinition vs in referenceVS)
+            {
+               if (vs.version == this.associatedVS.version)
+               {
+                  this.associatedVS = vs;
+               }
+            }
+         }
+      }
+
+
       public EnvironmentVariable GetEnvironmentVariable(string name)
       {
          EnvironmentVariable result = null;
+
+         if (name.ToUpper() == "WYDE-DLL" && this.ewam != null)
+         {
+            char[] delimiters = { '\n', ';', '\r', '\b' };
+            string[] cppdlls = this.binariesSet.cppdllPathes.Split(delimiters);
+            result = new EnvironmentVariable("WYDE-DLL", "%WYDE-ROOT%" + "\\" + cppdlls[0]);
+         }
 
          if (name.ToUpper() == "WYDE-ROOT" && this.ewam != null)
          {
@@ -249,7 +295,8 @@ namespace eWamLauncher
                 envVariable.name.ToUpper() == "WYDE-ROOT" ||
                 envVariable.name.ToUpper() == "WF-ROOT" ||
                 envVariable.name.ToUpper() == "ENV-ROOT" ||
-                envVariable.name.ToUpper() == "WYDE-TGV")
+                envVariable.name.ToUpper() == "WYDE-TGV" ||
+                envVariable.name.ToUpper() == "PATH")
             {
                toRemove.Add(envVariable);
             }
@@ -267,7 +314,7 @@ namespace eWamLauncher
          }
       }
 
-      public string GetEnvVarBatch()
+      public string GetEnvVarForBatch()
       {
          Dictionary<string, string> variables = new Dictionary<string, string>();
 
@@ -290,8 +337,6 @@ namespace eWamLauncher
          // Set all other environment variables
          foreach (EnvironmentVariable variable in this.environmentVariables)
          {
-            if (variable.name == "PATH") continue;
-
             variables.Add(variable.name, variable.value);
          }
 
@@ -313,7 +358,7 @@ namespace eWamLauncher
 
          if (this.GetEnvironmentVariable("PATH") != null)
          {
-            pathVariable += this.GetEnvironmentVariable("PATH").value + ";";
+            pathVariable += this.additionalPath;
          }
 
          pathVariable += "%PATH%";
@@ -334,7 +379,7 @@ namespace eWamLauncher
       {
          string eWamSetEnv = "eWAM Set Env.bat";
 
-         System.IO.File.WriteAllText(path + "\\" + eWamSetEnv, this.GetEnvVarBatch());
+         System.IO.File.WriteAllText(path + "\\" + eWamSetEnv, this.GetEnvVarForBatch());
 
          foreach (Launcher launcher in this.launchers)
          {

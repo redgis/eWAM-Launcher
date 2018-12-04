@@ -60,6 +60,9 @@
       this.ewamUpdateServerURL = @"http://regismt470p.wyde.paris.local/eWamUpdate/";
    -->
 
-   <xctk:PropertyGrid x:Name="pgSettings" SelectedObject="{Binding}" NameColumnWidth="300" />
-   
+   <DockPanel>
+      <Button Click="OnAutoDetectVisualStudios" Content="Auto detect Visual Studios" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="5"/>
+      <xctk:PropertyGrid x:Name="pgSettings" SelectedObject="{Binding}" NameColumnWidth="300" />
+   </DockPanel>
+
 </UserControl>

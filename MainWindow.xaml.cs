@@ -53,11 +53,18 @@ namespace eWamLauncher
       private string _assemblyUpdateInfo { get; set; }
       public string assemblyUpdateInfo { get { return _assemblyUpdateInfo; } set { _assemblyUpdateInfo = value; this.NotifyPropertyChanged(); } }
 
-      private ObservableCollection<Package> _packages;
-      public ObservableCollection<Package> packages { get { return _packages; } set { _packages = value; this.NotifyPropertyChanged(); } }
+      private ObservableDictionary<string, ObservableCollection<Package>> _productsPackages;
+      public ObservableDictionary<string, ObservableCollection<Package>> productsPackages { get { return _productsPackages; } set { _productsPackages = value; this.NotifyPropertyChanged(); } }
+
+      //private ObservableCollection<Package> _packages;
+      //public ObservableCollection<Package> packages { get { return _packages; } set { _packages = value; this.NotifyPropertyChanged(); } }
 
       private PackageDownloadManager _packageDownloadManager;
       public PackageDownloadManager packageDownloadManager { get { return _packageDownloadManager; } set { _packageDownloadManager = value; this.NotifyPropertyChanged(); } }
+
+      private bool _updatePending { get; set; }
+      public bool updatePending { get { return _updatePending; } set { _updatePending = value; this.NotifyPropertyChanged(); } }
+
 
       public event PropertyChangedEventHandler PropertyChanged;
 
@@ -90,7 +97,7 @@ namespace eWamLauncher
             string defaultJSONSettings = System.Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%\\ewamLauncher\\ewamLauncher.config.json");
 
             this.profile = new Profile();
-            this.packages = new ObservableCollection<Package>();
+            this.productsPackages = new ObservableDictionary<string, ObservableCollection<Package>>();
 
             try
             { LoadCfgFromXML(defaultXMLSettings); }
@@ -101,7 +108,7 @@ namespace eWamLauncher
                catch (Exception exception)
                {
                   this.profile = new Profile();
-                  this.packages = new ObservableCollection<Package>();
+                  this.productsPackages = new ObservableDictionary<string, ObservableCollection<Package>>();
                   log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
                }
             }
@@ -130,37 +137,6 @@ namespace eWamLauncher
                System.Windows.MessageBoxImage.Error);
          }
       }
-
-      private void StartUpdater()
-         {
-            Task.Run(async () =>
-            {
-               using (var mgr = new UpdateManager(this.profile.settings.launcherUpdateServerURL))
-               {
-                 // Note, in most of these scenarios, the app exits after this method
-                 // completes!
-                 //SquirrelAwareApp.HandleEvents(
-                 //   onInitialInstall: v => mgr.CreateShortcutForThisExe(),
-                 //   onAppUpdate: v =>
-                 //   {
-                 //      mgr.CreateShortcutForThisExe();
-                 //      System.Windows.MessageBox.Show("Updated", "Update detected!", System.Windows.MessageBoxButton.OK);
-                 //   },
-                 //   onAppUninstall: v => mgr.RemoveShortcutForThisExe(),
-                 //   onFirstRun: () =>
-                 //   {
-                 //      System.Windows.MessageBox.Show("First run", "First run!", System.Windows.MessageBoxButton.OK);
-                 //   },
-                 //   onAppObsoleted: v =>
-                 //   {
-                 //      System.Windows.MessageBox.Show("Obsoleted", "App obsolete!", System.Windows.MessageBoxButton.OK);
-                 //   }
-                 //);
-
-                  await mgr.UpdateApp();
-               }
-            });
-         }
 
       #region Logger
 
@@ -336,6 +312,32 @@ namespace eWamLauncher
 
       #region Configuration actions
 
+      private void BackupToDatedFilename(string fileName, int keepOnlyXBackups)
+      {
+         if (File.Exists(fileName))
+         {
+            string path = Path.GetDirectoryName(fileName);
+            string prefix = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss - ");
+            string suffix = Path.GetFileName(fileName);
+            File.Move(fileName, path + "\\" + prefix + suffix);
+
+            List<string> existingBackups = Directory.GetFiles(path, "*" + suffix).ToList();
+            existingBackups.Sort();
+
+            if (existingBackups.Count() > keepOnlyXBackups)
+            {
+               existingBackups.RemoveRange(existingBackups.Count() - keepOnlyXBackups, keepOnlyXBackups);
+
+               foreach (string backupFile in existingBackups)
+               {
+                  File.Delete(backupFile);
+               }
+            }
+         }
+
+         
+      }
+
       public void LoadCfgFromXML(string fileName)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -356,6 +358,7 @@ namespace eWamLauncher
             foreach (Environment env in this.profile.environments)
             {
                env.RestoreReferenceEwam(this.profile.ewams);
+               env.RestoreReferenceVS(this.profile.settings.visualStudios);
             }
          }
          catch (FileNotFoundException exception)
@@ -368,8 +371,15 @@ namespace eWamLauncher
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
-         Directory.CreateDirectory(Path.GetDirectoryName(fileName));
-
+         if (!Directory.Exists(Path.GetDirectoryName(fileName)))
+         {
+            Directory.CreateDirectory(Path.GetDirectoryName(fileName));
+         }
+         else
+         {
+            this.BackupToDatedFilename(fileName, this.profile.settings.numberOfBackups);
+         }
+         
          FileStream writer = new FileStream(fileName, FileMode.Create);
          DataContractSerializer xmlSerializer = new DataContractSerializer(typeof(Profile));
          xmlSerializer.WriteObject(writer, this.profile);
@@ -395,6 +405,7 @@ namespace eWamLauncher
             foreach (Environment env in this.profile.environments)
             {
                env.RestoreReferenceEwam(this.profile.ewams);
+               env.RestoreReferenceVS(this.profile.settings.visualStudios);
             }
          }
          catch (FileNotFoundException exception)
@@ -407,7 +418,14 @@ namespace eWamLauncher
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
-         Directory.CreateDirectory(Path.GetDirectoryName(fileName));
+         if (!Directory.Exists(Path.GetDirectoryName(fileName)))
+         {
+            Directory.CreateDirectory(Path.GetDirectoryName(fileName));
+         }
+         else
+         {
+            this.BackupToDatedFilename(fileName, this.profile.settings.numberOfBackups);
+         }
 
          FileStream writer = new FileStream(fileName, FileMode.Create);
          DataContractJsonSerializer jsonSerializer =
@@ -644,10 +662,9 @@ namespace eWamLauncher
          try
          {
             FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
-            folderBrowser.Description = "Select root folder of your environment";
+            folderBrowser.Description = "Select root folder of your environment (Parent folder of the TGV folder)";
 
             //OpenFileDialog fileBrowser = new OpenFileDialog();
-
             //fileBrowser.Filter = "TGV Base1|W001001.tgv|Any TGV|*.tgv";
             //fileBrowser.FilterIndex = 1;
             //fileBrowser.RestoreDirectory = true;
@@ -1408,7 +1425,7 @@ namespace eWamLauncher
 
          try
          {
-            this.packages.Clear();
+            this.productsPackages.Clear();
 
             WebClient wc = new WebClient();
             wc.DownloadDataCompleted += new DownloadDataCompletedEventHandler(this.OnPackageIndexDownloaded);
@@ -1457,7 +1474,13 @@ namespace eWamLauncher
                WideIndex packageIndex = (WideIndex)serializer.Deserialize(memStream);
                foreach (Package package in packageIndex.Packages)
                {
-                  this.packages.Add(package);
+                  if (!this.productsPackages.ContainsKey(package.Type))
+                  {
+                     this.productsPackages.Add(package.Type, new ObservableCollection<Package>());
+                  }
+
+                  this.productsPackages[package.Type].Add(package);
+
                }
             }
          }
@@ -1568,6 +1591,48 @@ namespace eWamLauncher
 
       #region Update actions
 
+      private void StartUpdater()
+      {
+         Task.Run(async () =>
+         {
+            using (var mgr = new UpdateManager(this.profile.settings.launcherUpdateServerURL))
+            {
+               UpdateInfo updateInfo = await mgr.CheckForUpdate();
+
+               this.assemblyUpdateInfo = "Latest version: " + updateInfo.FutureReleaseEntry.Version;
+
+               if (updateInfo.CurrentlyInstalledVersion.Version != updateInfo.FutureReleaseEntry.Version)
+               {
+                  // Note, in most of these scenarios, the app exits after this method
+                  // completes!
+                  //SquirrelAwareApp.HandleEvents(
+                  //   onInitialInstall: v => mgr.CreateShortcutForThisExe(),
+                  //   onAppUpdate: v =>
+                  //   {
+                  //      mgr.CreateShortcutForThisExe();
+                  //      System.Windows.MessageBox.Show("Updated", "Update detected!", System.Windows.MessageBoxButton.OK);
+                  //   },
+                  //   onAppUninstall: v => mgr.RemoveShortcutForThisExe(),
+                  //   onFirstRun: () =>
+                  //   {
+                  //      System.Windows.MessageBox.Show("First run", "First run!", System.Windows.MessageBoxButton.OK);
+                  //   },
+                  //   onAppObsoleted: v =>
+                  //   {
+                  //      System.Windows.MessageBox.Show("Obsoleted", "App obsolete!", System.Windows.MessageBoxButton.OK);
+                  //   }
+                  //);
+
+                  this.updatePending = true;
+
+                  await mgr.UpdateApp();
+
+                  this.assemblyUpdateInfo = "eWamLauncher updated :) ! Please restart the application !";
+               }
+            }
+         });
+      }
+
       public void OnCheckUpdate(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -1632,6 +1697,5 @@ namespace eWamLauncher
       }
 
       #endregion
-
    }
 }

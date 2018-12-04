@@ -475,6 +475,8 @@ namespace eWamLauncher
       private ConfigurationSecurity securityField;
 
       private int connectTimeoutField;
+
+      private ClientConfigurationTCP tcpField;
       [DefaultValue("")]      [Description("Name of host computer of the HTTP server.")]      public string HttpHost
       {
          get
@@ -694,6 +696,19 @@ namespace eWamLauncher
          set
          {
             this.connectTimeoutField = value;
+         }
+      }
+
+      [Description("TCP Keep alive settings.")]
+      public ClientConfigurationTCP TCP
+      {
+         get
+         {
+            return this.tcpField;
+         }
+         set
+         {
+            this.tcpField = value;
          }
       }
    }
@@ -1945,4 +1960,76 @@ namespace eWamLauncher
          }
       }
    }
+
+   [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+   public partial class ClientConfigurationTCP: INotifyPropertyChanged
+   {
+      public event PropertyChangedEventHandler PropertyChanged;
+
+      // This method is called by the Set accessor of each property.
+      // The CallerMemberName attribute that is applied to the optional propertyName
+      // parameter causes the property name of the caller to be substituted as an argument.
+      private void NotifyPropertyChanged(string propertyName = "")
+      {
+         if (this.PropertyChanged != null)
+         {
+            this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+         }
+      }
+
+      public object Clone()
+      {
+         ClientConfigurationTCP clone = (ClientConfigurationTCP)this.MemberwiseClone();
+
+         return clone;
+      }
+
+
+      private eYesNo keepAliveField;
+
+      private int keepAliveTimeoutField = 7200000;
+
+      private int keepAliveIntervalField = 1000;
+
+      [Description("Enable to keep connection to server alive.")]
+      public eYesNo KeepAlive
+      {
+         get
+         {
+            return this.keepAliveField;
+         }
+         set
+         {
+            this.keepAliveField = value;
+         }
+      }
+
+      [Description("Interval in seconds after which connection is considered dead.")]
+      public int KeepAliveTimeout
+      {
+         get
+         {
+            return this.keepAliveTimeoutField;
+         }
+         set
+         {
+            this.keepAliveTimeoutField = value;
+         }
+      }
+
+      [Description("Interval in seconds between two keep alive requests.")]
+      public int KeepAliveInterval
+      {
+         get
+         {
+            return this.keepAliveIntervalField;
+         }
+         set
+         {
+            this.keepAliveIntervalField = value;
+         }
+      }
+   }
+
+
 }

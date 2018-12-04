@@ -158,60 +158,74 @@ namespace eWamLauncher
 
       private bool TreatNextTasks()
       {
-         bool result = false;
-
-         // No more task ! We're finished, configure the environment and finish up.
-         if (this.remainingTasks.Count == 0)
+         try
          {
-            this.OnDone(new AsyncCompletedEventArgs(null, false, null));
-            return result;
-         }
+            bool result = false;
 
-         bool canProcessTasks = true;
-
-         while (this.remainingTasks.Count > 0 && canProcessTasks)
-         {
-            canProcessTasks = false;
-
-            SubTask nextTask = this.remainingTasks.Peek();
-
-            if (nextTask.prerequisite == null ||
-               (nextTask.prerequisite != null && nextTask.prerequisite.completed))
+            // No more task ! We're finished, configure the environment and finish up.
+            if (this.remainingTasks.Count == 0)
             {
+               this.OnDone(new AsyncCompletedEventArgs(null, false, null));
+               return result;
+            }
 
-               switch (nextTask.taskType)
+            bool canProcessTasks = true;
+
+            while (this.remainingTasks.Count > 0 && canProcessTasks)
+            {
+               canProcessTasks = false;
+
+               SubTask nextTask = this.remainingTasks.Peek();
+
+               if (nextTask.prerequisite == null ||
+                  (nextTask.prerequisite != null && nextTask.prerequisite.completed))
                {
-                  case SubTask.eTaskTypes.Download:
-                     if (!downloadWorker.IsBusy)
-                     {
-                        this.remainingTasks.Dequeue();
-                        this.currentDownloadDescription = "Downloading " + nextTask.description + "...";
-                        this.currentDownloadProgress = 0;
-                        Directory.CreateDirectory(Path.GetDirectoryName(nextTask.target));
-                        downloadWorker.DownloadFileAsync(new Uri(nextTask.source), nextTask.target, nextTask);
-                        canProcessTasks = true;
-                        result = true;
-                     }
-                     break;
-                  case SubTask.eTaskTypes.Extract:
-                     if (!installWorker.IsBusy)
-                     {
-                        this.remainingTasks.Dequeue();
-                        this.currentInstallDescription = "Installing " + nextTask.description + "...";
-                        this.currentInstallProgress = 0;
-                        Directory.CreateDirectory(Path.GetDirectoryName(nextTask.target));
-                        installWorker.RunWorkerAsync(nextTask);
-                        canProcessTasks = true;
-                        result = true;
-                     }
-                     break;
-                  default:
-                     break;
+
+                  switch (nextTask.taskType)
+                  {
+                     case SubTask.eTaskTypes.Download:
+                        if (!downloadWorker.IsBusy)
+                        {
+                           this.remainingTasks.Dequeue();
+                           this.currentDownloadDescription = "Downloading " + nextTask.description + "...";
+                           this.currentDownloadProgress = 0;
+                           Directory.CreateDirectory(Path.GetDirectoryName(nextTask.target));
+                           downloadWorker.DownloadFileAsync(new Uri(nextTask.source), nextTask.target, nextTask);
+                           canProcessTasks = true;
+                           result = true;
+                        }
+                        break;
+                     case SubTask.eTaskTypes.Extract:
+                        if (!installWorker.IsBusy)
+                        {
+                           this.remainingTasks.Dequeue();
+                           this.currentInstallDescription = "Installing " + nextTask.description + "...";
+                           this.currentInstallProgress = 0;
+                           Directory.CreateDirectory(Path.GetDirectoryName(nextTask.target));
+                           installWorker.RunWorkerAsync(nextTask);
+                           canProcessTasks = true;
+                           result = true;
+                        }
+                        break;
+                     default:
+                        break;
+                  }
                }
             }
-         }
 
-         return result;
+            return result;
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
+         return false;
       }
 
       private void OnDownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
@@ -223,79 +237,101 @@ namespace eWamLauncher
 
       private void OnDownloadCompleted(object sender, AsyncCompletedEventArgs e)
       {
-         SubTask currentTask = (SubTask)e.UserState;
+         try
+         { 
+            SubTask currentTask = (SubTask)e.UserState;
 
-         if (e.Cancelled == true)
-         {
-            this.currentDownloadDescription = "Cancelled.";
+            if (e.Cancelled == true)
+            {
+               this.currentDownloadDescription = "Cancelled.";
 
-            log.Info("Download canceled : " + currentTask.description +
-               " from " + currentTask.source + " to " + currentTask.target);
+               log.Info("Download canceled : " + currentTask.description +
+                  " from " + currentTask.source + " to " + currentTask.target);
 
-            this.OnDone(e);
+               this.OnDone(e);
+            }
+            else if (e.Error != null)
+            {
+               this.currentDownloadDescription = "Error !";
+
+               log.Info("Download failed : " + currentTask.description +
+                  " from " + currentTask.source + " to " + currentTask.target +
+                  " with error : " + e.Error.Message);
+
+               this.OnDone(e);
+            }
+            else
+            {
+               currentTask.completed = true;
+               this.currentDownloadProgress = 100;
+               this.currentDownloadDescription = currentTask.description + " - Download finished.";
+               this._doneWorkAmount += currentTask.workAmount;
+               this.OnOverallProgressChanged(0);
+               this.TreatNextTasks();
+            }
          }
-         else if (e.Error != null)
+         catch (Exception exception)
          {
-            this.currentDownloadDescription = "Error !";
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
 
-            log.Info("Download failed : " + currentTask.description +
-               " from " + currentTask.source + " to " + currentTask.target +
-               " with error : " + e.Error.Message);
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
 
-            this.OnDone(e);
-         }
-         else
-         {
-            currentTask.completed = true;
-            this.currentDownloadProgress = 100;
-            this.currentDownloadDescription = currentTask.description + " - Download finished.";
-            this._doneWorkAmount += currentTask.workAmount;
-            this.OnOverallProgressChanged(0);
-            this.TreatNextTasks();
-         }
-         
+
       }
 
       private void OnInstall(object sender, DoWorkEventArgs e)
       {
-         BackgroundWorker worker = sender as BackgroundWorker;
-         SubTask currentTask = (SubTask)e.Argument;
-         e.Result = currentTask;
-         
-
-         int currentTaskWorkAmountDone = 0;
-
-         //Do extract of the given zip
-         //ZipFile.ExtractToDirectory(targetDir + "\\" + component.Name + ".zip", targetDir);
-         using (SharpCompress.Archives.Zip.ZipArchive archive = SharpCompress.Archives.Zip.ZipArchive.Open(currentTask.source))
-         {
-            foreach (SharpCompress.Archives.Zip.ZipArchiveEntry entry in archive.Entries)
-            {
-               if (worker.CancellationPending == true)
-               {
-                  e.Cancel = true;
-                  break;
-               }
-               else
-               {
-                  //if (entry.FullName.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
-                  Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(this.targetDir, entry.ToString())));
-                  entry.WriteToFile(Path.Combine(this.targetDir, entry.ToString()));
-                  currentTaskWorkAmountDone++;
-
-                  worker.ReportProgress((int)(((double)currentTaskWorkAmountDone / (double)currentTask.workAmount) * 100), currentTask);
-               }
-            }
-         }
-
          try
          {
+            BackgroundWorker worker = sender as BackgroundWorker;
+            SubTask currentTask = (SubTask)e.Argument;
+            e.Result = currentTask;
+         
+
+            int currentTaskWorkAmountDone = 0;
+
+            //Do extract of the given zip
+            //ZipFile.ExtractToDirectory(targetDir + "\\" + component.Name + ".zip", targetDir);
+            using (SharpCompress.Archives.Zip.ZipArchive archive = SharpCompress.Archives.Zip.ZipArchive.Open(currentTask.source))
+            {
+               foreach (SharpCompress.Archives.Zip.ZipArchiveEntry entry in archive.Entries)
+               {
+                  if (worker.CancellationPending == true)
+                  {
+                     e.Cancel = true;
+                     break;
+                  }
+                  else
+                  {
+                     //if (entry.FullName.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
+                     Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(this.targetDir, entry.ToString())));
+                     entry.WriteToFile(Path.Combine(this.targetDir, entry.ToString()));
+                     currentTaskWorkAmountDone++;
+
+                     worker.ReportProgress((int)(((double)currentTaskWorkAmountDone / (double)currentTask.workAmount) * 100), currentTask);
+                  }
+               }
+            }
+
+
             File.Delete(currentTask.source);
          }
          catch (Exception exception)
          {
             log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
          }
+
       }
 
       private void OnOnInstallProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -307,38 +343,52 @@ namespace eWamLauncher
 
       private void OnInstallCompleted(object sender, RunWorkerCompletedEventArgs e)
       {
-         if (e.Cancelled == true)
+         try
          {
-            this.currentInstallDescription = "Cancelled.";
+            if (e.Cancelled == true)
+            {
+               this.currentInstallDescription = "Cancelled.";
 
-            log.Info("Install canceled : " + this.description
-               /*+ " from " + currentTask.source + " to " + currentTask.target*/);
+               log.Info("Install canceled : " + this.description
+                  /*+ " from " + currentTask.source + " to " + currentTask.target*/);
 
-            this.OnDone(e);
+               this.OnDone(e);
+            }
+            else if (e.Error != null)
+            {
+               SubTask currentTask = (SubTask)e.Result;
+
+               this.currentInstallDescription = "Error !";
+
+               log.Info("Install failed : " + currentTask.description +
+                  " from " + currentTask.source + " to " + currentTask.target +
+                  " with error : " + e.Error.Message);
+
+               this.OnDone(e);
+            }
+            else
+            {
+               SubTask currentTask = (SubTask)e.Result;
+
+               currentTask.completed = true;
+               this.currentInstallProgress = 100;
+               this.currentInstallDescription = currentTask.description + " - Install finished.";
+               this._doneWorkAmount += currentTask.workAmount;
+               this.OnOverallProgressChanged(0);
+               this.TreatNextTasks();
+            }
          }
-         else if (e.Error != null)
+         catch (Exception exception)
          {
-            SubTask currentTask = (SubTask)e.Result;
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
 
-            this.currentInstallDescription = "Error !";
-
-            log.Info("Install failed : " + currentTask.description +
-               " from " + currentTask.source + " to " + currentTask.target + 
-               " with error : " + e.Error.Message);
-
-            this.OnDone(e);
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
          }
-         else
-         {
-            SubTask currentTask = (SubTask)e.Result;
 
-            currentTask.completed = true;
-            this.currentInstallProgress = 100;
-            this.currentInstallDescription = currentTask.description + " - Install finished.";
-            this._doneWorkAmount += currentTask.workAmount;
-            this.OnOverallProgressChanged(0);
-            this.TreatNextTasks();
-         }
       }
 
       private void OnOverallProgressChanged(int currentTaskEstimatedWorkMountDone)
@@ -349,135 +399,160 @@ namespace eWamLauncher
 
       private void OnDone(AsyncCompletedEventArgs e)
       {
-         if (this.state != ePackageDownloadState.Running)
+         try
          {
-            return;
+            if (this.state != ePackageDownloadState.Running)
+            {
+               return;
+            }
+
+            if (e.Cancelled == true)
+            {
+               this.state = ePackageDownloadState.Cancelled;
+
+               ((MainWindow)Application.Current.MainWindow).eWAMLauncherNotifyIcon.ShowBalloonTip(
+                  "Download canceled", this.package.Description, BalloonIcon.Warning);
+
+               log.Info("Package pull canceled : " + this.package.Description);
+
+            }
+            else if (e.Error != null)
+            {
+               this.state = ePackageDownloadState.Failed;
+
+               ((MainWindow)Application.Current.MainWindow).eWAMLauncherNotifyIcon.ShowBalloonTip(
+                     "Download failed",
+                     this.package.Description + "\n" + e.Error.Message, BalloonIcon.Error);
+
+               log.Info("Package pull canceled : " + this.package.Description);
+
+            }
+            else
+            {
+               this.state = ePackageDownloadState.Done;
+
+               ((MainWindow)Application.Current.MainWindow).eWAMLauncherNotifyIcon.ShowBalloonTip(
+               "Download completed",
+               this.package.Description, BalloonIcon.Info);
+
+               log.Info("Download completed of " + this.package.Description +
+                  " (while " + this.description + ") " +
+                  ", at " + this.overallprogress + ", to " + this.targetDir);
+
+               this.ConfigureEnvironments();
+            }
+
+            ((MainWindow)Application.Current.MainWindow).packageDownloadManager.downloads.Remove(this);
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
          }
 
-         if (e.Cancelled == true)
-         {
-            this.state = ePackageDownloadState.Cancelled;
-
-            ((MainWindow)Application.Current.MainWindow).eWAMLauncherNotifyIcon.ShowBalloonTip(
-               "Download canceled", this.package.Description, BalloonIcon.Warning);
-
-            log.Info("Package pull canceled : " + this.package.Description);
-
-         }
-         else if (e.Error != null)
-         {
-            this.state = ePackageDownloadState.Failed;
-
-            ((MainWindow)Application.Current.MainWindow).eWAMLauncherNotifyIcon.ShowBalloonTip(
-                  "Download failed",
-                  this.package.Description + "\n" + e.Error.Message, BalloonIcon.Error);
-
-            log.Info("Package pull canceled : " + this.package.Description);
-
-         }
-         else
-         {
-            this.state = ePackageDownloadState.Done;
-
-            ((MainWindow)Application.Current.MainWindow).eWAMLauncherNotifyIcon.ShowBalloonTip(
-            "Download completed",
-            this.package.Description, BalloonIcon.Info);
-
-            log.Info("Download completed of " + this.package.Description +
-               " (while " + this.description + ") " +
-               ", at " + this.overallprogress + ", to " + this.targetDir);
-
-            this.ConfigureEnvironments();
-         }
-
-         ((MainWindow)Application.Current.MainWindow).packageDownloadManager.downloads.Remove(this);
       }
-      
+
       private void ConfigureEnvironments()
       {
-         this.description = this.package.Description + " - Configuring ... ";
-         //Look for BinariesSets
-         // Get BinariesSet and import associated eWAM
-         Ewam importedEwam = null;
-         Boolean found = false;
-         foreach (PackageComponent component in this.package.Components)
+         try
          {
-            if (component.Files != null)
+            this.description = this.package.Description + " - Configuring ... ";
+            //Look for BinariesSets
+            // Get BinariesSet and import associated eWAM
+            Ewam importedEwam = null;
+            Boolean found = false;
+            foreach (PackageComponent component in this.package.Components)
             {
-               foreach (ComponentFile file in component.Files)
+               if (component.Files != null)
                {
-                  string filename = MainWindow.NormalizePath(
-                     this.targetDir + "\\" + file.Path);
-                  string extension = Path.GetExtension(filename);
-
-                  if (extension == ".xwam")
+                  foreach (ComponentFile file in component.Files)
                   {
-                     importedEwam = ((MainWindow)Application.Current.MainWindow).LoadEwamFromXML(filename);
-                     found = true;
-                     break;
+                     string filename = MainWindow.NormalizePath(
+                        this.targetDir + "\\" + file.Path);
+                     string extension = Path.GetExtension(filename);
+
+                     if (extension == ".xwam")
+                     {
+                        importedEwam = ((MainWindow)Application.Current.MainWindow).LoadEwamFromXML(filename);
+                        found = true;
+                        break;
+                     }
+                     else if (extension == ".jswam")
+                     {
+                        importedEwam = ((MainWindow)Application.Current.MainWindow).LoadEwamFromJSON(filename);
+                        found = true;
+                        break;
+                     }
 
                   }
-                  else if (extension == ".jswam")
-                  {
-                     importedEwam = ((MainWindow)Application.Current.MainWindow).LoadEwamFromJSON(filename);
-                     found = true;
-                     break;
-                  }
+               }
 
+               if (found)
+               {
+                  importedEwam.basePath = this.targetDir;
+                  importedEwam.name = this.package.Name;
+
+                  this._profile.ewams.Add(importedEwam);
+                  break;
                }
             }
 
-            if (found)
+            //Look for environment definition / launchers
+            // If exists, create associated environment using Launchers
+            found = false;
+            Environment importedEnv = null;
+            foreach (PackageComponent component in this.package.Components)
             {
-               importedEwam.basePath = this.targetDir;
-               importedEwam.name = this.package.Description;
+               if (component.Files != null)
+               {
+                  foreach (ComponentFile file in component.Files)
+                  {
+                     string filename = MainWindow.NormalizePath(this.targetDir + "\\" + file.Path);
+                     string extension = Path.GetExtension(filename);
 
-               this._profile.ewams.Add(importedEwam);
-               break;
+                     if (extension == ".xenv")
+                     {
+                        importedEnv = ((MainWindow)Application.Current.MainWindow).LoadEnvironmentFromXML(filename);
+                        found = true;
+                        break;
+                     }
+                     else if (extension == ".jsenv")
+                     {
+                        importedEnv = ((MainWindow)Application.Current.MainWindow).LoadEnvironmentFromJSON(filename);
+                        found = true;
+                        break;
+                     }
+                  }
+               }
+
+               if (found)
+               {
+                  // Fill envRoot and wfRoot by adding the provided path as prefix
+                  importedEnv.envRoot = this.targetDir + "\\" + importedEnv.envRoot;
+                  importedEnv.wfRoot = this.targetDir + "\\" + importedEnv.wfRoot;
+                  importedEnv.ewam = importedEwam;
+                  importedEnv.name = this.package.Name;
+
+                  this._profile.environments.Add(importedEnv);
+                  break;
+               }
             }
          }
-
-         //Look for environment definition / launchers
-         // If exists, create associated environment using Launchers
-         found = false;
-         Environment importedEnv = null;
-         foreach (PackageComponent component in this.package.Components)
+         catch (Exception exception)
          {
-            if (component.Files != null)
-            {
-               foreach (ComponentFile file in component.Files)
-               {
-                  string filename = MainWindow.NormalizePath(this.targetDir + "\\" + file.Path);
-                  string extension = Path.GetExtension(filename);
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
 
-                  if (extension == ".xenv")
-                  {
-                     importedEnv = ((MainWindow)Application.Current.MainWindow).LoadEnvironmentFromXML(filename);
-                     found = true;
-                     break;
-                  }
-                  else if (extension == ".jsenv")
-                  {
-                     importedEnv = ((MainWindow)Application.Current.MainWindow).LoadEnvironmentFromJSON(filename);
-                     found = true;
-                     break;
-                  }
-               }
-            }
-
-            if (found)
-            {
-               // Fill envRoot and wfRoot by adding the provided path as prefix
-               importedEnv.envRoot = this.targetDir + "\\" + importedEnv.envRoot;
-               importedEnv.wfRoot = this.targetDir + "\\" + importedEnv.wfRoot;
-               importedEnv.ewam = importedEwam;
-               importedEnv.name = this.package.Description;
-
-               this._profile.environments.Add(importedEnv);
-               break;
-            }
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
          }
       }
-
    }
 }

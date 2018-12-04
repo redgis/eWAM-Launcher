@@ -8,7 +8,7 @@
 - [x] Command / Menu to export an entire environment or binary set
 - [x] Added logging feature
 - [x] Show log in a window, in the UI
-- [ ] Backup configuration on launch
+- [x] Backup configuration on close, with limited number of backup kept
 
 ## WydeWeb configuration
 - [x] Import configuration from wNetConf.ini, wNetConf.xml
@@ -65,8 +65,8 @@
 - [x] have a list of folder in which to lookup when importing a new environment
 - [x] reload last session (based on last session file opened, default is in %appdata%)
 - [x] address of update server
-- [ ] Add "Additional pathes", and forbid "PATH" in environment variables
-- [ ] Add Section with VS2010, VS2012 path to be called if needed, find a way to enable that in an environment.
+- [x] Add "Additional pathes", and forbid "PATH" in environment variables
+- [x] Add Section with VS2010, VS2012 path to be called if needed, find a way to enable that in an environment.
    See https://stackoverflow.com/questions/1842491/how-do-i-find-the-path-of-visual-studio-in-the-registry-using-python :
       - HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\SxS\VC7
       - path + vcvars*.bat :
@@ -84,7 +84,7 @@
 - [x] Re-design using BackgroundWorker : supports progress and cancellation !
    - [x] Add ability to cancel an on-going download
 - [x] Allow downloading only selected components
-- [ ] Allow comparing local environment and suggest update binaries
+- [ ] Allow comparing local to online repo index, and suggest update binaries
 - [x] Add a progressbar for download and extraction
 - [/] Use nuget packaging ?
       
@@ -105,7 +105,7 @@
 - [x] When changing eWAM, also change (or at least remove) all the binary set used in the launchers
 - [x] Add path to Wyseman and WydeWeb.exe somewhere (at import of eWAM or environment, or in path, at launch)
 - [x] Wynsure environment launchers not importing correctly after environment pull from online repo
-- [ ] Auto-Update doesn't seem to work correctly ...
+- [x] Auto-Update doesn't seem to work correctly ...
 
 https://youtu.be/rDjrOaoHz9s
 

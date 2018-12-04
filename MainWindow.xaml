@@ -164,7 +164,7 @@
          </TabItem>
 
          <TabItem Header="Packages  ">
-            <Grid HorizontalAlignment="Stretch">
+            <Grid>
                <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="210" MinWidth="150"/>
                   <ColumnDefinition Width="5"/>
@@ -172,7 +172,7 @@
                </Grid.ColumnDefinitions>
 
                <DockPanel Grid.Column="0" Margin="5" VerticalAlignment="Stretch">
-                  
+
                   <WrapPanel Orientation="Horizontal" Margin="0,2" DockPanel.Dock="Bottom">
                      <Button Click="OnRefreshPackages" Content="Refresh Package List" Margin="2,2"/>
                      <Button Click="OnImportSelectedPackage" Content="Import Selected Package" Margin="2,2"/>
@@ -180,27 +180,47 @@
                   </WrapPanel>
 
                   <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch" DockPanel.Dock="Top"
-                     x:Name="lbPackageList"
-                     ItemsSource="{Binding packages, Mode=TwoWay}"
+                     x:Name="lbProductPackageList"
+                     ItemsSource="{Binding productsPackages, Mode=TwoWay}"
+                     DisplayMemberPath="Key"
                      SelectedIndex="0"
-                     DisplayMemberPath="Id"
-                     MinHeight="200"/>
+                     MinHeight="200"
+                     Loaded="OnRefreshPackages"/>
 
                </DockPanel>
+               
                <GridSplitter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" Background="IndianRed"/>
-               <DockPanel Grid.Column="2" VerticalAlignment="Stretch">
 
-                  <Grid>
-                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="200" MinWidth="150"/>
-                        <ColumnDefinition Width="2"/>
-                        <ColumnDefinition Width="*"/>
-                     </Grid.ColumnDefinitions>
+               <Grid HorizontalAlignment="Stretch" Grid.Column="2">
+                  <Grid.ColumnDefinitions>
+                     <ColumnDefinition Width="210" MinWidth="150"/>
+                     <ColumnDefinition Width="5"/>
+                     <ColumnDefinition Width="*"/>
+                  </Grid.ColumnDefinitions>
 
-                     <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0"
+                  <DockPanel Grid.Column="0" Margin="5" VerticalAlignment="Stretch">
+
+                     <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch" DockPanel.Dock="Top"
+                     x:Name="lbPackageList"
+                     ItemsSource="{Binding SelectedItem.Value, ElementName=lbProductPackageList, Mode=OneWay}"
+                     SelectedIndex="0"
+                     DisplayMemberPath="Name"
+                     MinHeight="200"/>
+
+                  </DockPanel>
+                  <GridSplitter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" Background="IndianRed"/>
+                  <DockPanel Grid.Column="2" VerticalAlignment="Stretch">
+
+                     <Grid>
+                        <Grid.ColumnDefinitions>
+                           <ColumnDefinition Width="200" MinWidth="150"/>
+                           <ColumnDefinition Width="2"/>
+                           <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0"
                         x:Name="lbComponentList"
-                        ItemsSource="{Binding SelectedItem.Components, ElementName=lbPackageList, Mode=TwoWay}"
-                        SelectedIndex="0"
+                        ItemsSource="{Binding SelectedItem.Components, ElementName=lbPackageList, Mode=OneWay}"
                         DisplayMemberPath="Name"
                         MinWidth="120"
                         MinHeight="200"
@@ -208,73 +228,74 @@
                         SelectionMode="Multiple" />
                         <!--SelectionMode="Single" />-->
 
-                     <GridSplitter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" Background="IndianRed"/>
-                     <Grid Grid.Column="2">
-                        <Grid.ColumnDefinitions>
-                           <ColumnDefinition Width="*"/>
-                           <ColumnDefinition Width="350"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                           <RowDefinition Height="*"/>
-                           <!--<RowDefinition Height="Auto"/>
+                        <GridSplitter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" Background="IndianRed"/>
+                        <Grid Grid.Column="2">
+                           <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="*"/>
+                              <ColumnDefinition Width="350"/>
+                           </Grid.ColumnDefinitions>
+                           <Grid.RowDefinitions>
+                              <RowDefinition Height="*"/>
+                              <!--<RowDefinition Height="Auto"/>
                            <RowDefinition Height="Auto"/>
                            <RowDefinition Height="Auto"/>
                            <RowDefinition Height="Auto"/>-->
-                        </Grid.RowDefinitions>
+                           </Grid.RowDefinitions>
 
-                        <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" Grid.Row="0"
+                           <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" Grid.Row="0"
                                  x:Name="lbFileList"
-                                 ItemsSource="{Binding SelectedItem.Files, ElementName=lbComponentList, Mode=TwoWay}"
-                                 SelectedIndex="0"
+                                 ItemsSource="{Binding SelectedItem.Files, ElementName=lbComponentList, Mode=OneWay}"
                                  DisplayMemberPath="Path"
                                  MinWidth="120"
                                  MinHeight="200"
                                  Margin="5" />
 
-                        <StackPanel Orientation="Vertical" Grid.Column="1">
+                           <StackPanel Orientation="Vertical" Grid.Column="1">
 
-                           <StackPanel Orientation="Vertical" DockPanel.Dock="Top" Margin="10">
-                              <Label Content="Package descrtiption" FontSize="15" FontWeight="Bold"/>
-                              <StackPanel Orientation="Horizontal">
-                                 <Label Content="Name : " FontWeight="Bold"/>
-                                 <Label Content="{Binding SelectedItem.Name, ElementName=lbPackageList}" />
+                              <StackPanel Orientation="Vertical" DockPanel.Dock="Top" Margin="10">
+                                 <Label Content="Package descrtiption" FontSize="15" FontWeight="Bold"/>
+                                 <StackPanel Orientation="Horizontal">
+                                    <Label Content="Name : " FontWeight="Bold"/>
+                                    <Label Content="{Binding SelectedItem.Name, ElementName=lbPackageList}" />
+                                 </StackPanel>
+                                 <WrapPanel>
+                                    <Label Content="Description : " FontWeight="Bold"/>
+                                    <TextBlock Text="{Binding SelectedItem.Description, ElementName=lbPackageList}" TextWrapping="WrapWithOverflow" VerticalAlignment="Center" TextAlignment="Justify" />
+                                 </WrapPanel>
+                                 <StackPanel Orientation="Horizontal">
+                                    <Label Content="Unique ID: " FontWeight="Bold"/>
+                                    <Label Content="{Binding SelectedItem.Id, ElementName=lbPackageList}" />
+                                 </StackPanel>
+                                 <StackPanel Orientation="Horizontal">
+                                    <Label Content="Product : " FontWeight="Bold"/>
+                                    <Label Content="{Binding SelectedItem.Type, ElementName=lbPackageList}" />
+                                 </StackPanel>
+                                 <StackPanel Orientation="Horizontal">
+                                    <Label Content="Version : " FontWeight="Bold"/>
+                                    <Label Content="{Binding SelectedItem.Version, ElementName=lbPackageList}" />
+                                 </StackPanel>
+
                               </StackPanel>
-                              <WrapPanel>
-                                 <Label Content="Description : " FontWeight="Bold"/>
-                                 <TextBlock Text="{Binding SelectedItem.Description, ElementName=lbPackageList}" TextWrapping="WrapWithOverflow" VerticalAlignment="Center" TextAlignment="Justify" />
-                              </WrapPanel>
-                              <StackPanel Orientation="Horizontal">
-                                 <Label Content="Unique ID: " FontWeight="Bold"/>
-                                 <Label Content="{Binding SelectedItem.Id, ElementName=lbPackageList}" />
-                              </StackPanel>
-                              <StackPanel Orientation="Horizontal">
-                                 <Label Content="Product : " FontWeight="Bold"/>
-                                 <Label Content="{Binding SelectedItem.Type, ElementName=lbPackageList}" />
-                              </StackPanel>
-                              <StackPanel Orientation="Horizontal">
-                                 <Label Content="Version : " FontWeight="Bold"/>
-                                 <Label Content="{Binding SelectedItem.Version, ElementName=lbPackageList}" />
-                              </StackPanel>
-                              
-                           </StackPanel>
-                           
-                           <ListView x:Name="lbDownloadList" ItemsSource="{Binding packageDownloadManager.downloads}"
+
+                              <ListView x:Name="lbDownloadList" ItemsSource="{Binding packageDownloadManager.downloads}"
                                     ItemTemplate="{StaticResource PackageDownloadInfoTemplate}"
                                     HorizontalContentAlignment="Stretch" HorizontalAlignment="Stretch" 
                                     VerticalAlignment="Stretch" VerticalContentAlignment="Stretch">
-                              <ListView.ItemContainerStyle>
-                                 <Style TargetType="{x:Type ListViewItem}">
-                                    <Setter Property="Focusable" Value="False"/>
-                                 </Style>
-                              </ListView.ItemContainerStyle>
-                           </ListView>
-                        </StackPanel>
+                                 <ListView.ItemContainerStyle>
+                                    <Style TargetType="{x:Type ListViewItem}">
+                                       <Setter Property="Focusable" Value="False"/>
+                                    </Style>
+                                 </ListView.ItemContainerStyle>
+                              </ListView>
+                           </StackPanel>
+
+                        </Grid>
 
                      </Grid>
-                     
-                  </Grid>
-               </DockPanel>
-               
+                  </DockPanel>
+
+               </Grid>
+
             </Grid>
          </TabItem>
 

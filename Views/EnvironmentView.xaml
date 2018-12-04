@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:eWamLauncher"
              xmlns:localviews="clr-namespace:eWamLauncher.Views"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
 
@@ -13,7 +14,17 @@
       <CommandBinding Command="localviews:EnvironmentView.ExploreTgvPath" Executed="OnExploreTgvPath" CanExecute="OnExploreTgvPath_CanExecute"/>
    </UserControl.CommandBindings>
 
-   <DockPanel>
+   <UserControl.Resources>
+      <ObjectDataProvider MethodName="GetValues"
+        ObjectType="{x:Type sys:Enum}"
+        x:Key="VsPlateformEnumValues">
+         <ObjectDataProvider.MethodParameters>
+            <x:Type TypeName="local:eVsPlateform" />
+         </ObjectDataProvider.MethodParameters>
+      </ObjectDataProvider>
+   </UserControl.Resources>
+
+<DockPanel>
       <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5" HorizontalContentAlignment="Center" TabStripPlacement="Top">
          <TabItem Header="General ">
             <Grid>
@@ -70,22 +81,31 @@
          </TabItem>
          <TabItem Header="Env. Variables ">
             <DockPanel>
-               <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" HorizontalAlignment="Center">
-                  <Button Click="OnReevaluateEnvVariables" Content="Re-Evaluate" Margin="5"/>
-                  <Button Click="OnMoveUpVariable" Content="Move Up" Margin="5"/>
-                  <Button Click="OnMoveDownVariable" Content="Move Down" Margin="5"/>
+
+               <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" DockPanel.Dock="Bottom">
+                  <TextBlock  TextWrapping="WrapWithOverflow" Margin="5,20,5,5">
+                     WARNING: ONLY CONTAIN ADDITIONAL PATHES. DON'T ADD "%PATH%", nor bin/ dll/ cppdll/.
+                     THOSE ARE AUTOMATICALLY ADDED FROM SELECTED EWAM AND ENVIRONMENT SETTINGS.
+                  </TextBlock>
+                  <Label Content="Additional Paths (semi-colon seperated list): " FontWeight="Bold"/>
+                  <TextBox Text="{Binding additionalPath}" TextWrapping="Wrap" AcceptsReturn="False"/>
+
+                  <StackPanel Orientation="Horizontal"  HorizontalAlignment="Center">
+                     <Button Click="OnReevaluateEnvVariables" Content="Re-Evaluate" Margin="5"/>
+                     <Button Click="OnMoveUpVariable" Content="Move Up" Margin="5"/>
+                     <Button Click="OnMoveDownVariable" Content="Move Down" Margin="5"/>
+                  </StackPanel>
                </StackPanel>
-               <TextBlock DockPanel.Dock="Top" TextWrapping="WrapWithOverflow" Margin="20">
-                  WARNING: PATH VARIABLE MUST ONLY CONTAIN ADDITIONAL PATHES. DON'T ADD
-                  bin/ dll/ cppdll/ PATHES. THOSE ARE AUTOMATICALLY ADDED FROM SELECTED
-                  EWAM BINARIES.
-               </TextBlock>
+               
                <DataGrid 
                   x:Name="dgVarList"
                   ItemsSource="{Binding environmentVariables, Mode=TwoWay}"
                   CurrentCellChanged="OnReevaluateEnvVariables"
-                  AutoGenerateColumns="False"
-                  ToolTip="WYDE-DLL should not be added : it is automatically generated from binaries settings CppDll. Use SUPPR to remove a line. Double-click to modify.">
+                  AutoGenerateColumns="False">
+                  <DataGrid.ToolTip>
+                     WYDE-DLL should not be added : it is automatically generated from binaries settings CppDll. 
+                     Use SUPPR to remove a line. Double-click to modify.
+                  </DataGrid.ToolTip>
                   <DataGrid.Columns>
                      <DataGridTextColumn Header="Name" Binding="{Binding name, Mode=TwoWay}"/>
                      <DataGridTextColumn Header="Value" Binding="{Binding value, Mode=TwoWay}">
@@ -141,6 +161,19 @@
                      </Hyperlink>
                   </TextBlock>
                   <Button Click="OnFileExportAllLaunchers" Content="Export Launchers to Batch Scripts" Margin="10,2" />
+                  <Label Content="Use Visual Studio:" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                  <CheckBox x:Name="cbUseVS" IsChecked="{Binding useVS, Mode=TwoWay}" VerticalAlignment="Center" Margin="0,5"/>
+                  <ComboBox x:Name="cbVsVersion" 
+                     ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=profile.settings.visualStudios, Mode=OneWay}"
+                     DisplayMemberPath="name"
+                     SelectedValue="{Binding associatedVS}"
+                     IsEnabled="{Binding ElementName=cbUseVS, Path=IsChecked}"
+                     VerticalAlignment="Center" Margin="0,5"/>
+                  <ComboBox x:Name="cbVsPlateform" 
+                     ItemsSource="{Binding Source={StaticResource VsPlateformEnumValues}}"
+                     SelectedValue="{Binding VsPlateform}" 
+                     IsEnabled="{Binding ElementName=cbUseVS, Path=IsChecked}"
+                     VerticalAlignment="Center" Margin="0,5"/>
                </WrapPanel>
                <Grid>
                   <Grid.ColumnDefinitions>
@@ -184,7 +217,7 @@
                                      SelectedItem="{Binding SelectedItem.binariesSet, ElementName=lbLauncherList, Mode=TwoWay}"
                                      Grid.Column="1" Grid.Row="3" Margin="5"/>-->
                      <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="4">
-                        <Button Click="OnExecuteLauncher" Content="Start" HorizontalAlignment="Left" Margin="5"/>
+                        <Button Click="OnExecuteLauncher" Content="Start" HorizontalAlignment="Left" Margin="5" IsEnabled="{Binding notUseVS}"/>
                         <Button Click="OnConsoleExecuteLauncher" Content="Start in a Console" HorizontalAlignment="Left" Margin="5"/>
                      </StackPanel>
                   </Grid>

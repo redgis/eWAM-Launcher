@@ -163,6 +163,10 @@
     <Compile Include="Views\WWTraceConfigView.xaml.cs">
       <DependentUpon>WWTraceConfigView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\WydeWebDeployWizard.xaml.cs">
+      <DependentUpon>WydeWebDeployWizard.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="VisualStudioDefinition.cs" />
     <Compile Include="WideIndexImporter.cs" />
     <Compile Include="WNetConf.cs" />
     <Compile Include="WNetConfImporter.cs" />
@@ -204,6 +208,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\WWTraceConfigView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\WydeWebDeployWizard.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
