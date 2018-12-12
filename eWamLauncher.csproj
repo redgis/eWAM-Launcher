@@ -129,6 +129,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="PackageIndexGetter.cs" />
     <Compile Include="EwamImporter.cs" />
     <Compile Include="NotifyAppender.cs" />
     <Compile Include="ObservableDictionary.cs" />
@@ -162,6 +163,18 @@
     <Compile Include="Settings.cs" />
     <Compile Include="Views\WWTraceConfigView.xaml.cs">
       <DependentUpon>WWTraceConfigView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\WydeWebDeployFinish.xaml.cs">
+      <DependentUpon>WydeWebDeployFinish.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\WydeWebDeployLauncherSelector.xaml.cs">
+      <DependentUpon>WydeWebDeployLauncherSelector.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\WydeWebDeployPackageSelector.xaml.cs">
+      <DependentUpon>WydeWebDeployPackageSelector.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\WydeWebDeployServiceSelector.xaml.cs">
+      <DependentUpon>WydeWebDeployServiceSelector.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\WydeWebDeployWizard.xaml.cs">
       <DependentUpon>WydeWebDeployWizard.xaml</DependentUpon>
@@ -208,6 +221,22 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\WWTraceConfigView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\WydeWebDeployFinish.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\WydeWebDeployLauncherSelector.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\WydeWebDeployPackageSelector.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\WydeWebDeployServiceSelector.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

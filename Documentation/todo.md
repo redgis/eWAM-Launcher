@@ -17,7 +17,7 @@
 - [x] Make a simpler object to avoid redundancy between client and server configuration (security, etc), simplify http tunnel configuration
 - [x] Export a configuration to a wNetConf.ini, wNetConf.xml, of WydeWebAsAuto.html
 - [x] Add automatic wNetConf import on environment pull (included in .xenv) and import ! (based on WYDE-NETCONF)
-- [ ] Wizard to automatically deploy ClickOnce / OCX with given configuration (maybe create a Wizard for the occasion)
+- [x] Wizard to automatically deploy ClickOnce / OCX with given configuration (maybe create a Wizard for the occasion)
 
 ## Ergonomy
 - [x] Shouldn't we simply have a pool of eWAMs referenced by the various environments ?
@@ -87,6 +87,8 @@
 - [ ] Allow comparing local to online repo index, and suggest update binaries
 - [x] Add a progressbar for download and extraction
 - [/] Use nuget packaging ?
+- [ ] Improve package-index.xml format to make it lighter (decompose it in hierarchical architecture)
+- [/] Notifications : when clicked, open destination
       
 ## Auto update
 - [x] Auto updater using Squirrel
@@ -106,6 +108,8 @@
 - [x] Add path to Wyseman and WydeWeb.exe somewhere (at import of eWAM or environment, or in path, at launch)
 - [x] Wynsure environment launchers not importing correctly after environment pull from online repo
 - [x] Auto-Update doesn't seem to work correctly ...
+- [x] Importing fails with error
+- [x] Fixed WW configuration issue
 
 https://youtu.be/rDjrOaoHz9s
 

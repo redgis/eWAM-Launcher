@@ -1136,6 +1136,12 @@ namespace eWamLauncher.Views
          }
       }
 
+      public void OnDeployWydeWeb(object sender, RoutedEventArgs e)
+      {
+         WydeWebDeployWizard deployWizard = new WydeWebDeployWizard((Environment)this.DataContext);
+         bool? wizardResult = deployWizard.ShowDialog();
+      }
+
       #endregion
 
    }

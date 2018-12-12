@@ -254,31 +254,44 @@ namespace eWamLauncher
                             newKey != "WF-ROOT" &&
                             newKey != "WYDE-TGV")
                         {
-                           // If this variable already exists, AND has a different value, we still 
-                           // want to keep this different value, so that the user can make a clean up,
-                           // and choose the right value by himself. We thus increment the variable
-                           // name, before adding it to the dictionary
-                           EnvironmentVariable localEnVariable = this.environment.GetEnvironmentVariable(newKey);
-                           if (localEnVariable != null)
+
+                           if (newKey == "PATH")
                            {
-                              if (localEnVariable.value == match.Groups["value"].Value)
+                              if (this.environment.additionalPath != "" && match.Groups["value"].Value != "")
                               {
-                                 // if it's same value, just ignore this match, move on to next one.
-                                 continue;
+                                 this.environment.additionalPath += ";";
                               }
-                              else
+
+                              this.environment.additionalPath += match.Groups["value"].Value;
+                           }
+                           else
+                           {
+                              // If this variable already exists, AND has a different value, we still 
+                              // want to keep this different value, so that the user can make a clean up,
+                              // and choose the right value by himself. We thus increment the variable
+                              // name, before adding it to the dictionary
+                              EnvironmentVariable localEnVariable = this.environment.GetEnvironmentVariable(newKey);
+                              if (localEnVariable != null)
                               {
-                                 int increment = 0;
-                                 while (this.environment.GetEnvironmentVariable(newKey) != null)
+                                 if (localEnVariable.value == match.Groups["value"].Value)
                                  {
-                                    increment++;
-                                    newKey = match.Groups["key"].Value.ToUpper() + "_" + increment.ToString();
+                                    // if it's same value, just ignore this match, move on to next one.
+                                    continue;
+                                 }
+                                 else
+                                 {
+                                    int increment = 0;
+                                    while (this.environment.GetEnvironmentVariable(newKey) != null)
+                                    {
+                                       increment++;
+                                       newKey = match.Groups["key"].Value.ToUpper() + "_" + increment.ToString();
+                                    }
                                  }
                               }
-                           }
 
-                           this.environment.environmentVariables.Add(
-                              new EnvironmentVariable(newKey, match.Groups["value"].Value));
+                              this.environment.environmentVariables.Add(
+                                 new EnvironmentVariable(newKey, match.Groups["value"].Value));
+                           }
                         }
                      }
                   }

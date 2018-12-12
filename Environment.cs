@@ -227,15 +227,28 @@ namespace eWamLauncher
 
          string variableValue = "";
 
-         bool variableIsInEnvironment = false;
-
          // Look for variable in current Environment (i.e. this)
          EnvironmentVariable localEnvVar = this.GetEnvironmentVariable(name);
 
          if (localEnvVar != null)
          {
             variableValue = localEnvVar.value;
-            variableIsInEnvironment = true;
+
+            if (!localEnvVar.isBeingResolved)
+            {
+               localEnvVar.isBeingResolved = true;
+               {
+                  // Expand env variable value by looking up all %....% and expanding each of these matches
+                  Regex rgx = new Regex(@"%(?<variable>[^=%\s\t]+)%");
+                  result = rgx.Replace(
+                     variableValue,
+                     new MatchEvaluator(this.ExpandEnvVariableMatch));
+               }
+
+               localEnvVar.isBeingResolved = false;
+               localEnvVar.result = result;
+            }
+
          }
          else
          {
@@ -250,24 +263,6 @@ namespace eWamLauncher
          }
          else
          {
-            if (!localEnvVar.isBeingResolved)
-            {
-               localEnvVar.isBeingResolved = true;
-               {
-                  // Expand env variable value by looking up all %....% and expanding each of these matches
-                  Regex rgx = new Regex(@"%(?<variable>[^=%\s\t]+)%");
-                  result = rgx.Replace(
-                     variableValue,
-                     new MatchEvaluator(this.ExpandEnvVariableMatch));
-               }
-               localEnvVar.isBeingResolved = false;
-
-               if (variableIsInEnvironment)
-               {
-                  localEnvVar.result = result;
-               }
-               
-            }
          }
 
          return result;

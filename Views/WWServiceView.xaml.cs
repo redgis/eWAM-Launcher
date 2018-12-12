@@ -38,26 +38,7 @@ namespace eWamLauncher.Views
          try
          {
             WWService simplifiedService = (WWService)this.DataContext;
-
-            ClientConfigurationService service = simplifiedService.GetClientService(WNetConf.eNetConf.SingleService);
-
-            XmlAttributes overrideAttributes = new XmlAttributes();
-            overrideAttributes.XmlRoot = new XmlRootAttribute("service");
-         
-            XmlAttributeOverrides overrides = new XmlAttributeOverrides();
-            overrides.Add(typeof(ClientConfigurationService), overrideAttributes);
-
-            StringWriter strWriter = new StringWriter();
-            XmlWriterSettings xmlWriterSettings = new XmlWriterSettings { OmitXmlDeclaration = true, Indent = true }; 
-
-            XmlWriter writer = XmlWriter.Create(strWriter, xmlWriterSettings);
-            XmlSerializer xmlSerializer = new XmlSerializer(typeof(ClientConfigurationService), overrides);
-            XmlSerializerNamespaces namespaces = new XmlSerializerNamespaces();
-            namespaces.Add("", "");
-
-            xmlSerializer.Serialize(writer, service, namespaces);
-
-            tbWNetClientChunk.Text = "<services>\n" + strWriter.ToString() + "\n</services>\n";
+            tbWNetClientChunk.Text = simplifiedService.GetWNetClientChunk();
          }
          catch (Exception exception)
          {

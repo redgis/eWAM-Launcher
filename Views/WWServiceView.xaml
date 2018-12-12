@@ -25,10 +25,10 @@
             </Grid.RowDefinitions>
 
             <Label Content="Name : " Grid.Column="0" Grid.Row="0" Margin="5"/>
-            <TextBox Text="{Binding Name}" Grid.Column="1" Grid.Row="0" Margin="5"/>
+            <TextBox Text="{Binding Name, Mode=TwoWay}" Grid.Column="1" Grid.Row="0" Margin="5"/>
 
             <Label Content="Alias : " Grid.Column="0" Grid.Row="1" Margin="5"/>
-            <TextBox Text="{Binding Alias}" Grid.Column="1" Grid.Row="1" Margin="5"/>
+            <TextBox Text="{Binding Alias, Mode=TwoWay}" Grid.Column="1" Grid.Row="1" Margin="5"/>
 
             <Button Content="Get ClickOnce/WydeWebAsAuto chunk" Click="OnGetWNetClientChunk" 
                     Grid.ColumnSpan="2" Grid.Row="2" HorizontalAlignment="Left" Margin="5"/>
@@ -40,12 +40,12 @@
       </TabItem>
       
       <TabItem Header="Client">
-         <xctk:PropertyGrid x:Name="pgWWClientService" SelectedObject="{Binding clientService}" NameColumnWidth="150" MinWidth="300"
+         <xctk:PropertyGrid x:Name="pgWWClientService" SelectedObject="{Binding clientService, Mode=TwoWay}" NameColumnWidth="150" MinWidth="300"
             MaxWidth="800" />
       </TabItem>
       
       <TabItem Header="Server">
-         <xctk:PropertyGrid x:Name="pgWWServerService" SelectedObject="{Binding serverService}" NameColumnWidth="150" MinWidth="300"
+         <xctk:PropertyGrid x:Name="pgWWServerService" SelectedObject="{Binding serverService, Mode=TwoWay}" NameColumnWidth="150" MinWidth="300"
             MaxWidth="800"/>
       </TabItem>
    </TabControl>

@@ -185,7 +185,7 @@
                      DisplayMemberPath="Key"
                      SelectedIndex="0"
                      MinHeight="200"
-                     Loaded="OnRefreshPackages"/>
+                     Loaded="OnLoadPackagesIfNeeded"/>
 
                </DockPanel>
                

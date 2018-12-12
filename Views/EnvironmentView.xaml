@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:eWamLauncher"
              xmlns:localviews="clr-namespace:eWamLauncher.Views"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
 
@@ -24,7 +25,7 @@
       </ObjectDataProvider>
    </UserControl.Resources>
 
-<DockPanel>
+   <DockPanel>
       <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5" HorizontalContentAlignment="Center" TabStripPlacement="Top">
          <TabItem Header="General ">
             <Grid>
@@ -228,13 +229,21 @@
 
             <DockPanel>
 
-               <StackPanel Orientation="Horizontal" Margin="20,5" DockPanel.Dock="Top">
-                  <Button Click="OnFileImportWNetConfIni" Content="Import from WNetConf" Margin="2,2"/>
-                  <Button Click="OnFileExportWNetConfIni_Client" Content="Export Client-only WNetConf" Margin="2,2"/>
-                  <Button Click="OnFileExportWNetConfIni_WSMISAPI" Content="Export WSMISAPI-only WNetConf" Margin="2,2"/>
-                  <Button Click="OnFileExportWNetConfIni_Server" Content="Export Server-only WNetConf" Margin="2,2"/>
-                  <Button Click="OnFileExportWNetConfIni_Full" Content="Export Full WNetConf (for developpers)" Margin="2,2"/>
-               </StackPanel>
+               <WrapPanel Orientation="Horizontal" Margin="20,5" DockPanel.Dock="Top">
+                  <xctk:DropDownButton Content="Import/Export" Margin="2" >
+                     <xctk:DropDownButton.DropDownContent>
+                        <StackPanel Orientation="Vertical">
+                           <Button Click="OnFileImportWNetConfIni" Content="Import from WNetConf" Margin="2,2"/>
+                           <Button Click="OnFileExportWNetConfIni_Client" Content="Export Client-only WNetConf" Margin="2,2"/>
+                           <Button Click="OnFileExportWNetConfIni_WSMISAPI" Content="Export WSMISAPI-only WNetConf" Margin="2,2"/>
+                           <Button Click="OnFileExportWNetConfIni_Server" Content="Export Server-only WNetConf" Margin="2,2"/>
+                           <Button Click="OnFileExportWNetConfIni_Full" Content="Export Full WNetConf (for developpers)" Margin="2,2"/>
+                        </StackPanel>
+                     </xctk:DropDownButton.DropDownContent>
+                  </xctk:DropDownButton>
+                  
+                  <Button Click="OnDeployWydeWeb" Content="Deploy WydeWeb (OCX/ClickOnce)" Margin="2,2"/>
+               </WrapPanel>
                
                <StackPanel Orientation="Vertical" Margin="0,2" DockPanel.Dock="Bottom">
 

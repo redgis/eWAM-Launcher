@@ -220,6 +220,7 @@ namespace eWamLauncher
          set
          {
             this.clientConfigurationField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -233,6 +234,7 @@ namespace eWamLauncher
          set
          {
             this.servicesManagerField = value;
+            this.NotifyPropertyChanged();
          }
       }
    }
@@ -286,6 +288,7 @@ namespace eWamLauncher
          set
          {
             this.servicesField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -299,6 +302,7 @@ namespace eWamLauncher
          set
          {
             this.securityField = value;
+            this.NotifyPropertyChanged();
          }
       }
    }
@@ -355,6 +359,7 @@ namespace eWamLauncher
          set
          {
             this.nameField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -373,6 +378,7 @@ namespace eWamLauncher
          set
          {
             this.servicesManagersField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -387,6 +393,7 @@ namespace eWamLauncher
          set
          {
             this.securityField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -401,6 +408,7 @@ namespace eWamLauncher
          set
          {
             this.aliasesField = value;
+            this.NotifyPropertyChanged();
          }
       }
    }
@@ -486,6 +494,7 @@ namespace eWamLauncher
          set
          {
             this.httpHostField = value;
+            this.NotifyPropertyChanged();
          }
       }
       [XmlIgnore]
@@ -502,6 +511,7 @@ namespace eWamLauncher
          set
          {
             this.httpPortField = value;
+            this.NotifyPropertyChanged();
          }
       }
       [XmlIgnore]
@@ -518,6 +528,7 @@ namespace eWamLauncher
          set
          {
             this.proxyHostField = value;
+            this.NotifyPropertyChanged();
          }
       }
       [XmlIgnore]
@@ -534,6 +545,7 @@ namespace eWamLauncher
          set
          {
             this.proxyPortField = value;
+            this.NotifyPropertyChanged();
          }
       }
       [XmlIgnore]
@@ -552,6 +564,7 @@ namespace eWamLauncher
          set
          {
             this.httpAdditionalHeadersField = value;
+            this.NotifyPropertyChanged();
          }
       }
       [XmlIgnore]
@@ -570,6 +583,7 @@ namespace eWamLauncher
          set
          {
             this.extensionField = value;
+            this.NotifyPropertyChanged();
          }
       }
       [XmlIgnore]
@@ -586,6 +600,7 @@ namespace eWamLauncher
          set
          {
             this.hostField = value;
+            this.NotifyPropertyChanged();
          }
       }
       [XmlIgnore]
@@ -602,6 +617,7 @@ namespace eWamLauncher
          set
          {
             this.portField = value;
+            this.NotifyPropertyChanged();
          }
       }
       [XmlIgnore]
@@ -617,6 +633,7 @@ namespace eWamLauncher
          set
          {
             this.nbMaxConcurrentRequestsField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -630,6 +647,7 @@ namespace eWamLauncher
          set
          {
             this.aliasField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -643,6 +661,7 @@ namespace eWamLauncher
          set
          {
             this.timeBeforePollingField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -656,6 +675,7 @@ namespace eWamLauncher
          set
          {
             this.emergencyField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -669,6 +689,7 @@ namespace eWamLauncher
          set
          {
             this.compressionField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -683,6 +704,7 @@ namespace eWamLauncher
          set
          {
             this.securityField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -696,6 +718,7 @@ namespace eWamLauncher
          set
          {
             this.connectTimeoutField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -709,6 +732,7 @@ namespace eWamLauncher
          set
          {
             this.tcpField = value;
+            this.NotifyPropertyChanged();
          }
       }
    }
@@ -845,6 +869,7 @@ namespace eWamLauncher
          set
          {
             this.servicesField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -858,6 +883,7 @@ namespace eWamLauncher
          set
          {
             this.securityField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -871,6 +897,7 @@ namespace eWamLauncher
          set
          {
             this.traceConfigField = value;
+            this.NotifyPropertyChanged();
          }
       }
    }
@@ -933,6 +960,7 @@ namespace eWamLauncher
          set
          {
             this.nameField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -955,6 +983,7 @@ namespace eWamLauncher
          set
          {
             this.compressionField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -972,6 +1001,7 @@ namespace eWamLauncher
          set
          {
             this.encryptionField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -985,6 +1015,7 @@ namespace eWamLauncher
          set
          {
             this.aliasesField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -999,6 +1030,7 @@ namespace eWamLauncher
          set
          {
             this.environmentVariablesField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1013,6 +1045,7 @@ namespace eWamLauncher
          set
          {
             this.processField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1084,6 +1117,7 @@ namespace eWamLauncher
          set
          {
             this.commandLineField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1097,6 +1131,7 @@ namespace eWamLauncher
          set
          {
             this.nbMaxProcessesField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1110,6 +1145,7 @@ namespace eWamLauncher
          set
          {
             this.nbMaxConcurrentRequestsField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1123,6 +1159,7 @@ namespace eWamLauncher
          set
          {
             this.useResponsiveProcessesOnlyField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1136,6 +1173,7 @@ namespace eWamLauncher
          set
          {
             this.currentDirectoryField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1149,6 +1187,7 @@ namespace eWamLauncher
          set
          {
             this.userNameField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1162,6 +1201,7 @@ namespace eWamLauncher
          set
          {
             this.userDomainField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1175,6 +1215,7 @@ namespace eWamLauncher
          set
          {
             this.userPasswordField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1189,6 +1230,7 @@ namespace eWamLauncher
          set
          {
             this.environmentVariablesField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1203,6 +1245,7 @@ namespace eWamLauncher
          set
          {
             this.processManagementField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1217,6 +1260,7 @@ namespace eWamLauncher
          set
          {
             this.loadBalancingField = value;
+            this.NotifyPropertyChanged();
          }
       }
    }
@@ -1262,6 +1306,7 @@ namespace eWamLauncher
          set
          {
             this.forceRandomField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1275,6 +1320,7 @@ namespace eWamLauncher
          set
          {
             this.loadBalancingByNbSessionsField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1288,6 +1334,7 @@ namespace eWamLauncher
          set
          {
             this.loadBalancingByCPUField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1301,6 +1348,7 @@ namespace eWamLauncher
          set
          {
             this.loadBalancingByMemoryField = value;
+            this.NotifyPropertyChanged();
          }
       }
    }
@@ -1360,6 +1408,7 @@ namespace eWamLauncher
          set
          {
             this.nbMaxSimultaneousSessionsField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1373,6 +1422,7 @@ namespace eWamLauncher
          set
          {
             this.requestOnMaxSimultaneousSessionsQueuedField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1386,6 +1436,7 @@ namespace eWamLauncher
          set
          {
             this.maxMemoryUsageField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1399,6 +1450,7 @@ namespace eWamLauncher
          set
          {
             this.requestOnMaxMemoryUsageQueuedField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1412,6 +1464,7 @@ namespace eWamLauncher
          set
          {
             this.stopAfterLastSessionField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1425,6 +1478,7 @@ namespace eWamLauncher
          set
          {
             this.stopAfterRunningTimeField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1438,6 +1492,7 @@ namespace eWamLauncher
          set
          {
             this.stopAfterInactivityTimeoutField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1451,6 +1506,7 @@ namespace eWamLauncher
          set
          {
             this.stopAfterMemoryLimitField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1464,6 +1520,7 @@ namespace eWamLauncher
          set
          {
             this.stopAfterNbSessionsField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1478,6 +1535,7 @@ namespace eWamLauncher
          set
          {
             this.periodicalStopField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1492,6 +1550,7 @@ namespace eWamLauncher
          set
          {
             this.automaticStartField = value;
+            this.NotifyPropertyChanged();
          }
       }
    }
@@ -1539,6 +1598,7 @@ namespace eWamLauncher
          set
          {
             this.stopAtTimeField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1552,6 +1612,7 @@ namespace eWamLauncher
          set
          {
             this.stopEveryField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1565,6 +1626,7 @@ namespace eWamLauncher
          set
          {
             this.cannotBeLaunchedDuringTimeField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1578,6 +1640,7 @@ namespace eWamLauncher
          set
          {
             this.stoppingModeField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1591,6 +1654,7 @@ namespace eWamLauncher
          set
          {
             this.timeToEndSessionsField = value;
+            this.NotifyPropertyChanged();
          }
       }
    }
@@ -1640,6 +1704,7 @@ namespace eWamLauncher
          set
          {
             this.nbProcessesField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1653,6 +1718,7 @@ namespace eWamLauncher
          set
          {
             this.fromDayField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1666,6 +1732,7 @@ namespace eWamLauncher
          set
          {
             this.toDayField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1679,6 +1746,7 @@ namespace eWamLauncher
          set
          {
             this.fromTimeField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1692,6 +1760,7 @@ namespace eWamLauncher
          set
          {
             this.toTimeField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1705,6 +1774,7 @@ namespace eWamLauncher
          set
          {
             this.preloadField = value;
+            this.NotifyPropertyChanged();
          }
       }
    }
@@ -1754,6 +1824,7 @@ namespace eWamLauncher
          set
          {
             this.encryptionField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1767,6 +1838,7 @@ namespace eWamLauncher
          set
          {
             this.authenticateField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1780,6 +1852,7 @@ namespace eWamLauncher
          set
          {
             this.userNameField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1793,6 +1866,7 @@ namespace eWamLauncher
          set
          {
             this.userPasswordField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1806,6 +1880,7 @@ namespace eWamLauncher
          set
          {
             this.userDomainField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1819,6 +1894,7 @@ namespace eWamLauncher
          set
          {
             this.loginsField = value;
+            this.NotifyPropertyChanged();
          }
       }
    }
@@ -1864,6 +1940,7 @@ namespace eWamLauncher
          set
          {
             this.startRunningField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1877,6 +1954,7 @@ namespace eWamLauncher
          set
          {
             this.timestepField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1890,6 +1968,7 @@ namespace eWamLauncher
          set
          {
             this.servicesField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1903,6 +1982,7 @@ namespace eWamLauncher
          set
          {
             this.processesField = value;
+            this.NotifyPropertyChanged();
          }
       }
    }
@@ -1944,6 +2024,7 @@ namespace eWamLauncher
          set
          {
             this.nameField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -1957,6 +2038,7 @@ namespace eWamLauncher
          set
          {
             this.valueField = value;
+            this.NotifyPropertyChanged();
          }
       }
    }
@@ -2001,6 +2083,7 @@ namespace eWamLauncher
          set
          {
             this.keepAliveField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -2014,6 +2097,7 @@ namespace eWamLauncher
          set
          {
             this.keepAliveTimeoutField = value;
+            this.NotifyPropertyChanged();
          }
       }
 
@@ -2027,6 +2111,7 @@ namespace eWamLauncher
          set
          {
             this.keepAliveIntervalField = value;
+            this.NotifyPropertyChanged();
          }
       }
    }

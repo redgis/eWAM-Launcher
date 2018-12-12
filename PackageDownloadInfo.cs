@@ -13,8 +13,18 @@ using SharpCompress.Archives;
 
 namespace eWamLauncher
 {
+   public class PackageDownloadCompletedEventArgs : EventArgs
+   {
+      public Exception Error;
+      public bool Cancelled;
+   }
+
+   public delegate void PackageDownloadCompletedHandler(object sender, PackageDownloadCompletedEventArgs e);
+
    public class PackageDownloadInfo : INotifyPropertyChanged
    {
+      public event PackageDownloadCompletedHandler PackageDownloadCompleted;
+
       private static readonly ILog log = LogManager.GetLogger(typeof(PackageDownloadInfo));
 
       private WebClient _downloadWorker;
@@ -81,7 +91,8 @@ namespace eWamLauncher
       }
 
 
-      public PackageDownloadInfo(Package package, string targetDir, Profile profile)
+      public PackageDownloadInfo(Package package, string targetDir, Profile profile,
+         PackageDownloadCompletedHandler packageDownloadCompletedHandler)
       {
          this.package = (Package)package.Clone();
          this.targetDir = targetDir;
@@ -105,12 +116,15 @@ namespace eWamLauncher
          this.installWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(OnInstallCompleted);
          this.installWorker.ProgressChanged += new ProgressChangedEventHandler(OnOnInstallProgressChanged);
 
+         this.PackageDownloadCompleted += packageDownloadCompletedHandler;
+
          ((MainWindow)Application.Current.MainWindow).eWAMLauncherNotifyIcon.ShowBalloonTip(
             "Download started",
             this.package.Description, BalloonIcon.Info);
 
          this.TreatNextTasks();
       }
+
 
       private void PopulateTasks()
       {
@@ -441,6 +455,12 @@ namespace eWamLauncher
 
                this.ConfigureEnvironments();
             }
+
+            PackageDownloadCompletedEventArgs evtArgs = new PackageDownloadCompletedEventArgs();
+            evtArgs.Cancelled = e.Cancelled;
+            evtArgs.Error = e.Error;
+            
+            this.PackageDownloadCompleted(this, evtArgs);
 
             ((MainWindow)Application.Current.MainWindow).packageDownloadManager.downloads.Remove(this);
          }

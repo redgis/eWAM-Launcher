@@ -53,11 +53,8 @@ namespace eWamLauncher
       private string _assemblyUpdateInfo { get; set; }
       public string assemblyUpdateInfo { get { return _assemblyUpdateInfo; } set { _assemblyUpdateInfo = value; this.NotifyPropertyChanged(); } }
 
-      private ObservableDictionary<string, ObservableCollection<Package>> _productsPackages;
-      public ObservableDictionary<string, ObservableCollection<Package>> productsPackages { get { return _productsPackages; } set { _productsPackages = value; this.NotifyPropertyChanged(); } }
-
-      //private ObservableCollection<Package> _packages;
-      //public ObservableCollection<Package> packages { get { return _packages; } set { _packages = value; this.NotifyPropertyChanged(); } }
+      private ObservableDictionary<string, ObservableCollection<Package> > _productsPackages;
+      public ObservableDictionary<string, ObservableCollection<Package> > productsPackages { get { return _productsPackages; } set { _productsPackages = value; this.NotifyPropertyChanged(); } }
 
       private PackageDownloadManager _packageDownloadManager;
       public PackageDownloadManager packageDownloadManager { get { return _packageDownloadManager; } set { _packageDownloadManager = value; this.NotifyPropertyChanged(); } }
@@ -65,6 +62,8 @@ namespace eWamLauncher
       private bool _updatePending { get; set; }
       public bool updatePending { get { return _updatePending; } set { _updatePending = value; this.NotifyPropertyChanged(); } }
 
+      private WideIndex _WideIndex;
+      public WideIndex WideIndex { get { return _WideIndex; } set { _WideIndex = value; this.NotifyPropertyChanged(); } }
 
       public event PropertyChangedEventHandler PropertyChanged;
 
@@ -123,6 +122,8 @@ namespace eWamLauncher
             //this.notifier.Visible = true;
 
             //this.menu = (System.Windows.Controls.ContextMenu)this.FindResource("NotifierContextMenu");
+
+            this.LoadPackagesAsync();
 
             StartUpdater();
          }
@@ -958,8 +959,8 @@ namespace eWamLauncher
              envCopy.wfRoot != null && envCopy.wfRoot != "")
          {
             string commonPath = FindLongestCommonPath(envCopy.envRoot, envCopy.wfRoot);
-            envCopy.envRoot = envCopy.envRoot.Substring(commonPath.Length + 1);
-            envCopy.wfRoot = envCopy.wfRoot.Substring(commonPath.Length + 1);
+            envCopy.envRoot = envCopy.envRoot.Substring(Math.Min(envCopy.envRoot.Length, commonPath.Length + 1));
+            envCopy.wfRoot = envCopy.wfRoot.Substring(Math.Min(envCopy.wfRoot.Length, commonPath.Length + 1));
          }
          else
          {
@@ -1015,8 +1016,8 @@ namespace eWamLauncher
              envCopy.wfRoot != null && envCopy.wfRoot != "")
          {
             string commonPath = FindLongestCommonPath(envCopy.envRoot, envCopy.wfRoot);
-            envCopy.envRoot = envCopy.envRoot.Substring(commonPath.Length + 1);
-            envCopy.wfRoot = envCopy.wfRoot.Substring(commonPath.Length + 1);
+            envCopy.envRoot = envCopy.envRoot.Substring(Math.Min(envCopy.envRoot.Length, commonPath.Length + 1));
+            envCopy.wfRoot = envCopy.wfRoot.Substring(Math.Min(envCopy.wfRoot.Length, commonPath.Length + 1));
          }
          else
          {
@@ -1419,32 +1420,23 @@ namespace eWamLauncher
 
       #region Package actions
 
-      public void OnRefreshPackages(object sender, RoutedEventArgs e)
+      private void LoadPackagesAsync()
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
          try
          {
-            this.productsPackages.Clear();
-
-            WebClient wc = new WebClient();
-            wc.DownloadDataCompleted += new DownloadDataCompletedEventHandler(this.OnPackageIndexDownloaded);
-            wc.DownloadDataAsync(new Uri(this.profile.settings.ewamUpdateServerURL + "//package-index.xml"));
+            PackageIndexGetter packageGetter = new PackageIndexGetter(this.profile.settings.ewamUpdateServerURL + "//package-index.xml");
+            packageGetter.PackageListCompleted += this.OnPackageIndexDownloaded;
+            packageGetter.GetPackages();
          }
          catch (Exception exception)
          {
             log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
-
-            System.Windows.MessageBox.Show(
-               "Something went wrong ! \n\n" + exception.Message,
-               "Oops",
-               System.Windows.MessageBoxButton.OK,
-               System.Windows.MessageBoxImage.Error);
          }
-
       }
 
-      private void OnPackageIndexDownloaded(object sender, DownloadDataCompletedEventArgs e)
+      private void OnPackageIndexDownloaded(object sender, PackageListCompletedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
@@ -1466,13 +1458,96 @@ namespace eWamLauncher
             }
             else
             {
-               byte[] raw = e.Result;
+               this.WideIndex = e.PackageIndex;
+            }
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
 
-               String webData = System.Text.Encoding.UTF8.GetString(raw);
-               XmlSerializer serializer = new XmlSerializer(typeof(WideIndex));
-               MemoryStream memStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(webData));
-               WideIndex packageIndex = (WideIndex)serializer.Deserialize(memStream);
-               foreach (Package package in packageIndex.Packages)
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
+      }
+
+      public void OnLoadPackagesIfNeeded(object sender, RoutedEventArgs e)
+      {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
+         {
+            if (this.WideIndex == null)
+            {
+               this.OnRefreshPackages(sender, e);
+            }
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
+
+      }
+
+      public void OnRefreshPackages(object sender, RoutedEventArgs e)
+      {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
+         {
+            this.productsPackages.Clear();
+
+            PackageIndexGetter packageGetter = new PackageIndexGetter(this.profile.settings.ewamUpdateServerURL + "//package-index.xml");
+
+            packageGetter.PackageListCompleted += this.OnPackageIndexRefreshed;
+            packageGetter.GetPackages();
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
+
+      }
+
+      private void OnPackageIndexRefreshed(object sender, PackageListCompletedEventArgs e)
+      {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
+         {
+            if (e.Cancelled == true)
+            {
+               eWAMLauncherNotifyIcon.ShowBalloonTip("package-index.xml download cancelled",
+                  e.Error.Message, BalloonIcon.Error);
+
+               log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : package-index.xml download cancelled");
+            }
+            else if (e.Error != null)
+            {
+               eWAMLauncherNotifyIcon.ShowBalloonTip("package-index.xml download failed",
+                  e.Error.Message, BalloonIcon.Error);
+
+               log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + e.Error.Message);
+            }
+            else
+            {
+               this.WideIndex = e.PackageIndex;
+
+               foreach (Package package in e.PackageIndex.Packages)
                {
                   if (!this.productsPackages.ContainsKey(package.Type))
                   {
@@ -1480,7 +1555,6 @@ namespace eWamLauncher
                   }
 
                   this.productsPackages[package.Type].Add(package);
-
                }
             }
          }

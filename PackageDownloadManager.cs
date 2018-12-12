@@ -43,14 +43,14 @@ namespace eWamLauncher
          this.downloads = new ObservableCollection<PackageDownloadInfo>();
       }
 
-      public void AddDownloadTask(Package package, string targetDir)
+      public void AddDownloadTask(Package package, string targetDir, PackageDownloadCompletedHandler packageDownloadCompletedHandler = null)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString() + ": adding download of " + package.Description + " to " + targetDir);
 
          try
          {
-            PackageDownloadInfo packageDownloadInfo = new PackageDownloadInfo(package, targetDir, this._profile);
-
+            PackageDownloadInfo packageDownloadInfo = new PackageDownloadInfo(package, targetDir, this._profile, packageDownloadCompletedHandler);
+            
             this.downloads.Add(packageDownloadInfo);
          }
          catch (Exception exception)
