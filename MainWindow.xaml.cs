@@ -1347,7 +1347,7 @@ namespace eWamLauncher
       {
          Directory.CreateDirectory(Path.GetDirectoryName(fileName));
 
-         Ewam ewamCopy = (Ewam)((Ewam)lbEnvList.SelectedItem).Clone();
+         Ewam ewamCopy = (Ewam)((Ewam)lbEwamList.SelectedItem).Clone();
          ewamCopy.basePath = "";
          FileStream writer = new FileStream(fileName, FileMode.Create);
          DataContractJsonSerializer jsonSerializer =
