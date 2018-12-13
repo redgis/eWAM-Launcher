@@ -36,14 +36,15 @@
 - [x] Add a Systray icon. Right click => close. Make it work correctly (not working when window doesn't have focus)
 - [x] Reduce /close to systray. 
 - [x] Double-click on Systray icon reopens app
+- [x] Allow only one instance
 
 ## Code quality
 - [ ] Document code
 - [ ] Replace / bind implemented "actions" to WPF commands <= not sure it's worse it...
 - [x] XAML / WPF : How to create a UI for a specific type, and include it in another ? use pages ?
 - [x] Mutualize code between OnConsoleExecuteLauncher and OnExecuteLauncher
-- [ ] Rewrite variable importing : sanitize wyde-root, env-root, wf-root, wyde-dll and path after importing, let user choose the right value from a list or set custom value
-- [ ] Rewrite environment and ewam importing functions : buggy and messy at the moment
+- [x] Rewrite variable importing : sanitize wyde-root, env-root, wf-root, wyde-dll and path after importing, let user choose the right value from a list or set custom value
+- [x] Rewrite environment and ewam importing functions : buggy and messy at the moment
 - [ ] XML serealization : get rid of DataContract ? (But we would also loose json serialization ?)
 
 ## Process management

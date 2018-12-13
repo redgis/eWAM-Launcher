@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows;
 using Squirrel;
 using log4net;
+using System.Threading;
 
 namespace eWamLauncher
 {
@@ -16,11 +17,44 @@ namespace eWamLauncher
    {
       private static readonly ILog log = LogManager.GetLogger(typeof(App));
 
-      protected override void OnStartup(StartupEventArgs e)
+      bool tookMutex = false;
+      static Mutex mutex = new Mutex(true, "{A70F17F8-D109-4761-97F1-9D5B96D99D53}");
+      
+
+      protected override void OnStartup(StartupEventArgs e)                    
       {
          log4net.Config.XmlConfigurator.Configure();
          log.Info("        =============  Started Logging  =============        ");
-         base.OnStartup(e);
+
+         if (mutex.WaitOne(TimeSpan.Zero, true))
+         {
+            this.tookMutex = true;
+            base.OnStartup(e);
+         }
+         else
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : instance already running, exiting...");
+
+            MessageBox.Show(
+               "Application is already running. Only one instance " +
+               "allowed. Check notification bar for eWAM Launcher icon.", 
+               "App already running", 
+               MessageBoxButton.OK, MessageBoxImage.Warning);
+
+            //System.Windows.Application.Current.Shutdown();
+            this.Shutdown();
+         }
+      }
+
+      protected override void OnExit(ExitEventArgs e)
+      {
+         if (this.tookMutex)
+         {
+            mutex.ReleaseMutex();
+         }
+
+         base.OnExit(e);
+         log.Info("        =============  Stopped Logging  =============        ");
       }
 
       public App()
