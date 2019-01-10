@@ -22,6 +22,6 @@ for line in search:
 		os.system("packages\\squirrel.windows.1.9.0\\tools\\Squirrel.exe --releasify Squirrel\\Ewam.Launcher." + version + ".nupkg --releaseDir=Squirrel\\Releases\\ --packagesDir=packages\\")
 		os.system("git add " + targetSpec)
 		os.system("git add " + targetPkg)
-		os.system("git add " + "Squirrel\\Releases\\Ewam.Launcher." + version + "-delta.nupkg")
-		os.system("git add " + "Squirrel\\Releases\\Ewam.Launcher." + version + "-full.nupkg")
+		os.system("git add " + "Squirrel\\Releases\\Ewam.Launcher-" + version + "-delta.nupkg")
+		os.system("git add " + "Squirrel\\Releases\\Ewam.Launcher-" + version + "-full.nupkg")
 		os.system("git commit -m \"Squirrel package from integrator\"")
