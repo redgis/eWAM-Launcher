@@ -17,6 +17,7 @@ namespace eWamLauncher.Views
 {
    /// <summary>
    /// Interaction logic for WWSecurityView.xaml
+   /// This view presents a ConfigurationSecurity object, allowing management of a WydeWeb security configuration 
    /// </summary>
    public partial class WWSecurityView : UserControl
    {

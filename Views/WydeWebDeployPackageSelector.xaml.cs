@@ -18,6 +18,7 @@ namespace eWamLauncher.Views
 {
    /// <summary>
    /// Interaction logic for WydeWebDeployPackageSelector.xaml
+   /// Step for selecting which package to use for deployment of the service / launcher
    /// </summary>
    public partial class WydeWebDeployPackageSelector : PageFunction<Package>, INotifyPropertyChanged
    {

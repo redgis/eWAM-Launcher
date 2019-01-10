@@ -10,6 +10,11 @@ using System.Threading.Tasks;
 
 namespace eWamLauncher
 {
+   /// <summary>
+   /// This class contains the application settings with there default values.
+   /// The member attributes "DisplayName", "Category" and "Description" are used by propertygrids : 
+   /// https://github.com/xceedsoftware/wpftoolkit/wiki/PropertyGrid
+   /// </summary>
    [DataContract(Name = "Settings", Namespace = "http://www.wyde.com")]
    public class Settings : ICloneable, INotifyPropertyChanged
    {
@@ -56,13 +61,13 @@ namespace eWamLauncher
       [Description("Comma seperated list of eWam executables. This settings is unused for now.")]
       [DataMember()] public string ewamexes { get { return _ewamexes; } set { _ewamexes = value; NotifyPropertyChanged(); } }
 
-      private string _launcherUpdateServerURL = @"http://regismt470p.wyde.paris.local/wLauncherUpdate/";
+      private string _launcherUpdateServerURL = @"http://formationt430s3.wyde.paris.local/wLauncherUpdate/";
       [Category("Update settings")]
       [DisplayName("Update URL")]
       [Description("URL to self update server (for eWamLauncher to update itself).")]
       [DataMember()] public string launcherUpdateServerURL { get { return _launcherUpdateServerURL; } set { _launcherUpdateServerURL = value; NotifyPropertyChanged(); } }
 
-      private string _ewamUpdateServerURL = @"http://regismt470p.wyde.paris.local/eWamUpdate/";
+      private string _ewamUpdateServerURL = @"http://formationt430s3.wyde.paris.local/eWamUpdate/";
       [Category("Package repository settings")]
       [DisplayName("Package server URL")]
       [Description("URL of the package repository containing the package-index.xml file.")]
@@ -87,9 +92,6 @@ namespace eWamLauncher
       [DataMember()] public List<VisualStudioDefinition> visualStudios { get { return _visualStudios; } set { _visualStudios = value; NotifyPropertyChanged(); } }
       
 
-      //private string _ewamdlls;
-      //[DataMember()] public string ewamdlls { get { return _ewamdlls; } set { _ewamdlls = value; NotifyPropertyChanged(); } }
-
       public event PropertyChangedEventHandler PropertyChanged;
 
       // This method is called by the Set accessor of each property.
@@ -110,6 +112,10 @@ namespace eWamLauncher
          return clone;
       }
 
+      /// <summary>
+      /// List of Visual Studio versions. To be used when inventoring available VS on the 
+      /// system (see AutoDetectVisualStudios())
+      /// </summary>
       private static Dictionary<string, string> vsNames = new Dictionary<string, string>()
       {
          { "6.0", "6.0" },
@@ -132,34 +138,43 @@ namespace eWamLauncher
 
          this.ewamexes = "ewam.exe;ewamconsole.exe;wyseman.exe;wydeweb.exe;remoteewam.exe;wedrpcserver.exe;wsmadmin.exe;RemoteWAM.exe";
 
-         this.launcherUpdateServerURL = @"http://regismt470p.wyde.paris.local/wLauncherUpdate/";
-         this.ewamUpdateServerURL = @"http://regismt470p.wyde.paris.local/eWamUpdate/";
+         this.launcherUpdateServerURL = @"http://formationt430s3.wyde.paris.local/wLauncherUpdate/";
+         this.ewamUpdateServerURL = @"http://formationt430s3.wyde.paris.local/eWamUpdate/";
 
          this.minimizeToTray = true;
          this.numberOfBackups = 5;
 
-         //AutoDetectVisualStudios();
+         this.visualStudios = new List<VisualStudioDefinition>();
+         AutoDetectVisualStudios();
       }
 
+      /// <summary>
+      /// Look for Visual Studio versions installed on the system
+      /// </summary>
       public void AutoDetectVisualStudios()
       {
          this.visualStudios.Clear();
 
+         // All Visual Studio versions are registered under this registry key
          RegistryKey VSVersionPathsKey = 
             Registry.LocalMachine.OpenSubKey(@"SOFTWARE\WOW6432Node\Microsoft\VisualStudio\SxS\VS7");
 
+         // for each entry found (each entry should be a different visual studio instance
          foreach (string valueName in VSVersionPathsKey.GetValueNames())
          {
             string vsPath = (string)Registry.GetValue(VSVersionPathsKey.Name, valueName, "");
 
             if (vsPath != null && vsPath != "")
             {
+               // create the object that will hold all the information of this VS instance
                VisualStudioDefinition vsDef = 
                   new VisualStudioDefinition() { basePath = vsPath, version = valueName, name = vsNames[valueName] };
 
+               // Look for vcvars32.bat
                List<String> vcvars32 = 
                   StripPrefix(vsDef.basePath, Directory.GetFiles(vsDef.basePath, "vcvars32.bat", SearchOption.AllDirectories));
 
+               // Look for vcvarsamd64.bat or vcvars64.bat
                List<String> vcvars64 = 
                   StripPrefix(vsDef.basePath, Directory.GetFiles(vsDef.basePath, "vcvarsamd64.bat", SearchOption.AllDirectories));
                if (vcvars64.Count() == 0)
@@ -179,17 +194,26 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Removes a prefix path from larger pathes (used to retrieve only the remaining subpath)
+      /// </summary>
+      /// <param name="prefix">the prefix to be remove</param>
+      /// <param name="files">the list of files from which the prefix must be removed</param>
+      /// <returns></returns>
       static List<string> StripPrefix(string prefix, string[] files)
       {
          List<string> result = new List<string>();
 
+         //normalize and remove trailing '/' or '\' from prefix
          string normalizePrefix = Path.GetFullPath(new Uri(prefix).LocalPath)
             .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
          foreach (string file in files)
          {
+            //normalize and remove trailing '/' or '\'
             string normalizedFile = Path.GetFullPath(new Uri(file).LocalPath)
                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
 
             if (file.StartsWith(normalizePrefix))
             {

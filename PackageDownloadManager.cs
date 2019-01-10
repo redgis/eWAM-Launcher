@@ -14,10 +14,18 @@ using log4net;
 
 namespace eWamLauncher
 {
+   /// <summary>
+   /// Download manager class. It simply holds the observable list of downloads, and allows for 
+   /// new package download addition
+   /// </summary>
    public class PackageDownloadManager : INotifyPropertyChanged
    {
       private static readonly ILog log = LogManager.GetLogger(typeof(PackageDownloadManager));
 
+      /// <summary>
+      /// Reference to the Profile, holding for instance, the server URL from which to 
+      /// download things. Passed to the PackageDownloadInfo class.
+      /// </summary>
       private Profile _profile = null;
 
       private ObservableCollection<PackageDownloadInfo> _downloads;
@@ -43,12 +51,19 @@ namespace eWamLauncher
          this.downloads = new ObservableCollection<PackageDownloadInfo>();
       }
 
+      /// <summary>
+      /// Adds and starts a new package download
+      /// </summary>
+      /// <param name="package">the package to be downloaded</param>
+      /// <param name="targetDir">destination folder where the download must be deployed</param>
+      /// <param name="packageDownloadCompletedHandler">download completion handler that will be triggered (optional)</param>
       public void AddDownloadTask(Package package, string targetDir, PackageDownloadCompletedHandler packageDownloadCompletedHandler = null)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString() + ": adding download of " + package.Description + " to " + targetDir);
 
          try
          {
+            // Create new PackageDownloadInfo holding the download information for this package
             PackageDownloadInfo packageDownloadInfo = new PackageDownloadInfo(package, targetDir, this._profile, packageDownloadCompletedHandler);
             
             this.downloads.Add(packageDownloadInfo);

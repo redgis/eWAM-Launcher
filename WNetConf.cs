@@ -15,7 +15,13 @@ using System.Xml;
 
 namespace eWamLauncher
 {
-
+   /// <summary>
+   /// Class representing WydeWeb configuration, containing a list of services, client and server security 
+   /// configuration, server trace configuration.
+   /// 
+   /// The member attributes "DisplayName", "Category" and "Description" are used by propertygrids : 
+   /// https://github.com/xceedsoftware/wpftoolkit/wiki/PropertyGrid
+   /// </summary>
    [DataContract(Name = "WNetConf", Namespace = "http://www.wyde.com")]
    public class WNetConf : ICloneable, INotifyPropertyChanged
    {
@@ -98,15 +104,24 @@ namespace eWamLauncher
       [DataMember()] public ServerConfigurationTraceConfig traceConfig { get { return _traceConfig; } set { _traceConfig = value; this.NotifyPropertyChanged(); } }
 
 
+      /// <summary>
+      /// Says what type of wNetConf we want
+      /// </summary>
       public enum eNetConf
       {
-         Full,
-         Client,
-         WSMISAPI,
-         Server,
-         SingleService
+         Full,          //full wNetConf
+         Client,        //client side only wNetConf
+         WSMISAPI,      //IIS side only wNetConf for HTTP tunnel
+         Server,        //server side only wNetConf
+         SingleService  //client side only, for one service
       }
 
+      /// <summary>
+      /// Generates a wNetConf depending on its destination : server, client, WSMISAPI (i.e. IIS HTTP tunnel), all sides.
+      /// </summary>
+      /// <param name="outputType">type of wNetConf to generate</param>
+      /// <param name="service">if "SingleService" type, the service to be used</param>
+      /// <returns>a WydeNetWorkConfiguration object that can be serialized to wNetConf.ini xml file</returns>
       public WydeNetWorkConfiguration GetWydeNetConf(eNetConf outputType, WWService service)
       {
          WydeNetWorkConfiguration result = new WydeNetWorkConfiguration();
@@ -136,6 +151,12 @@ namespace eWamLauncher
          return result;
       }
 
+      /// <summary>
+      /// Internal method to get the client side configuration
+      /// </summary>
+      /// <param name="outputType">type of wNetConf to generate</param>
+      /// <param name="service">if "SingleService" type, the service to be used</param>
+      /// <returns></returns>
       public ClientConfiguration GetClientConfiguration(eNetConf outputType, WWService service)
       {
          ClientConfiguration result = new ClientConfiguration();
@@ -176,6 +197,10 @@ namespace eWamLauncher
          return result;
       }
 
+      /// <summary>
+      /// Internal method to get the server side configuration
+      /// </summary>
+      /// <returns></returns>
       public ServerConfiguration GetServerConfiguration()
       {
          ServerConfiguration result = new ServerConfiguration();
@@ -205,50 +230,9 @@ namespace eWamLauncher
       }
    }
 
-   //[DataContract(Name = "WWService", Namespace = "http://www.wyde.com")]
-   //public class WWService : ICloneable, INotifyPropertyChanged
-   //{
-   //   public event PropertyChangedEventHandler PropertyChanged;
-
-   //   // This method is called by the Set accessor of each property.
-   //   // The CallerMemberName attribute that is applied to the optional propertyName
-   //   // parameter causes the property name of the caller to be substituted as an argument.
-   //   private void NotifyPropertyChanged(string propertyName = "")
-   //   {
-   //      if (this.PropertyChanged != null)
-   //      {
-   //         this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-   //      }
-   //   }
-
-   //   public object Clone()
-   //   {
-   //      WWService clone = (WWService)this.MemberwiseClone();
-
-   //      return clone;
-   //   }
-
-
-   //   private ClientConfigurationService _clientService;
-
-   //   [ExpandableObject]
-   //   [DataMember()] public ClientConfigurationService clientService { get { return _clientService; } set { _clientService = value; this.NotifyPropertyChanged(); } }
-
-   //   private ServerConfigurationService _serverService;
-
-   //   [ExpandableObject]
-   //   [DataMember()] public ServerConfigurationService serverService { get { return _serverService; } set { _serverService = value; this.NotifyPropertyChanged(); } }
-
-
-   //   public WWService(ClientConfigurationService clientService = null, ServerConfigurationService serverService = null)
-   //   {
-   //      this.clientService = clientService;
-   //      this.serverService = serverService;
-   //   }
-
-   //}
-
-
+   /// <summary>
+   /// Class representing an agglomerated (server and client together) service configuration
+   /// </summary>
    [DataContract(Name = "WWService", Namespace = "http://www.wyde.com")]
    public class WWService : ICloneable, INotifyPropertyChanged
    {
@@ -291,6 +275,11 @@ namespace eWamLauncher
       private WWServerService _serverService;
       [DataMember()] public WWServerService serverService { get { return _serverService; } set { _serverService = value; this.NotifyPropertyChanged(); } }
 
+      /// <summary>
+      /// Generates the wNetConf client side chunk to be used in WydeWebAsAuto.html for OCX configuration, or 
+      /// in wNetConf.xml for ClickOnce configuration
+      /// </summary>
+      /// <returns>string containing the client side XML chunk for that service</returns>
       public string GetWNetClientChunk()
       {
          ClientConfigurationService service = this.GetClientService(WNetConf.eNetConf.SingleService);
@@ -314,6 +303,12 @@ namespace eWamLauncher
          return "<services>\n" + strWriter.ToString() + "\n</services>\n";
       }
 
+      /// <summary>
+      /// Internal method to get the client side configuration
+      /// </summary>
+      /// <param name="outputType">type of wNetConf to generate</param>
+      /// <param name="service">if "SingleService" type, the service to be used</param>
+      /// <returns></returns>
       public ClientConfigurationService GetClientService(WNetConf.eNetConf outputType)
       {
          if (this.clientService == null) return null;
@@ -324,6 +319,10 @@ namespace eWamLauncher
          return result;
       }
 
+      /// <summary>
+      /// Internal method to get the client side configuration
+      /// </summary>
+      /// <returns></returns>
       public ServerConfigurationService GetServerService()
       {
          if (this.serverService == null) return null;
@@ -384,6 +383,9 @@ namespace eWamLauncher
       }
    }
 
+   /// <summary>
+   /// Simplified client side service configuration
+   /// </summary>
    [DataContract(Name = "WWClientService", Namespace = "http://www.wyde.com")]
    public class WWClientService : ICloneable, INotifyPropertyChanged
    {
@@ -401,6 +403,10 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Constructs a simplified client side configuration from a XML deserialized object
+      /// </summary>
+      /// <param name="clientService">a XML deserialized object</param>
       public WWClientService(ClientConfigurationService clientService = null)
       {
 
@@ -441,6 +447,11 @@ namespace eWamLauncher
          return clone;
       }
 
+      /// <summary>
+      /// Generates an XML serializable cliend side configuration
+      /// </summary>
+      /// <param name="outputType">type of wNetConf to generate</param>
+      /// <returns></returns>
       public ClientConfigurationService GetClientService(WNetConf.eNetConf outputType)
       {
          ClientConfigurationService result = new ClientConfigurationService();
@@ -806,6 +817,9 @@ namespace eWamLauncher
 
    }
 
+   /// <summary>
+   /// Simplified server side service configuration
+   /// </summary>
    [DataContract(Name = "WWServerService", Namespace = "http://www.wyde.com")]
    public class WWServerService : ICloneable, INotifyPropertyChanged
    {

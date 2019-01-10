@@ -10,6 +10,10 @@ using System.ComponentModel;
 
 namespace eWamLauncher
 {
+   /// <summary>
+   /// Class representing a launcher. A launcher is basically a command line : a n executable program, 
+   /// and a set of parameters (arguments).
+   /// </summary>
    [DataContract(Name = "Launcher", Namespace = "http://www.wyde.com")]
    public class Launcher : ICloneable, INotifyPropertyChanged
    {
@@ -21,9 +25,6 @@ namespace eWamLauncher
 
       private string _arguments;
       [DataMember()] public string arguments { get { return _arguments; } set { _arguments = value;  NotifyPropertyChanged(); } }
-
-      //private string _binariesSet;
-      //[DataMember()] public string binariesSet { get { return _binariesSet; } set { _binariesSet = value;  NotifyPropertyChanged(); } }
 
       public event PropertyChangedEventHandler PropertyChanged;
 
@@ -47,12 +48,17 @@ namespace eWamLauncher
 
       public object Clone()
       {
-         //No need to clone binariesSet because it is a reference!
-         //clone.binariesSet = this.binariesSet.Clone();
-
          return this.MemberwiseClone();
       }
 
+      /// <summary>
+      /// Generate the batch command line for this launcher. This is be called / executed in the 
+      /// context of the environment this launcher belongs to : using the same environment variables
+      /// provided by "ewamSetEnvFilename" batch file.
+      /// </summary>
+      /// <param name="ewamSetEnvFilename">Batch file called before executing the launcher. Usually 
+      /// contains the necessary environment variables.</param>
+      /// <returns></returns>
       public string GenerateBatch(string ewamSetEnvFilename)
       {
          string output = "";

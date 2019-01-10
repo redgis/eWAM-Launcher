@@ -21,6 +21,7 @@ namespace eWamLauncher.Views
 {
    /// <summary>
    /// Interaction logic for WydeWebDeployFinish.xaml
+   /// Final step of the wizard : verify and edit information
    /// </summary>
    public partial class WydeWebDeployFinish : PageFunction<String>, INotifyPropertyChanged
    {
@@ -74,6 +75,11 @@ namespace eWamLauncher.Views
 
       #region Path actions
 
+      /// <summary>
+      /// Internal method to check if selected target folder is write protected
+      /// </summary>
+      /// <param name="folderPath"></param>
+      /// <returns></returns>
       private bool hasWriteAccessToFolder(string folderPath)
       {
          try
@@ -95,6 +101,11 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Command Handler to change path of a TextBox in the UI
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void OnChangePath(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -127,6 +138,11 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Command handler to navigate (i.e. open an explorer window), to a path specified in the UI
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void OnExplorePath(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -149,6 +165,11 @@ namespace eWamLauncher.Views
 
       #endregion
 
+      /// <summary>
+      /// Event Handler when selected path is modified : check it's valid and not write protected
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void OnPathChanged(object sender, TextChangedEventArgs e)
       {
          if (!this.hasWriteAccessToFolder(tbPath.Text))

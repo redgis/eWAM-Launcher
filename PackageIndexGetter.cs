@@ -13,6 +13,9 @@ using log4net;
 namespace eWamLauncher
 {
 
+   /// <summary>
+   /// Event arg class to passed used when notifying of download completion
+   /// </summary>
    public class PackageListCompletedEventArgs : EventArgs
    {
       public PackageListCompletedEventArgs(WideIndex index)
@@ -28,6 +31,9 @@ namespace eWamLauncher
 
    public delegate void PackageListCompletedHandler(object sender, PackageListCompletedEventArgs e);
 
+   /// <summary>
+   /// Class managing the download of a package-index.xml file and converting it to WideIndex object (simple XML conversion)
+   /// </summary>
    public class PackageIndexGetter
    {
       private static readonly ILog log = LogManager.GetLogger(typeof(PackageIndexGetter));
@@ -43,6 +49,9 @@ namespace eWamLauncher
          this.url = url;
       }
 
+      /// <summary>
+      /// Start package-index.xml download
+      /// </summary>
       public void GetPackages()
       {
          WebClient wc = new WebClient();
@@ -50,7 +59,11 @@ namespace eWamLauncher
          wc.DownloadDataAsync(new Uri(this.url));
       }
 
-
+      /// <summary>
+      /// Handler for package-index.xml download completion
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void OnPackageIndexDownloaded(object sender, DownloadDataCompletedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -67,14 +80,17 @@ namespace eWamLauncher
             }
             else
             {
+               // Download is complete, we get the raw data from the passed EventArgs recieved
                byte[] raw = e.Result;
 
+               // Deserialize raw XML data to object
                String webData = System.Text.Encoding.UTF8.GetString(raw);
                XmlSerializer serializer = new XmlSerializer(typeof(WideIndex));
                MemoryStream memStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(webData));
                this.packageIndex = (WideIndex)serializer.Deserialize(memStream);
             }
 
+            // pass resulting packageIndex object in the EventArgs for notification
             PackageListCompletedEventArgs args = new PackageListCompletedEventArgs(packageIndex);
             args.Cancelled = e.Cancelled;
             args.Error = e.Error;

@@ -9,6 +9,9 @@ using Microsoft.Win32;
 
 namespace eWamLauncher
 {
+   /// <summary>
+   /// This class the information of an instance of Visual Studio installed : version name, path and pathes to vcvarsXX.bat
+   /// </summary>
    [DataContract(Name = "VisualStudioDefinition", Namespace = "http://www.wyde.com")]
    [DisplayName("Visual Studio definition")]
    public class VisualStudioDefinition : INotifyPropertyChanged

@@ -18,6 +18,7 @@ namespace eWamLauncher.Views
 {
    /// <summary>
    /// Interaction logic for WydeWebDeployServiceSelector.xaml
+   /// Step for selecting the service to be deployed
    /// </summary>
    public partial class WydeWebDeployServiceSelector : PageFunction<WWService>, INotifyPropertyChanged
    {

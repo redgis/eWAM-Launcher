@@ -22,6 +22,9 @@ namespace eWamLauncher
       x64
    }
 
+   /// <summary>
+   /// Represents an environment (e.g. Wynsure 5.8)
+   /// </summary>
    [DataContract(Name = "Environment", Namespace = "http://www.wyde.com")]
    public class Environment : ICloneable, INotifyPropertyChanged
    {
@@ -29,47 +32,85 @@ namespace eWamLauncher
       [DataMember()] public string name { get { return _name; } set { _name = value; NotifyPropertyChanged(); } }
 
       private string _envRoot;
+      /// <summary>
+      /// Root path of the environment (formerly WYDE-ROOT in Wynsure batch files)
+      /// </summary>
       [DataMember()] public string envRoot { get { return _envRoot; } set { _envRoot = value; NotifyPropertyChanged(); } }
 
       private string _wfRoot;
+      /// <summary>
+      /// Wynsure-specific root path (formerly WF-ROOT in Wynsure batch files)
+      /// </summary>
       [DataMember()] public string wfRoot { get { return _wfRoot; } set { _wfRoot = value; NotifyPropertyChanged(); } }
 
       private string _tgvSubPath;
+      /// <summary>
+      /// Sub path to TGV folder, relative to EnvRoot
+      /// </summary>
       [DataMember()] public string tgvSubPath { get { return _tgvSubPath; } set { _tgvSubPath = value; NotifyPropertyChanged(); } }
 
       private string _additionalPath;
+      /// <summary>
+      /// Additional folder to be used as part of the PATH variable when using this environment
+      /// </summary>
       [DataMember()] public string additionalPath { get { return _additionalPath; } set { _additionalPath = value; NotifyPropertyChanged(); } }
 
       private ObservableCollection<EnvironmentVariable> _environmentVariables;
+      /// <summary>
+      /// List of environment variable to be used by this environment
+      /// </summary>
       [DataMember()] public ObservableCollection<EnvironmentVariable> environmentVariables { get { return _environmentVariables; } set { _environmentVariables = value; NotifyPropertyChanged(); } }
 
       private ObservableCollection<Launcher> _launchers;
+      /// <summary>
+      /// List of commands available to this environment
+      /// </summary>
       [DataMember()] public ObservableCollection<Launcher> launchers { get { return _launchers; } set { _launchers = value; NotifyPropertyChanged(); } }
 
       private Ewam _ewam;
+      /// <summary>
+      /// eWAM instance to be used by this environment (this allows namely the definition of WYDE-ROOT)
+      /// </summary>
       [DataMember()] public Ewam ewam { get { return _ewam; } set { _ewam = value; this.NotifyPropertyChanged(); } }
 
       private BinariesSet _binariesSet;
+      /// <summary>
+      /// Set of binaries to use from the eWAM instance (release, debug, etc.)
+      /// </summary>
       [DataMember()] public BinariesSet binariesSet { get { return _binariesSet; } set { _binariesSet = value; NotifyPropertyChanged(); } }
 
       private WNetConf _wNetConf;
+      /// <summary>
+      /// WydeWeb configuration for this environment
+      /// </summary>
       [DataMember()] public WNetConf wNetConf { get { return _wNetConf; } set { _wNetConf = value; NotifyPropertyChanged(); } }
 
       //private WydeNetWorkConfiguration _wydeNetConf;
       //[DataMember()] public WydeNetWorkConfiguration wydeNetConf { get { return _wydeNetConf; } set { _wydeNetConf = value; NotifyPropertyChanged(); } }
 
       private bool _useVS;
+      /// <summary>
+      /// Says if the environment should setup the VS environment when executing a command (a launcher)
+      /// </summary>
       [DataMember()] public bool useVS { get { return _useVS; } set { _useVS = value; NotifyPropertyChanged(); } }
       [DataMember()] public bool notUseVS { get { return !_useVS; } set { _useVS = !value; NotifyPropertyChanged(); } }
 
       private VisualStudioDefinition _associatedVS;
+      /// <summary>
+      /// Which VS instance (from the settings) to use with this environment
+      /// </summary>
       [DataMember()] public VisualStudioDefinition associatedVS { get { return _associatedVS; } set { _associatedVS = value; NotifyPropertyChanged(); } }
 
       private eVsPlateform _VsPlateform;
+      /// <summary>
+      /// Which plateform to use for Visual Studio (x64, x86)
+      /// </summary>
       [DataMember()] public eVsPlateform VsPlateform { get { return _VsPlateform; } set { _VsPlateform = value; NotifyPropertyChanged(); } }
 
 
-
+      /// <summary>
+      /// Unused for now. Maint to maintain the list of processes starter by this environment.
+      /// </summary>
       public ObservableCollection<Process> processes { get; set; }
 
       public event PropertyChangedEventHandler PropertyChanged;
@@ -112,6 +153,11 @@ namespace eWamLauncher
          return clone;
       }
       
+      /// <summary>
+      /// After deserialization from XML or JSON, eWAM is a standalone object, we need to re-set it 
+      /// to an existing reference from ewams in the the Profile. 
+      /// </summary>
+      /// <param name="referenceEwams"></param>
       public void RestoreReferenceEwam(IEnumerable<Ewam> referenceEwams)
       {
          if (this.ewam == null)
@@ -146,6 +192,10 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// After deserialization from XML or JSON, Visual Studio is a standalone object, we need to re-set it 
+      /// to an existing reference from vs list in Profile settings. 
+      /// </summary>
       public void RestoreReferenceVS(IEnumerable<VisualStudioDefinition> referenceVS)
       {
          if (this.associatedVS == null)
@@ -164,7 +214,11 @@ namespace eWamLauncher
          }
       }
 
-
+      /// <summary>
+      /// Do a simple lookup for a variable name in this env variables defined in this environment.
+      /// </summary>
+      /// <param name="name">Name of the variable to lookup</param>
+      /// <returns>an EnvironmentVariable object corresponding to the provided name, or null if not found</returns>
       public EnvironmentVariable GetEnvironmentVariable(string name)
       {
          EnvironmentVariable result = null;
@@ -216,11 +270,22 @@ namespace eWamLauncher
          return result;
       }
 
+      /// <summary>
+      /// Internal method used to resolve the value of a variable name found in a "%...%" match
+      /// </summary>
+      /// <param name="match">the regex match for "%...%" pattern.</param>
+      /// <returns>the value of the found environment variable</returns>
       private string ExpandEnvVariableMatch(Match match)
       {
          return this.ResolveVariable(match.Groups["variable"].Value);
       }
 
+      /// <summary>
+      /// Retrieve the expanded value of an environment variable for this environment
+      /// Recursively resolve all the occurences of "%...%"
+      /// </summary>
+      /// <param name="name">name of the variable to expand</param>
+      /// <returns>expanded environment value</returns>
       public string ResolveVariable(string name)
       {
          string result = null;
@@ -268,6 +333,11 @@ namespace eWamLauncher
          return result;
       }
 
+      /// <summary>
+      /// Expand environment variables in given string (any occurence of %...%)
+      /// </summary>
+      /// <param name="str">string to expand</param>
+      /// <returns>the expanded string</returns>
       public string ExpandString(string str)
       {
          if (str == null || str == "") return "";
@@ -280,6 +350,9 @@ namespace eWamLauncher
          return result;
       }
 
+      /// <summary>
+      /// Expand all env. variables values defined in this environment, store result in the "result" member
+      /// </summary>
       public void ExpandAllEnvVariables()
       {
          //Get rid of WYDE-DLL variable : set up in binaries set !
@@ -309,6 +382,10 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Generate batch script defining environment variables for this environment
+      /// </summary>
+      /// <returns>string containing the batch script</returns>
       public string GetEnvVarForBatch()
       {
          Dictionary<string, string> variables = new Dictionary<string, string>();
@@ -370,6 +447,11 @@ namespace eWamLauncher
          return output;
       }
 
+      /// <summary>
+      /// Generate the batch files for this environment, including the generic script defining all the environment
+      /// variables, and the batch script for each launcher
+      /// </summary>
+      /// <param name="path">path where the batch files will be dumped.</param>
       public void GenerateBatchFiles(string path)
       {
          string eWamSetEnv = "eWAM Set Env.bat";

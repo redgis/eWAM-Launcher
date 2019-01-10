@@ -11,6 +11,10 @@ using System.ComponentModel;
 
 namespace eWamLauncher
 {
+   /// <summary>
+   /// Set of binaries paths to be part of an eWAM instance. a Set of binaries includes a pathes
+   /// to the .exe files, a path to dlls, and a path to cppdlls.
+   /// </summary>
    [DataContract(Name = "BinariesSet", Namespace = "http://www.wyde.com")]
    public class BinariesSet : ICloneable, INotifyPropertyChanged
    {
@@ -18,12 +22,21 @@ namespace eWamLauncher
       [DataMember()] public string name { get { return _name; } set { _name = value;  NotifyPropertyChanged(); } }
 
       private string _exePathes;
+      /// <summary>
+      /// Pathes to executables
+      /// </summary>
       [DataMember()] public string exePathes { get { return _exePathes; } set { _exePathes = value;  NotifyPropertyChanged(); } }
 
       private string _dllPathes;
+      /// <summary>
+      /// Pathes to Dlls
+      /// </summary>
       [DataMember()] public string dllPathes { get { return _dllPathes; } set { _dllPathes = value;  NotifyPropertyChanged(); } }
 
       private string _cppdllPathes;
+      /// <summary>
+      /// Pathes to CPPDLLs
+      /// </summary>
       [DataMember()] public string cppdllPathes { get { return _cppdllPathes; } set { _cppdllPathes = value;  NotifyPropertyChanged(); } }
 
       public event PropertyChangedEventHandler PropertyChanged;

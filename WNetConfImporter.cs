@@ -14,6 +14,11 @@ using System.IO;
 namespace eWamLauncher
 {
 
+   /// This file contains a set of auto-generated classes with Xml serialization attributes defined, 
+   /// to allow easy import / export of WydeWeb configuration from wNetConf xml files (usually wNetConf.ini)
+   /// online.
+   /// See - XML => xsd => .cs  : https://stackoverflow.com/questions/3187444/convert-xml-string-to-object
+
 
    [System.Xml.Serialization.XmlTypeAttribute(IncludeInSchema = false)]
    [DataContract(Name = "eAuthenticate")]
@@ -43,7 +48,6 @@ namespace eWamLauncher
       [XmlEnum("4")]
       Selected = 4
    }
-
 
    [System.Xml.Serialization.XmlTypeAttribute(IncludeInSchema = false)]
    [DataContract(Name = "eYesNo")]

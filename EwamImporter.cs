@@ -10,6 +10,9 @@ using log4net;
 
 namespace eWamLauncher
 {
+   /// <summary>
+   /// Factory class used to import an eWAM from a given path.
+   /// </summary>
    public class EwamImporter
    {
       private Ewam ewam;
@@ -17,6 +20,13 @@ namespace eWamLauncher
 
       private static readonly ILog log = LogManager.GetLogger(typeof(EwamImporter));
 
+      /// <summary>
+      /// Importer needs to have access to parameters in order to help it configure the importing 
+      /// (sub folders to lookup).
+      /// </summary>
+      /// <param name="settings">settings used during importing</param>
+      /// <param name="ewam">A pre-built ewam object may be provided, and will be filled 
+      /// with imported information</param>
       public EwamImporter(Settings settings, Ewam ewam = null)
       {
          this.settings = settings;
@@ -31,14 +41,30 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Importer needs to have access to parameters in order to help it configure the importing 
+      /// (sub folders to lookup).
+      /// </summary>
+      /// <param name="profile">profile containing settings to be used during importing</param>
+      /// <param name="ewam">A pre-built ewam object may be provided, and will be filled 
+      /// with imported information</param>
       public EwamImporter(Profile profile, Ewam ewam = null) : this(profile.settings, ewam)
       { }
 
+      /// <summary>
+      /// Get the imported ewam
+      /// </summary>
+      /// <returns>the imported ewam</returns>
       public Ewam GetEwam()
       {
          return this.ewam;
       }
 
+      /// <summary>
+      /// Import an ewam from given path.
+      /// </summary>
+      /// <param name="path">path from which to import the ewam instance</param>
+      /// <returns>imported ewam</returns>
       public Ewam ImportFromPath(string path)
       {
          if (!Directory.Exists(path)) throw new DirectoryNotFoundException("WYDE-ROOT : " + path);
@@ -112,6 +138,13 @@ namespace eWamLauncher
          return this.ewam;
       }
 
+      /// <summary>
+      /// Internal method used to find the set of sub pathes used by this ewam instance for a specified file type.
+      /// </summary>
+      /// <param name="basePath">root path to look into</param>
+      /// <param name="subPathes">list of sub pathes in which to lookup</param>
+      /// <param name="fileType">file types to lookup</param>
+      /// <param name="foundPathes">pathes containing given file types</param>
       private void FindPathes(string basePath, string[] subPathes, string fileType,
          Dictionary<string, string> foundPathes)
       {

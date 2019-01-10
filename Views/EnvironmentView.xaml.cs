@@ -21,6 +21,10 @@ using System.Xml.Serialization;
 namespace eWamLauncher.Views
 {
 
+   /// <summary>
+   /// Interaction logic for EnvironmentView.xaml
+   /// View code-behind for an Environment (datacontext is a Environment object)
+   /// </summary>
    public partial class EnvironmentView : System.Windows.Controls.UserControl
    {
       private static readonly ILog log = LogManager.GetLogger(typeof(EnvironmentView));
@@ -40,6 +44,12 @@ namespace eWamLauncher.Views
 
       #region Path actions
 
+
+      /// <summary>
+      /// Command Handler to change TGV path of a TextBox in the UI
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void OnChangeTgvPath(object sender, ExecutedRoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -80,6 +90,11 @@ namespace eWamLauncher.Views
          e.CanExecute = true;
       }
 
+      /// <summary>
+      /// Command handler to navigate (i.e. open an explorer window), to a TGV path specified in the UI
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void OnExploreTgvPath(object sender, ExecutedRoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -110,6 +125,52 @@ namespace eWamLauncher.Views
 
       #region Environment variables actions
 
+      /// <summary>
+      /// Command handler to import environment variable from batch files from a given path
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
+      private void OnImportEnvVariables(object sender, RoutedEventArgs e)
+      {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
+         {
+            OpenFileDialog fileBrowser = new OpenFileDialog();
+
+            fileBrowser.Filter = "Batch file|*.bat";
+            fileBrowser.FilterIndex = 1;
+            fileBrowser.RestoreDirectory = true;
+
+            if (fileBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+
+               string envVarsPath = System.IO.Path.GetDirectoryName(fileBrowser.FileName);
+
+               EnvironmentImporter importer =
+                  new EnvironmentImporter(
+                     ((MainWindow)System.Windows.Application.Current.MainWindow).profile,
+                     (Environment)this.DataContext);
+               importer.ImportEnvironmentVariables(envVarsPath);
+            }
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
+      }
+
+      /// <summary>
+      /// Command handler to force evaluation of all environment variable of the environment
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void OnReevaluateEnvVariables(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -130,6 +191,11 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Command handler to force evaluation of all environment variable of the environment
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void OnReevaluateEnvVariables(object sender, EventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -150,6 +216,11 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Command handler to move up selected variable in the list of env. variables
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnMoveUpVariable(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -181,6 +252,11 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Command handler to move down selected variable in the list of env. variables
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnMoveDownVariable(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -216,6 +292,12 @@ namespace eWamLauncher.Views
 
       #region Launchers actions
 
+
+      /// <summary>
+      /// Creates and adds a new empty launcher in the launchers list
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnNewLauncher(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -239,6 +321,11 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Duplicates the selected launcher and adds the duplicate to the launchers list
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnDuplicateLauncher(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -267,6 +354,11 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Delete selected launcher
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnDeleteLauncher(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -296,6 +388,11 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Imports existing launchers from batch files from a local folder
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnImportLaunchers(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -332,6 +429,13 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Internal method to set a given env. variables in a ProcessStartInfo (used to launch 
+      /// a process). This methods replace any preexisting env. var. with the new value.
+      /// </summary>
+      /// <param name="startInfo"></param>
+      /// <param name="VarName"></param>
+      /// <param name="VarValue"></param>
       private void SetEnvVarToProcessInfo(ProcessStartInfo startInfo, 
          string VarName, string VarValue)
       {
@@ -345,6 +449,13 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Internal method to set a given env. variables in a ProcessStartInfo (used to launch 
+      /// a process). This methods appends any preexisting env. var. with the new value.
+      /// </summary>
+      /// <param name="startInfo"></param>
+      /// <param name="VarName"></param>
+      /// <param name="VarValue"></param>
       private void AppendEnvVarToProcessInfo(ProcessStartInfo startInfo,
          string VarName, string VarValue)
       {
@@ -358,6 +469,12 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Internal method to prepare a process to be ready to start, within the context 
+      /// of this environment (using its env. variable mainly).
+      /// </summary>
+      /// <param name="launcher"></param>
+      /// <returns></returns>
       private ProcessStartInfo GetPreparedProcessInfo(Launcher launcher)
       {
          // Before anything, make sure all env. variable are up to date !
@@ -443,6 +560,11 @@ namespace eWamLauncher.Views
          return startInfo;
       }
 
+      /// <summary>
+      /// Start the selected launcher from a console, using VS context and environment variables
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnConsoleExecuteLauncher(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -499,6 +621,11 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Start the selected launcher
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnExecuteLauncher(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -521,11 +648,21 @@ namespace eWamLauncher.Views
          }
       }
 
-      private void processExited(object sender, EventArgs e)
+      /// <summary>
+      /// Unimplemented event handler for process exit
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
+      private void OnProcessExited(object sender, EventArgs e)
       {
          throw new NotImplementedException();
       }
 
+      /// <summary>
+      /// Move selected launcher up in the launchers list
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnMoveUpLauncher(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -557,6 +694,11 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Move selected launcher down in the launchers list
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnMoveDownLauncher(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -588,6 +730,11 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Handle click on an hyper-text link
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnClickHLink(object sender, RequestNavigateEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -609,6 +756,12 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Export all launchers to batch files, in the specified folder, including the
+      /// eWAM Set Env.bat to set the environment variables
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnFileExportAllLaunchers(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -643,6 +796,11 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Open a console for this environment, with envirionment and VS context set up
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnOpenEnvironmentConsole(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -698,6 +856,12 @@ namespace eWamLauncher.Views
 
       #region WydeWeb services actions
 
+      /// <summary>
+      /// Creates and adds a new empty WydeWeb service in the services list in the 
+      /// WydeWeb configuration of the environment
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnNewWWService(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -721,6 +885,12 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Duplicates the selected WydeWeb service and adds the duplicate to the services list in the 
+      /// WydeWeb configuration of the environment
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnDuplicateWWService(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -749,6 +919,11 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Delete selected WydeWeb service
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnDeleteWWService(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -778,6 +953,11 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Move selected WydeWeb service up in the services list
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnMoveUpWWService(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -809,6 +989,11 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Move selected WydeWeb service down in the services list
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnMoveDownWWService(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -844,6 +1029,11 @@ namespace eWamLauncher.Views
 
       #region WydeWeb actions
 
+      /// <summary>
+      /// Load WydeWeb configuration from wNetConf.ini file
+      /// </summary>
+      /// <param name="fileName"></param>
+      /// <returns></returns>
       public WydeNetWorkConfiguration LoadWNetConf(string fileName)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -865,6 +1055,13 @@ namespace eWamLauncher.Views
          return null;
       }
 
+      /// <summary>
+      /// Extract a WNetConf XML content (ready for storing in a wNetConf.ini or wNetConf.xml, or a
+      /// WydeWebAsAuto.html) from WydeWeb configurationof the environment
+      /// </summary>
+      /// <param name="outputType">Specifies for what purpose this WNetConf is to be built : server side, client side, WSMISAPI, full configuration, client side single service</param>
+      /// <param name="service">If single service requested, the service for which to generate the client side WNetConf</param>
+      /// <returns></returns>
       private string GetWNetConf(WNetConf.eNetConf outputType, WWService service)
       {
          Environment environment = (Environment)this.DataContext;
@@ -882,6 +1079,11 @@ namespace eWamLauncher.Views
          return writer.ToString();
       }
 
+      /// <summary>
+      /// Import environment WydeWeb configuration from wNetConf.ini file
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnFileImportWNetConfIni(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -937,6 +1139,11 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Export WydeWeb configuration to wNetConf.ini : only client side configuration
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnFileExportWNetConfIni_Client(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -988,6 +1195,11 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Export WydeWeb configuration to wNetConf.ini : only IIS WSMISAPI configuration
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnFileExportWNetConfIni_WSMISAPI(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -1038,6 +1250,11 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Export WydeWeb configuration to wNetConf.ini : only server side configuration
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnFileExportWNetConfIni_Server(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -1087,6 +1304,11 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Export WydeWeb configuration to wNetConf.ini : full (client and server side) configuration
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnFileExportWNetConfIni_Full(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -1136,6 +1358,11 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Launche WydeWeb deployment wizard
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnDeployWydeWeb(object sender, RoutedEventArgs e)
       {
          WydeWebDeployWizard deployWizard = new WydeWebDeployWizard((Environment)this.DataContext);

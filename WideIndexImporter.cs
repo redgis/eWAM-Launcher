@@ -17,7 +17,15 @@ using System.Xml.Serialization;
 
 namespace eWamLauncher
 {
-   /// <remarks/>
+   /// This file contains an auto-generated set of classes with Xml serialization attributes defined, 
+   /// to allow easy import / export of package-index.xml files (used to inventory all packages available 
+   /// online.
+   /// See - XML => xsd => .cs  : https://stackoverflow.com/questions/3187444/convert-xml-string-to-object
+
+   
+   /// <summary>
+   /// Root node class : WideIndex contains a list of packages
+   /// </summary>
    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.0.30319.17929")]
    [System.SerializableAttribute()]
    [System.Diagnostics.DebuggerStepThroughAttribute()]
@@ -59,7 +67,10 @@ namespace eWamLauncher
       }
    }
 
-   /// <remarks/>
+   /// <summary>
+   /// A package has a uniq ID, a type (ewam, wynsure, activex, clickonce, etc), a version and contains a 
+   /// list of components
+   /// </summary>
    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.0.30319.17929")]
    [System.SerializableAttribute()]
    [System.Diagnostics.DebuggerStepThroughAttribute()]
@@ -180,7 +191,10 @@ namespace eWamLauncher
       }
    }
 
-   /// <remarks/>
+   /// <summary>
+   /// A component has name, a compression (says if its packaged as a .zip of if its files are stored raw), 
+   /// and a list of files
+   /// </summary>
    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.0.30319.17929")]
    [System.SerializableAttribute()]
    [System.Diagnostics.DebuggerStepThroughAttribute()]
@@ -260,7 +274,9 @@ namespace eWamLauncher
 
    }
 
-   /// <remarks/>
+   /// <summary>
+   /// A file has hash, and a path
+   /// </summary>
    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.0.30319.17929")]
    [System.SerializableAttribute()]
    [System.Diagnostics.DebuggerStepThroughAttribute()]

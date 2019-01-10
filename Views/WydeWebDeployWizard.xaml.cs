@@ -34,6 +34,14 @@ namespace eWamLauncher.Views
 
    /// <summary>
    /// Interaction logic for WydeWebDeployWizard.xaml
+   /// This wizard is meant to allow for selection of a WydeWen service and a 
+   /// launcher (to have the client parmeters), selection of a package (activex or clickonce), 
+   /// and deploy the appropriately configured package to a local IIS folder, for instance.
+   /// This wizard is composed of the steps :
+   /// - WydeWebDeployServiceSelector     : select a service to deploy
+   /// - WydeWebDeployLauncherSelector    : select a launcher to use (e.g. wydeweb_wynsure, wydeweb_wynsureFr, etc.)
+   /// - WydeWebDeployPackageSelector     : select a package to deploy this service / launcher
+   /// - WydeWebDeployFinish              : show info, and do the deploy
    /// </summary>
    public partial class WydeWebDeployWizard : NavigationWindow
    {
@@ -46,6 +54,10 @@ namespace eWamLauncher.Views
       private WydeWebDeployPackageSelector packageSelector;
       private WydeWebDeployFinish finishPage;
 
+      /// <summary>
+      /// Initialize Wizard, create all steps, start first step
+      /// </summary>
+      /// <param name="environment"></param>
       public WydeWebDeployWizard(Environment environment)
       {
          InitializeComponent();
@@ -65,6 +77,11 @@ namespace eWamLauncher.Views
          this.Navigate(serviceSelector);
       }
 
+      /// <summary>
+      /// Treatement of result of service selector
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void ServiceSelector_Return(object sender, WizardReturnEventArgs<WWService> e)
       {
          if(e.Result == null)
@@ -76,6 +93,11 @@ namespace eWamLauncher.Views
          this.Navigate(optionSelector);
       }
 
+      /// <summary>
+      /// Treatement of result of option selector
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void OptionSelector_Return(object sender, WizardReturnEventArgs<Launcher> e)
       {
          if (e.Result == null)
@@ -87,6 +109,11 @@ namespace eWamLauncher.Views
          this.Navigate(packageSelector);
       }
 
+      /// <summary>
+      /// Treatement of result of package selector
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void PackageSelector_Return(object sender, WizardReturnEventArgs<Package> e)
       {
          if (e.Result == null)
@@ -115,42 +142,11 @@ namespace eWamLauncher.Views
          this.Navigate(this.finishPage);
       }
 
-      private void OnDownloadCompleted(object sender, PackageDownloadCompletedEventArgs e)
-      {
-         if (e.Cancelled == true)
-         {
-
-         }
-         else if (e.Error != null)
-         {
-
-         }
-         else
-         {
-            //Do things with files
-            if (this.package.Type == "activex")
-            {
-               List<string> htmlFiles = Directory.GetFiles(this.finishPage.path, "*.html").ToList();
-
-               foreach (string filename in htmlFiles)
-               {
-                  this.SetupActiveXLauncher(filename);
-               }
-
-            }
-            else if (this.package.Type == "clickonce")
-            {
-               File.WriteAllText(
-                  Path.Combine(this.finishPage.path, "options.txt"),
-                  this.finishPage.options);
-
-               File.WriteAllText(
-                  Path.Combine(this.finishPage.path, "wnetconf.xml"),
-                  this.finishPage.chunk);
-            }
-         }
-      }
-
+      /// <summary>
+      /// On finish wizard, download the selected package and close the wizard window
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void FinishPage_WizardReturn(object sender, WizardReturnEventArgs<bool> e)
       {
          if (e.Result)
@@ -166,6 +162,57 @@ namespace eWamLauncher.Views
          this.Close();
       }
 
+      /// <summary>
+      /// Handle completion of the download of the selected package
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
+      private void OnDownloadCompleted(object sender, PackageDownloadCompletedEventArgs e)
+      {
+         if (e.Cancelled == true)
+         {
+
+         }
+         else if (e.Error != null)
+         {
+
+         }
+         else
+         {
+            //Do things with files
+
+            //Setup the ActiveX deployment
+            if (this.package.Type == "activex")
+            {
+               //For each HTML file, setup its PARAM tags appropriately
+               List<string> htmlFiles = Directory.GetFiles(this.finishPage.path, "*.html").ToList();
+               foreach (string filename in htmlFiles)
+               {
+                  this.SetupActiveXLauncher(filename);
+               }
+
+            }
+            //Setup the ClickOnce deployment
+            else if (this.package.Type == "clickonce")
+            {
+               //Write the selected launcher's options (modified by user in finishPage, see 
+               // PackageSelector_Return), in options.txt 
+               File.WriteAllText(
+                  Path.Combine(this.finishPage.path, "options.txt"),
+                  this.finishPage.options);
+
+               //Write wnetconf.xml using the chunk previously generated (see PackageSelector_Return)
+               File.WriteAllText(
+                  Path.Combine(this.finishPage.path, "wnetconf.xml"),
+                  this.finishPage.chunk);
+            }
+         }
+      }
+
+      /// <summary>
+      /// Generate HTML code to be setup in the HTML files of the ActiveX Package
+      /// </summary>
+      /// <param name="filename"></param>
       private void SetupActiveXLauncher(string filename)
       {
          string content = File.ReadAllText(filename);

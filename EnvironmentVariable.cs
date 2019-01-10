@@ -9,6 +9,9 @@ using System.ComponentModel;
 
 namespace eWamLauncher
 {
+   /// <summary>
+   /// Represents an environment variable : its name, its symbolic value (i.e. containing un resolved %...%), its expanded value (all %...% resolved too their value)
+   /// </summary>
    [DataContract(Name = "EnvironmentVariable", Namespace = "http://www.wyde.com")]
    public class EnvironmentVariable : ICloneable, INotifyPropertyChanged
    {
@@ -16,11 +19,20 @@ namespace eWamLauncher
       [DataMember()] public string name { get { return _name.ToUpper(); } set { _name = value.ToUpper();  NotifyPropertyChanged(); } }
 
       private string _value;
+      /// <summary>
+      /// Symbolic (unresolved) value of the environment variable
+      /// </summary>
       [DataMember()] public string value { get { return _value; } set { _value = value;  NotifyPropertyChanged(); } }
 
       private string _result;
+      /// <summary>
+      /// Expanded (resolved) value of the environment variable
+      /// </summary>
       [DataMember()] public string result { get { return _result; } set { _result = value;  NotifyPropertyChanged(); } }
 
+      /// <summary>
+      /// Boolean used to know the variable is being resolved, to avoid cycles due recursive env. variable definitions.
+      /// </summary>
       public Boolean isBeingResolved;
 
       public event PropertyChangedEventHandler PropertyChanged;

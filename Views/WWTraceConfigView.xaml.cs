@@ -17,6 +17,7 @@ namespace eWamLauncher.Views
 {
    /// <summary>
    /// Interaction logic for WWTraceConfigView.xaml
+   /// This view presents a ServerConfigurationTraceConfig object, allowing management of a WydeWeb trace configuration (server side)
    /// </summary>
    public partial class WWTraceConfigView : UserControl
    {

@@ -21,48 +21,49 @@ namespace eWamLauncher
 
    public delegate void PackageDownloadCompletedHandler(object sender, PackageDownloadCompletedEventArgs e);
 
+
+   /// <summary>
+   /// Class containing all the information about an ongoing package download
+   /// </summary>
    public class PackageDownloadInfo : INotifyPropertyChanged
    {
+      /// <summary>
+      /// Event triggered when the package download and deployment is completed
+      /// </summary>
       public event PackageDownloadCompletedHandler PackageDownloadCompleted;
 
       private static readonly ILog log = LogManager.GetLogger(typeof(PackageDownloadInfo));
 
+      /// <summary>
+      /// Async download worker
+      /// </summary>
       private WebClient _downloadWorker;
       public WebClient downloadWorker { get { return _downloadWorker; } set { _downloadWorker = value; this.NotifyPropertyChanged(); } }
 
+      /// <summary>
+      /// Async worker for copy / extract tasks
+      /// </summary>
       private BackgroundWorker _installWorker;
       public BackgroundWorker installWorker { get { return _installWorker; } set { _installWorker = value; this.NotifyPropertyChanged(); } }
 
+      /// <summary>
+      /// the package being downloaded / deployed
+      /// </summary>
       public Package _package;
       public Package package { get { return _package; } set { _package = value; this.NotifyPropertyChanged(); } }
 
       public string _description = "";
       public string description { get { return _description; } set { _description = value; this.NotifyPropertyChanged(); } }
+      
+      /// <summary>
+      /// Remaining tasks before the package download is complete. The package download is decomposed in 
+      /// download and extract of several files, called "subtaskes". 
+      /// </summary>
+      Queue<SubTask> remainingTasks;
 
-      private int _totalWorkAmount = 0;
-      private int _doneWorkAmount = 0;
-
-      public int _overallProgress = 0;
-      public int overallprogress { get { return _overallProgress; } set { _overallProgress = value; this.NotifyPropertyChanged(); } }
-
-      public string _currentDownloadDescription = "";
-      public string currentDownloadDescription { get { return _currentDownloadDescription; } set { _currentDownloadDescription = value; this.NotifyPropertyChanged(); } }
-
-      public int _currentDownloadProgress = 0;
-      public int currentDownloadProgress { get { return _currentDownloadProgress; } set { _currentDownloadProgress = value; this.NotifyPropertyChanged(); } }
-
-      public string _currentInstallDescription = "";
-      public string currentInstallDescription { get { return _currentInstallDescription; } set { _currentInstallDescription = value; this.NotifyPropertyChanged(); } }
-
-      public int _currentInstallProgress = 0;
-      public int currentInstallProgress { get { return _currentInstallProgress; } set { _currentInstallProgress = value; this.NotifyPropertyChanged(); } }
-
-      public string _targetDir = "";
-      public string targetDir { get { return _targetDir; } set { _targetDir = value; this.NotifyPropertyChanged(); } }
-
-      private Profile _profile;
-      public Profile profile { get { return _profile; } set { _profile = value; this.NotifyPropertyChanged(); } }
-
+      /// <summary>
+      /// States of a package download
+      /// </summary>
       public enum ePackageDownloadState
       {
          Running,
@@ -71,11 +72,64 @@ namespace eWamLauncher
          Done
       }
 
+      /// <summary>
+      /// Current state of the package download
+      /// </summary>
       private ePackageDownloadState _state = ePackageDownloadState.Running;
       public ePackageDownloadState state { get { return _state; } set { _state = value; this.NotifyPropertyChanged(); } }
 
-      Queue<SubTask> remainingTasks;
+      /// <summary>
+      /// estimated amount of work for this package download
+      /// </summary>
+      private int _totalWorkAmount = 0;
 
+      /// <summary>
+      /// estimated amount of work DONE so far for this package download
+      /// </summary>
+      private int _doneWorkAmount = 0;
+
+      /// <summary>
+      /// estimated percentage of work done so far for this package download
+      /// </summary>
+      public int _overallProgress = 0;
+      public int overallprogress { get { return _overallProgress; } set { _overallProgress = value; this.NotifyPropertyChanged(); } }
+
+      /// <summary>
+      /// Description of the current download SubTask being processed
+      /// </summary>
+      public string _currentDownloadDescription = "";
+      public string currentDownloadDescription { get { return _currentDownloadDescription; } set { _currentDownloadDescription = value; this.NotifyPropertyChanged(); } }
+
+      /// <summary>
+      /// Progress of the current download SubTask being processed
+      /// </summary>
+      public int _currentDownloadProgress = 0;
+      public int currentDownloadProgress { get { return _currentDownloadProgress; } set { _currentDownloadProgress = value; this.NotifyPropertyChanged(); } }
+
+      /// <summary>
+      /// Description of the current install SubTask being processed
+      /// </summary>
+      public string _currentInstallDescription = "";
+      public string currentInstallDescription { get { return _currentInstallDescription; } set { _currentInstallDescription = value; this.NotifyPropertyChanged(); } }
+
+      /// <summary>
+      /// Progress of the current install SubTask being processed
+      /// </summary>
+      public int _currentInstallProgress = 0;
+      public int currentInstallProgress { get { return _currentInstallProgress; } set { _currentInstallProgress = value; this.NotifyPropertyChanged(); } }
+
+      /// <summary>
+      /// Destination folder of the package
+      /// </summary>
+      public string _targetDir = "";
+      public string targetDir { get { return _targetDir; } set { _targetDir = value; this.NotifyPropertyChanged(); } }
+
+      /// <summary>
+      /// Reference to the profile, used for adding the package to the list of environments 
+      /// or ewams once the download is complete
+      /// </summary>
+      private Profile _profile;
+      public Profile profile { get { return _profile; } set { _profile = value; this.NotifyPropertyChanged(); } }
 
 
       public event PropertyChangedEventHandler PropertyChanged;
@@ -125,7 +179,10 @@ namespace eWamLauncher
          this.TreatNextTasks();
       }
 
-
+      /// <summary>
+      /// Creates all the subtasks that will need to be completed in order to finish 
+      /// the download of this package.
+      /// </summary>
       private void PopulateTasks()
       {
          //Populate tasks
@@ -170,6 +227,11 @@ namespace eWamLauncher
          }
       }
 
+
+      /// <summary>
+      /// Get next treatable task (download or extract, whatever), and start treating it
+      /// </summary>
+      /// <returns></returns>
       private bool TreatNextTasks()
       {
          try
@@ -242,6 +304,11 @@ namespace eWamLauncher
          return false;
       }
 
+      /// <summary>
+      /// Handler for the download worker : gets notified when a download SubTask progress has changed
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void OnDownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
       {
          SubTask currentTask = (SubTask)e.UserState;
@@ -249,6 +316,11 @@ namespace eWamLauncher
          this.OnOverallProgressChanged((currentTask.workAmount * e.ProgressPercentage) / 100);
       }
 
+      /// <summary>
+      /// Handler for the download worker : gets notified when a download SubTask is completed (or cancelled, or failed)
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void OnDownloadCompleted(object sender, AsyncCompletedEventArgs e)
       {
          try
@@ -298,6 +370,11 @@ namespace eWamLauncher
 
       }
 
+      /// <summary>
+      /// This is the 'install' worker actual method, doing the job
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void OnInstall(object sender, DoWorkEventArgs e)
       {
          try
@@ -348,6 +425,11 @@ namespace eWamLauncher
 
       }
 
+      /// <summary>
+      /// Handler for the install worker : gets notified when a install SubTask progress has changed
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void OnOnInstallProgressChanged(object sender, ProgressChangedEventArgs e)
       {
          SubTask currentTask = (SubTask)e.UserState;
@@ -355,6 +437,11 @@ namespace eWamLauncher
          this.OnOverallProgressChanged((currentTask.workAmount * e.ProgressPercentage) / 100);
       }
 
+      /// <summary>
+      /// Handler for the install worker : gets notified when a install SubTask is completed (or cancelled, or failed)
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void OnInstallCompleted(object sender, RunWorkerCompletedEventArgs e)
       {
          try
@@ -405,12 +492,20 @@ namespace eWamLauncher
 
       }
 
+      /// <summary>
+      /// Handler for the overrall progress : gets notified every time there's a change or completion in any SubTask
+      /// </summary>
+      /// <param name="currentTaskEstimatedWorkMountDone"></param>
       private void OnOverallProgressChanged(int currentTaskEstimatedWorkMountDone)
       {
          this.overallprogress = (int)
             (((double)(this._doneWorkAmount + currentTaskEstimatedWorkMountDone)*100.0) / (double)this._totalWorkAmount);
       }
 
+      /// <summary>
+      /// Handler for the package download/deploy completion
+      /// </summary>
+      /// <param name="e"></param>
       private void OnDone(AsyncCompletedEventArgs e)
       {
          try
@@ -477,6 +572,10 @@ namespace eWamLauncher
 
       }
 
+      /// <summary>
+      /// Adds and configures the environment or ewam package downloaded, so it appears in the 
+      /// Profile's list of ewams and environments (see "Profile" class)
+      /// </summary>
       private void ConfigureEnvironments()
       {
          try

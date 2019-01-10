@@ -9,15 +9,28 @@ using System.Threading.Tasks;
 
 namespace eWamLauncher
 {
+   /// <summary>
+   /// This class contains all the information of the local configuration : the environments, 
+   /// the ewams,the settings, and allows for derialization and deserialization
+   /// </summary>
    [DataContract(Name = "Profile", Namespace = "http://www.wyde.com")]
    public class Profile : ICloneable, INotifyPropertyChanged
    {
+      /// <summary>
+      /// List of environments
+      /// </summary>
       private ObservableCollection<Environment> _environments;
       [DataMember()] public ObservableCollection<Environment> environments { get { return _environments; } set { _environments = value; this.NotifyPropertyChanged(); } }
 
+      /// <summary>
+      /// List of ewams
+      /// </summary>
       private ObservableCollection<Ewam> _ewams;
       [DataMember()] public ObservableCollection<Ewam> ewams { get { return _ewams; } set { _ewams = value; this.NotifyPropertyChanged(); } }
 
+      /// <summary>
+      /// Application settings
+      /// </summary>
       private Settings _settings;
       [DataMember()] public Settings settings { get { return _settings; } set { _settings = value; this.NotifyPropertyChanged(); } }
 

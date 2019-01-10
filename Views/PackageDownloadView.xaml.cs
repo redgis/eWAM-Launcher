@@ -19,6 +19,7 @@ namespace eWamLauncher.Views
 {
    /// <summary>
    /// Interaction logic for PackageDownloadView.xaml
+   /// This view presents a PackageDownloadInfo object
    /// </summary>
    public partial class PackageDownloadView : UserControl
    {
@@ -29,6 +30,12 @@ namespace eWamLauncher.Views
          InitializeComponent();
       }
 
+      /// <summary>
+      /// When the download is cancelled (top right cross is clicked), cancel any ongoing download or
+      /// install.
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void OnCancel(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());

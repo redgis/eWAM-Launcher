@@ -18,14 +18,20 @@ namespace eWamLauncher
       private static readonly ILog log = LogManager.GetLogger(typeof(App));
 
       bool tookMutex = false;
+
+      /// <summary>
+      /// mutex semaphore used to allow only one instance
+      /// </summary>
       static Mutex mutex = new Mutex(true, "{A70F17F8-D109-4761-97F1-9D5B96D99D53}");
       
 
-      protected override void OnStartup(StartupEventArgs e)                    
+      protected override void OnStartup(StartupEventArgs e)
       {
+         // Start log4net logging system
          log4net.Config.XmlConfigurator.Configure();
          log.Info("        =============  Started Logging  =============        ");
 
+         // Check if application not open already by trying to get a lock on this system-wide mutex
          if (mutex.WaitOne(TimeSpan.Zero, true))
          {
             this.tookMutex = true;
@@ -48,6 +54,8 @@ namespace eWamLauncher
 
       protected override void OnExit(ExitEventArgs e)
       {
+         // Release mutex to let other instances start... I think this is not mandatory because .NET will automatically 
+         // clean the mutex if the process owning it crasshes or closes... I think. So better be safe.
          if (this.tookMutex)
          {
             mutex.ReleaseMutex();

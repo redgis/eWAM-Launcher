@@ -6,6 +6,11 @@ using System.Collections.Specialized;
 
 namespace System.Collections.ObjectModel
 {
+   /// <summary>
+   /// Generic dictionary container, compatible with dependency properties mechanism used by WPF controls.
+   /// </summary>
+   /// <typeparam name="TKey">Item key</typeparam>
+   /// <typeparam name="TValue">Item value</typeparam>
    public class ObservableDictionary<TKey, TValue> : IDictionary<TKey, TValue>, INotifyCollectionChanged, INotifyPropertyChanged
    {
       private const string CountString = "Count";

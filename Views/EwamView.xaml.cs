@@ -21,6 +21,7 @@ namespace eWamLauncher.Views
 {
    /// <summary>
    /// Interaction logic for EwamView.xaml
+   /// This view presents an Ewam object
    /// </summary>
    public partial class EwamView : UserControl
    {
@@ -34,6 +35,11 @@ namespace eWamLauncher.Views
 
       #region binariesSets actions
 
+      /// <summary>
+      /// Creates and adds a new empty binaries set in the binaries sets list
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnNewBinariesSet(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -57,6 +63,11 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Duplicates the selected binaries set and adds the duplicate to the binaries set list
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnDuplicateBinariesSet(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -85,6 +96,11 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Delete selected launcher
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnDeleteBinariesSet(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -114,6 +130,11 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Move selected binaries set up in the binaries set list
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnMoveUpBinariesSet(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -145,6 +166,11 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Move selected binaries set down in the binaries set list
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnMoveDownBinariesSet(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());

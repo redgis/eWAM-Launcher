@@ -12,12 +12,16 @@ using log4net.Core;
 
 namespace eWamLauncher
 {
+   /// <summary>
+   /// Class used to keep track of log messages generated. This class is used to explose "Notification" 
+   /// property member in the UI, to show the entire log in realtime.
+   /// </summary>
    public class NotifyAppender : AppenderSkeleton, INotifyPropertyChanged
    {
       private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
       #region Members and events
-      private static string _notification;
+      
       private event PropertyChangedEventHandler _propertyChanged;
 
       public event PropertyChangedEventHandler PropertyChanged
@@ -27,6 +31,7 @@ namespace eWamLauncher
       }
       #endregion
 
+      private static string _notification;
       /// <summary>
       /// Get or set the notification message.
       /// </summary>

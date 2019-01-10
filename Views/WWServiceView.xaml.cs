@@ -21,6 +21,7 @@ namespace eWamLauncher.Views
 {
    /// <summary>
    /// Interaction logic for WWServiceView.xaml
+   /// This view presents a WWService object, allowing management of the configuration 
    /// </summary>
    public partial class WWServiceView : UserControl
    {
@@ -31,6 +32,12 @@ namespace eWamLauncher.Views
 
       private static readonly ILog log = LogManager.GetLogger(typeof(WWServiceView));
 
+      /// <summary>
+      /// Command Handler to generate XML chunk of wNetConf, of the client-side WydeWeb configuration 
+      /// for a particular service
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void OnGetWNetClientChunk(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());

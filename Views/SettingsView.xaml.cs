@@ -17,6 +17,7 @@ namespace eWamLauncher.Views
 {
    /// <summary>
    /// Interaction logic for SettingsView.xaml
+   /// This view presents a Settings object
    /// </summary>
    public partial class SettingsView : UserControl
    {
@@ -25,6 +26,11 @@ namespace eWamLauncher.Views
          InitializeComponent();
       }
 
+      /// <summary>
+      /// Command handler used to look for all Visual Studio instances installed
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void OnAutoDetectVisualStudios(object sender, RoutedEventArgs e)
       {
          Settings _settings = (Settings)this.DataContext;

@@ -45,25 +45,40 @@ namespace eWamLauncher
    public partial class MainWindow : MetroWindow, INotifyPropertyChanged
    {
       private Profile _profile;
+      /// <summary>
+      /// Current profile (containing all configurations: application settings, list of ewams, list of environments, etc.)
+      /// </summary>
       public Profile profile { get { return _profile; } set { _profile = value; this.NotifyPropertyChanged(); } }
 
       private string _assemblyVersion { get; set; }
+      /// <summary>
+      /// Used to display application version on main window
+      /// </summary>
       public string assemblyVersion { get { return _assemblyVersion; } set { _assemblyVersion = value; this.NotifyPropertyChanged(); } }
 
       private string _assemblyUpdateInfo { get; set; }
+      /// <summary>
+      /// Used to display up-to-date information on the main window
+      /// </summary>
       public string assemblyUpdateInfo { get { return _assemblyUpdateInfo; } set { _assemblyUpdateInfo = value; this.NotifyPropertyChanged(); } }
 
-      private ObservableDictionary<string, ObservableCollection<Package> > _productsPackages;
-      public ObservableDictionary<string, ObservableCollection<Package> > productsPackages { get { return _productsPackages; } set { _productsPackages = value; this.NotifyPropertyChanged(); } }
-
       private PackageDownloadManager _packageDownloadManager;
+      /// <summary>
+      /// List of package downloads being currently processed
+      /// </summary>
       public PackageDownloadManager packageDownloadManager { get { return _packageDownloadManager; } set { _packageDownloadManager = value; this.NotifyPropertyChanged(); } }
 
-      private bool _updatePending { get; set; }
-      public bool updatePending { get { return _updatePending; } set { _updatePending = value; this.NotifyPropertyChanged(); } }
-
       private WideIndex _WideIndex;
+      /// <summary>
+      /// Local image of downloaded package-index.xml. This is used to generate the list of available packages for download
+      /// </summary>
       public WideIndex WideIndex { get { return _WideIndex; } set { _WideIndex = value; this.NotifyPropertyChanged(); } }
+
+      private ObservableDictionary<string, ObservableCollection<Package>> _productsPackages;
+      /// <summary>
+      /// Stored the list of online packages available, sorted by product (i.e., Package.Type : clickonce, activex, ewam, wynsure ...)
+      /// </summary>
+      public ObservableDictionary<string, ObservableCollection<Package>> productsPackages { get { return _productsPackages; } set { _productsPackages = value; this.NotifyPropertyChanged(); } }
 
       public event PropertyChangedEventHandler PropertyChanged;
 
@@ -157,6 +172,12 @@ namespace eWamLauncher
 
       #region Close action
 
+      /// <summary>
+      /// This Close command is used specifically when clicking "close" from the systray 
+      /// notification icon context menu.
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void CloseApplication(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -177,12 +198,21 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Handler for the application close command
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void CloseCommandHandler(object sender, ExecutedRoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
          this.Close();
       }
 
+      /// <summary>
+      /// Implementation of the Closing event, in order to save configuration when closing the application
+      /// </summary>
+      /// <param name="e"></param>
       protected override void OnClosing(CancelEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -193,9 +223,19 @@ namespace eWamLauncher
          SaveCfgToJSON(defaultJSONSettings);
       }
 
+      /// <summary>
+      /// Used to make window come to front when dbl-click the systray notification icon
+      /// </summary>
+      /// <param name="hWnd"></param>
+      /// <returns></returns>
       [DllImport("user32.dll")]
       static extern bool SetForegroundWindow(IntPtr hWnd);
 
+      /// <summary>
+      /// Used to restore window when dbl-click the systray notification icon
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void RestoreCommandHandler(object sender, RoutedEventArgs e)
       {
          this.Show();
@@ -209,6 +249,11 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Used to "Minimize to systray" (i.e. only keep systray icon and hide window from the taskbar)
+      /// when minimizing... if parametered to do so in settings.
+      /// </summary>
+      /// <param name="e"></param>
       protected override void OnStateChanged(EventArgs e)
       {
          if (WindowState == System.Windows.WindowState.Minimized &&
@@ -224,6 +269,11 @@ namespace eWamLauncher
 
       #region Configuration commands
 
+      /// <summary>
+      /// Command to browse to, and open a configuration file
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void OpenConfiguration(object sender, ExecutedRoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -266,6 +316,11 @@ namespace eWamLauncher
          e.CanExecute = true;
       }
 
+      /// <summary>
+      /// Command to browse to, and save a configuration file
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void SaveConfiguration(object sender, ExecutedRoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -313,6 +368,12 @@ namespace eWamLauncher
 
       #region Configuration actions
 
+      /// <summary>
+      /// Internal method used backup existing file by prefixing it with date, and only keeping 
+      /// a limited number of exising backups.
+      /// </summary>
+      /// <param name="fileName">name of file to be backed up if existing</param>
+      /// <param name="keepOnlyXBackups">limit of number of backup prefixed with date to be kept</param>
       private void BackupToDatedFilename(string fileName, int keepOnlyXBackups)
       {
          if (File.Exists(fileName))
@@ -339,6 +400,10 @@ namespace eWamLauncher
          
       }
 
+      /// <summary>
+      /// Loads Profile from XML configuration file
+      /// </summary>
+      /// <param name="fileName">file from which to load configuration</param>
       public void LoadCfgFromXML(string fileName)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -368,6 +433,10 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Saves Profile to XML configuration file
+      /// </summary>
+      /// <param name="fileName">file to which to save configuration</param>
       public void SaveCfgToXML(string fileName)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -387,6 +456,10 @@ namespace eWamLauncher
          writer.Close();
       }
 
+      /// <summary>
+      /// Loads Profile from JSON configuration file
+      /// </summary>
+      /// <param name="fileName">file from which to load configuration</param>
       public void LoadCfgFromJSON(string fileName)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -415,6 +488,10 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Saves Profile to JSON configuration file
+      /// </summary>
+      /// <param name="fileName">file to which to save configuration</param>
       public void SaveCfgToJSON(string fileName)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -439,6 +516,11 @@ namespace eWamLauncher
 
       #region Path actions
 
+      /// <summary>
+      /// Normalizes a path name. This is necessary, for instance, when comparing two pathes.
+      /// </summary>
+      /// <param name="path"></param>
+      /// <returns></returns>
       public static string NormalizePath(string path)
       {
          if (path != null && path != "")
@@ -461,6 +543,13 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Returns the longest common prefix of to pathes. Used to extract the sub folders 
+      /// relative to a common parent folder.
+      /// </summary>
+      /// <param name="path1"></param>
+      /// <param name="path2"></param>
+      /// <returns></returns>
       public static string FindLongestCommonPath(string path1, string path2)
       {
          string result = "";
@@ -495,6 +584,11 @@ namespace eWamLauncher
          return result;
       }
 
+      /// <summary>
+      /// Command Handler to change path of a TextBox in the UI
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void OnChangePath(object sender, ExecutedRoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -526,6 +620,11 @@ namespace eWamLauncher
          e.CanExecute = true;
       }
 
+      /// <summary>
+      /// Command handler to navigate (i.e. open an explorer window), to a path specified in the UI
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void OnExplorePath(object sender, ExecutedRoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -551,6 +650,11 @@ namespace eWamLauncher
          e.CanExecute = true;
       }
       
+      /// <summary>
+      /// Static generic method to modify a referenced path
+      /// </summary>
+      /// <param name="oldPath"></param>
+      /// <returns></returns>
       public static bool ChangePath(ref string oldPath)
       {
          bool changed = false;
@@ -566,6 +670,10 @@ namespace eWamLauncher
          return changed;
       }
 
+      /// <summary>
+      /// Static generic method to navigate to a given path
+      /// </summary>
+      /// <param name="path"></param>
       public static void ExplorePath(string path)
       {
          Process.Start("explorer.exe", path);
@@ -575,6 +683,11 @@ namespace eWamLauncher
 
       #region Environments actions
 
+      /// <summary>
+      /// Creates and adds a new empty environment in the env. list
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnNewEnvironment(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -598,6 +711,11 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Duplicates the selected environment and adds the duplicate to the env. list
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnDuplicateEnvironment(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -626,6 +744,11 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Delete selected environment
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnDeleteEnvironment(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -656,6 +779,11 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Import an existing environment from a local folder
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnImportEnvironment(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -757,6 +885,11 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Move selected environment up in the env. list
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnMoveUpEnvironment(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -787,6 +920,11 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Move selected environment down in the env. list
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnMoveDownEnvironment(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -817,6 +955,11 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Export selected environment to an xml (.xenv) or json (.jsenv)
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnFileExportEnvironment(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -838,11 +981,11 @@ namespace eWamLauncher
             {
                if (Path.GetExtension(fileBrowser.FileName).ToLower() == ".xenv")
                {
-                  this.SaveEnvironmentToXML(fileBrowser.FileName);
+                  this.SaveEnvironmentToXML(fileBrowser.FileName, (Environment)lbEnvList.SelectedItem);
                }
                else if (Path.GetExtension(fileBrowser.FileName).ToLower() == ".jsenv")
                {
-                  this.SaveEnvironmentToJSON(fileBrowser.FileName);
+                  this.SaveEnvironmentToJSON(fileBrowser.FileName, (Environment)lbEnvList.SelectedItem);
                }
             }
          }
@@ -858,6 +1001,11 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Import environment from an xml (.xenv) or json (.jsenv)
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnFileImportEnvironment(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -918,6 +1066,11 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Generic method to load an environment from an XML file
+      /// </summary>
+      /// <param name="fileName"></param>
+      /// <returns></returns>
       public Environment LoadEnvironmentFromXML(string fileName)
       {
          try
@@ -947,11 +1100,16 @@ namespace eWamLauncher
          }
       }
 
-      public void SaveEnvironmentToXML(string fileName)
+      /// <summary>
+      /// Generic method to save an environment to an XML file
+      /// </summary>
+      /// <param name="fileName"></param>
+      /// <param name="environment"></param>
+      public void SaveEnvironmentToXML(string fileName, Environment environment)
       {
          Directory.CreateDirectory(Path.GetDirectoryName(fileName));
 
-         Environment envCopy = (Environment)((Environment)lbEnvList.SelectedItem).Clone();
+         Environment envCopy = (Environment)environment.Clone();
          envCopy.binariesSet = null;
          envCopy.ewam = null;
 
@@ -974,6 +1132,11 @@ namespace eWamLauncher
          writer.Close();
       }
 
+      /// <summary>
+      /// Generic method to load an environment from an JSON file
+      /// </summary>
+      /// <param name="fileName"></param>
+      /// <returns></returns>
       public Environment LoadEnvironmentFromJSON(string fileName)
       {
          try
@@ -1004,11 +1167,15 @@ namespace eWamLauncher
          }
       }
 
-      public void SaveEnvironmentToJSON(string fileName)
+      /// <summary>
+      /// Generic method to save an environment to an JSON file
+      /// </summary>
+      /// <param name="fileName"></param>
+      public void SaveEnvironmentToJSON(string fileName, Environment environment)
       {
          Directory.CreateDirectory(Path.GetDirectoryName(fileName));
 
-         Environment envCopy = (Environment)((Environment)lbEnvList.SelectedItem).Clone();
+         Environment envCopy = (Environment)environment.Clone();
          envCopy.binariesSet = null;
          envCopy.ewam = null;
 
@@ -1036,6 +1203,11 @@ namespace eWamLauncher
 
       #region Ewam actions
 
+      /// <summary>
+      /// Creates and adds a new empty ewam in the ewam list
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnNewEwam(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -1059,6 +1231,11 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Duplicates the selected ewam and adds the duplicate to the ewam list
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnDuplicateEwam(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -1087,6 +1264,11 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Delete selected ewam
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnDeleteEwam(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -1118,6 +1300,11 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Import an existing ewam from a local folder
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnImportEwam(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -1164,6 +1351,11 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Export selected ewam to an xml (.xenv) or json (.jsenv)
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnFileExportEwam(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -1187,11 +1379,11 @@ namespace eWamLauncher
                {
                   if (Path.GetExtension(fileBrowser.FileName).ToLower() == ".xwam")
                   {
-                     this.SaveEwamToXML(fileBrowser.FileName);
+                     this.SaveEwamToXML(fileBrowser.FileName, (Ewam)lbEwamList.SelectedItem);
                   }
                   else if (Path.GetExtension(fileBrowser.FileName).ToLower() == ".jswam")
                   {
-                     this.SaveEwamToJSON(fileBrowser.FileName);
+                     this.SaveEwamToJSON(fileBrowser.FileName, (Ewam)lbEwamList.SelectedItem);
                   }
                }
                catch (Exception exception)
@@ -1212,6 +1404,11 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Import ewam from an xml (.xenv) or json (.jsenv)
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnFileImportEwam(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -1272,6 +1469,11 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Generic method to load an ewam from an XML file
+      /// </summary>
+      /// <param name="fileName"></param>
+      /// <returns></returns>
       public Ewam LoadEwamFromXML(string fileName)
       {
          try
@@ -1301,11 +1503,16 @@ namespace eWamLauncher
          }
       }
 
-      public void SaveEwamToXML(string fileName)
+      /// <summary>
+      /// Generic method to save an ewam to an XML file
+      /// </summary>
+      /// <param name="fileName"></param>
+      /// <param name="environment"></param>
+      public void SaveEwamToXML(string fileName, Ewam ewam)
       {
          Directory.CreateDirectory(Path.GetDirectoryName(fileName));
 
-         Ewam ewamCopy = (Ewam)((Ewam)lbEwamList.SelectedItem).Clone();
+         Ewam ewamCopy = (Ewam)ewam.Clone();
          ewamCopy.basePath = "";
          FileStream writer = new FileStream(fileName, FileMode.Create);
          DataContractSerializer xmlSerializer = new DataContractSerializer(typeof(Ewam));
@@ -1313,6 +1520,11 @@ namespace eWamLauncher
          writer.Close();
       }
 
+      /// <summary>
+      /// Generic method to load an ewam from an JSON file
+      /// </summary>
+      /// <param name="fileName"></param>
+      /// <returns></returns>
       public Ewam LoadEwamFromJSON(string fileName)
       {
          try
@@ -1343,11 +1555,15 @@ namespace eWamLauncher
          }
       }
 
-      public void SaveEwamToJSON(string fileName)
+      /// <summary>
+      /// Generic method to save an ewam to an JSON file
+      /// </summary>
+      /// <param name="fileName"></param>
+      public void SaveEwamToJSON(string fileName, Ewam ewam)
       {
          Directory.CreateDirectory(Path.GetDirectoryName(fileName));
 
-         Ewam ewamCopy = (Ewam)((Ewam)lbEwamList.SelectedItem).Clone();
+         Ewam ewamCopy = (Ewam)ewam.Clone();
          ewamCopy.basePath = "";
          FileStream writer = new FileStream(fileName, FileMode.Create);
          DataContractJsonSerializer jsonSerializer =
@@ -1356,6 +1572,11 @@ namespace eWamLauncher
          writer.Close();
       }
 
+      /// <summary>
+      /// Move selected ewam up in the ewam list
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnMoveUpEwam(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -1386,6 +1607,11 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Move selected ewam down in the ewam list
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnMoveDownEwam(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -1420,6 +1646,9 @@ namespace eWamLauncher
 
       #region Package actions
 
+      /// <summary>
+      /// Internal method that asynchronously downloads package-index.xml
+      /// </summary>
       private void LoadPackagesAsync()
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -1436,6 +1665,12 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Even handler called when asynchronous package-index.xml download is completed, sets the 
+      /// result in local variable, and indexed byt product (package.type)
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void OnPackageIndexDownloaded(object sender, PackageListCompletedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -1459,6 +1694,18 @@ namespace eWamLauncher
             else
             {
                this.WideIndex = e.PackageIndex;
+
+               this.productsPackages.Clear();
+
+               foreach (Package package in e.PackageIndex.Packages)
+               {
+                  if (!this.productsPackages.ContainsKey(package.Type))
+                  {
+                     this.productsPackages.Add(package.Type, new ObservableCollection<Package>());
+                  }
+
+                  this.productsPackages[package.Type].Add(package);
+               }
             }
          }
          catch (Exception exception)
@@ -1473,6 +1720,11 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Command handler used to asynchronously load the online package-index.xml content, only if not downloaded already
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnLoadPackagesIfNeeded(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -1497,6 +1749,11 @@ namespace eWamLauncher
 
       }
 
+      /// <summary>
+      /// Command handler to force asynchronously load the online package-index.xml content
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnRefreshPackages(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -1523,6 +1780,12 @@ namespace eWamLauncher
 
       }
 
+      /// <summary>
+      /// Even handler called when asynchronous package-index.xml download is completed, sets the 
+      /// result in local variable, and indexed byt product (package.type)
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       private void OnPackageIndexRefreshed(object sender, PackageListCompletedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -1547,6 +1810,8 @@ namespace eWamLauncher
             {
                this.WideIndex = e.PackageIndex;
 
+               this.productsPackages.Clear();
+
                foreach (Package package in e.PackageIndex.Packages)
                {
                   if (!this.productsPackages.ContainsKey(package.Type))
@@ -1570,6 +1835,11 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Command handler to download the selected package in a selected folder
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnImportSelectedPackage(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -1611,6 +1881,11 @@ namespace eWamLauncher
 
       }
 
+      /// <summary>
+      /// Command handler to download the selected components of the selected package in a selected folder
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnImportSelectedComponents(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
@@ -1665,6 +1940,9 @@ namespace eWamLauncher
 
       #region Update actions
 
+      /// <summary>
+      /// Squirrel async automatic update process
+      /// </summary>
       private void StartUpdater()
       {
          Task.Run(async () =>
@@ -1697,8 +1975,6 @@ namespace eWamLauncher
                   //   }
                   //);
 
-                  this.updatePending = true;
-
                   await mgr.UpdateApp();
 
                   this.assemblyUpdateInfo = "eWamLauncher updated :) ! Please restart the application !";
@@ -1707,12 +1983,19 @@ namespace eWamLauncher
          });
       }
 
+      /// <summary>
+      /// Checks if the current binary is up-to-date, displays message accordingly
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
       public void OnCheckUpdate(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
          try
          {
+            this.assemblyUpdateInfo = "Checking latest version, a moment please... ";
+
             Task.Run(async () =>
             {
                try

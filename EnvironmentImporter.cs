@@ -9,6 +9,9 @@ using log4net;
 
 namespace eWamLauncher
 {
+   /// <summary>
+   /// Factory class used to import an environment from a given path.
+   /// </summary>
    public class EnvironmentImporter
    {
       private Environment environment;
@@ -19,6 +22,14 @@ namespace eWamLauncher
 
       private static readonly ILog log = LogManager.GetLogger(typeof(EnvironmentImporter));
 
+      /// <summary>
+      /// Importer needs to have access to parameters in order to help it configure the importing 
+      /// (sub folders to lookup, list of ewams).
+      /// </summary>
+      /// <param name="settings">settings used during importing</param>
+      /// <param name="ewams">list of pre-existing ewams to be used during importing</param>
+      /// <param name="environment">A pre-built environment object may be provided, and will be filled 
+      /// with imported information</param>
       public EnvironmentImporter(Settings settings, ObservableCollection<Ewam> ewams, Environment environment = null)
       {
          this.ewams = ewams;
@@ -34,14 +45,30 @@ namespace eWamLauncher
          }
       }
 
+      /// <summary>
+      /// Importer needs to have access to parameters in order to help it configure the importing 
+      /// (sub folders to lookup, list of ewams).
+      /// </summary>
+      /// <param name="profile">profile containing settings, and list of pre-existing ewams to be used during importing</param>
+      /// <param name="environment">A pre-built environment object may be provided, and will be filled 
+      /// with imported information</param>
       public EnvironmentImporter(Profile profile, Environment environment = null) : this(profile.settings, profile.ewams, environment)
       { }
 
+      /// <summary>
+      /// Get the imported environment
+      /// </summary>
+      /// <returns>the imported ewam</returns>
       public Environment GetEnvironment()
       {
          return this.environment;
       }
 
+      /// <summary>
+      /// Import an environment from path.
+      /// </summary>
+      /// <param name="path">path from which to import environment</param>
+      /// <returns>imported environment</returns>
       public Environment ImportFromPath(string path)
       {
          if (!Directory.Exists(path)) throw new DirectoryNotFoundException(path);
@@ -179,6 +206,12 @@ namespace eWamLauncher
          return this.environment;
       }
 
+      /// <summary>
+      /// Internal method to get rid of any weird variable %cd% or %~dp0
+      /// </summary>
+      /// <param name="value"></param>
+      /// <param name="path"></param>
+      /// <returns></returns>
       private string ReplaceDPandCDwithPath(string value, string path)
       {
          value = value.Replace("%~dp0", path);
@@ -193,6 +226,11 @@ namespace eWamLauncher
          return value;
       }
 
+      /// <summary>
+      /// Internal method used during importing, to import all environment variables found in batch files in a path
+      /// </summary>
+      /// <param name="path">Path in which to look for .bat, to be parses for environment variables</param>
+      /// <returns>a list of environment variables</returns>
       public ObservableCollection<EnvironmentVariable> ImportEnvironmentVariables(string path)
       {
          if (!Directory.Exists(path)) throw new DirectoryNotFoundException(path);
@@ -309,6 +347,11 @@ namespace eWamLauncher
          return this.environment.environmentVariables;
       }
 
+      /// <summary>
+      /// Internal method used during importing, to import all launchers from batch files
+      /// </summary>
+      /// <param name="path">Path from which to parse .bat files to find launchers</param>
+      /// <returns>List of launchers imported</returns>
       public ObservableCollection<Launcher> ImportLaunchers(string path)
       {
          if (!Directory.Exists(path)) throw new DirectoryNotFoundException(path);
@@ -351,6 +394,10 @@ namespace eWamLauncher
          return this.environment.launchers;
       }
 
+      /// <summary>
+      /// Internal method used during importing, to import WydeWeb configuration from wNetConf file
+      /// </summary>
+      /// <param name="path">File path to wNetConf file to import configuration from</param>
       public void ImportWNetConf(string path)
       {
          try

@@ -18,6 +18,7 @@ namespace eWamLauncher.Views
 {
    /// <summary>
    /// Interaction logic for WydeWebDeployLauncherSelector.xaml
+   /// Step for selection of the launcher from which to get command line parameter for WydeWeb client
    /// </summary>
    public partial class WydeWebDeployLauncherSelector : PageFunction<Launcher>, INotifyPropertyChanged
    {
@@ -44,6 +45,7 @@ namespace eWamLauncher.Views
          InitializeComponent();
          this.DataContext = this;
 
+         //We want to keep only the launchers uing WydeWeb.exe
          foreach(var launcher in launchers)
          {
             if (launcher.program.ToLower() == "wydeweb.exe")
