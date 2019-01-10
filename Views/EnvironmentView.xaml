@@ -156,7 +156,7 @@
                         SelectedItem="{Binding binariesSet, Mode=TwoWay}"
                         Margin="5"
                         MinWidth="150"/>
-                  <TextBlock VerticalAlignment="Center" Margin="20,0">           
+                  <TextBlock VerticalAlignment="Center" Margin="20,0">
                      <Hyperlink NavigateUri="https://mphasiswyde.atlassian.net/wiki/spaces/PTD/pages/67174695/Executable+Command+Line+Options"
                         RequestNavigate="OnClickHLink">
                         Help : eWAM Command-Line options

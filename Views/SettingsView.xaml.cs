@@ -1,5 +1,7 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,6 +23,8 @@ namespace eWamLauncher.Views
    /// </summary>
    public partial class SettingsView : UserControl
    {
+      private static readonly ILog log = LogManager.GetLogger(typeof(SettingsView));
+
       public SettingsView()
       {
          InitializeComponent();
@@ -36,5 +40,32 @@ namespace eWamLauncher.Views
          Settings _settings = (Settings)this.DataContext;
          _settings.AutoDetectVisualStudios();
       }
+
+      /// <summary>
+      /// Handle click on an hyper-text link
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
+      public void OnClickHLink(object sender, RequestNavigateEventArgs e)
+      {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
+         {
+            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
+            e.Handled = true;
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
+      }
+
    }
 }

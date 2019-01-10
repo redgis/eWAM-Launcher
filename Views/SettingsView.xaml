@@ -62,6 +62,13 @@
 
    <DockPanel>
       <Button Click="OnAutoDetectVisualStudios" Content="Auto detect Visual Studios" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="5"/>
+      <TextBlock VerticalAlignment="Center" Margin="5" DockPanel.Dock="Bottom">
+         Source code of this application is available online, feel free to contribute : 
+         <Hyperlink NavigateUri="https://github.com/redgis/eWAM-Launcher" 
+                    RequestNavigate="OnClickHLink">
+            https://github.com/redgis/eWAM-Launcher
+         </Hyperlink>
+      </TextBlock>
       <xctk:PropertyGrid x:Name="pgSettings" SelectedObject="{Binding}" NameColumnWidth="300" />
    </DockPanel>
 
