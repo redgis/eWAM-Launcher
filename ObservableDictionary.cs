@@ -238,25 +238,25 @@ namespace System.Collections.ObjectModel
       private void OnCollectionChanged()
       {
          OnPropertyChanged();
-         if (CollectionChanged != null) CollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+         CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
       }
 
       private void OnCollectionChanged(NotifyCollectionChangedAction action, KeyValuePair<TKey, TValue> changedItem)
       {
          OnPropertyChanged();
-         if (CollectionChanged != null) CollectionChanged(this, new NotifyCollectionChangedEventArgs(action, changedItem));
+         CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(action, changedItem));
       }
 
       private void OnCollectionChanged(NotifyCollectionChangedAction action, KeyValuePair<TKey, TValue> newItem, KeyValuePair<TKey, TValue> oldItem)
       {
          OnPropertyChanged();
-         if (CollectionChanged != null) CollectionChanged(this, new NotifyCollectionChangedEventArgs(action, newItem, oldItem));
+         CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(action, newItem, oldItem));
       }
 
       private void OnCollectionChanged(NotifyCollectionChangedAction action, IList newItems)
       {
          OnPropertyChanged();
-         if (CollectionChanged != null) CollectionChanged(this, new NotifyCollectionChangedEventArgs(action, newItems));
+         CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(action, newItems));
       }
    }
 }

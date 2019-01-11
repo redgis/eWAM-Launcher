@@ -809,10 +809,9 @@ namespace eWamLauncher.Views
          {
             Environment environment = (Environment)this.DataContext;
 
-            Launcher launcher = (Launcher)lbLauncherList.SelectedItem;
             Launcher dummyLauncher = new Launcher();
 
-            dummyLauncher.name = launcher.name;
+            dummyLauncher.name = environment.name;
             dummyLauncher.program = "cmd.exe";
             dummyLauncher.arguments = "";
 

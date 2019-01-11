@@ -138,10 +138,7 @@ namespace eWamLauncher
       // parameter causes the property name of the caller to be substituted as an argument.
       private void NotifyPropertyChanged(string propertyName = "")
       {
-         if (this.PropertyChanged != null)
-         {
-            this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-         }
+         this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
       }
 
 
@@ -555,7 +552,7 @@ namespace eWamLauncher
             evtArgs.Cancelled = e.Cancelled;
             evtArgs.Error = e.Error;
             
-            this.PackageDownloadCompleted(this, evtArgs);
+            this.PackageDownloadCompleted?.Invoke(this, evtArgs);
 
             ((MainWindow)Application.Current.MainWindow).packageDownloadManager.downloads.Remove(this);
          }

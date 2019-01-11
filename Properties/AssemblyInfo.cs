@@ -53,8 +53,8 @@ using System.Windows;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.53.*")]
-[assembly: AssemblyFileVersion("1.0.53.*")]
+[assembly: AssemblyVersion("1.0.54.*")]
+[assembly: AssemblyFileVersion("1.0.54.*")]
 [assembly: NeutralResourcesLanguage("en")]
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
 

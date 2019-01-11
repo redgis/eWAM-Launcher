@@ -95,7 +95,7 @@ namespace eWamLauncher
             args.Cancelled = e.Cancelled;
             args.Error = e.Error;
 
-            this.PackageListCompleted(this, args);
+            this.PackageListCompleted?.Invoke(this, args);
          }
          catch (Exception exception)
          {

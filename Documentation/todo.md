@@ -13,6 +13,7 @@ To generate C# class from a reference XML file : XML => xsd => .cs  : https://st
 
 ### Online repository
 - [ ] Allow comparing local to online repo index, and suggest update binaries
+- [ ] Allow launchers and environment configuration updates from online repo
 - [ ] Improve package-index.xml format to make it lighter (decompose it in hierarchical architecture)
 
 ### Ergonomy
@@ -32,9 +33,11 @@ To generate C# class from a reference XML file : XML => xsd => .cs  : https://st
 
 
 
-
-
 # Changelog
+
+
+## 1.0.0.53/54 - 2019/01/11
+- [x] bug fix : error when importing a package
 
 ## 1.0.0.51 - 2019/01/09
 - [x] Document code

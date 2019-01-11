@@ -42,10 +42,7 @@ namespace eWamLauncher
       // parameter causes the property name of the caller to be substituted as an argument.
       private void NotifyPropertyChanged(string propertyName = "")
       {
-         if (this.PropertyChanged != null)
-         {
-            this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-         }
+         this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
       }
 
       //Needed to be able to add lines in the Env Variables datagrid

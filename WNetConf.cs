@@ -223,10 +223,7 @@ namespace eWamLauncher
       // parameter causes the property name of the caller to be substituted as an argument.
       private void NotifyPropertyChanged(string propertyName = "")
       {
-         if (this.PropertyChanged != null)
-         {
-            this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-         }
+         this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
       }
    }
 
@@ -243,10 +240,7 @@ namespace eWamLauncher
       // parameter causes the property name of the caller to be substituted as an argument.
       private void NotifyPropertyChanged(string propertyName = "")
       {
-         if (this.PropertyChanged != null)
-         {
-            this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-         }
+         this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
       }
 
       public WWService(ClientConfigurationService clientService = null, ServerConfigurationService serverService = null)
@@ -397,10 +391,7 @@ namespace eWamLauncher
       // parameter causes the property name of the caller to be substituted as an argument.
       private void NotifyPropertyChanged(string propertyName = "")
       {
-         if (this.PropertyChanged != null)
-         {
-            this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-         }
+         this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
       }
 
       /// <summary>
@@ -830,10 +821,7 @@ namespace eWamLauncher
       // parameter causes the property name of the caller to be substituted as an argument.
       private void NotifyPropertyChanged(string propertyName = "")
       {
-         if (this.PropertyChanged != null)
-         {
-            this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-         }
+         this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
       }
 
       public WWServerService(ServerConfigurationService serverService = null)
