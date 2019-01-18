@@ -1958,20 +1958,15 @@ namespace eWamLauncher
 
                      if (updateInfo.CurrentlyInstalledVersion.Version != updateInfo.FutureReleaseEntry.Version)
                      {
-                        this.assemblyUpdateInfo = "New version detected, downloading...";
-
-                        await mgr.DownloadReleases(updateInfo.ReleasesToApply);
-
-                        this.assemblyUpdateInfo = "Download finished, Ready to apply the update.";
-
-                        string resultPath = await mgr.ApplyReleases(updateInfo);
-
-                        this.assemblyUpdateInfo = "Update applied. You now need to restart !";
-
+                        //this.assemblyUpdateInfo = "New version detected, downloading...";
+                        //await mgr.DownloadReleases(updateInfo.ReleasesToApply);
+                        //this.assemblyUpdateInfo = "Download finished, Ready to apply the update.";
+                        //string resultPath = await mgr.ApplyReleases(updateInfo);  //Error on this line, with message : "The system cannot find the file specified"
+                        //this.assemblyUpdateInfo = "Update applied. You now need to restart !";
                         //mgr.KillAllExecutablesBelongingToPackage();
 
-                        //await mgr.UpdateApp();
-                        //this.assemblyUpdateInfo = "eWamLauncher updated :) ! Please restart the application !";
+                        await mgr.UpdateApp();
+                        this.assemblyUpdateInfo = "eWamLauncher updated :) ! Please restart the application !";
                      }
                   }
                }
@@ -2025,20 +2020,15 @@ namespace eWamLauncher
 
                      if (updateInfo.CurrentlyInstalledVersion.Version != updateInfo.FutureReleaseEntry.Version)
                      {
-                        this.assemblyUpdateInfo = "New version detected, downloading...";
-
-                        await mgr.DownloadReleases(updateInfo.ReleasesToApply);
-
-                        this.assemblyUpdateInfo = "Download finished, Ready to apply the update.";
-
-                        string resultPath = await mgr.ApplyReleases(updateInfo);
-
-                        this.assemblyUpdateInfo = "Update applied. You now need to restart !";
-
+                        //this.assemblyUpdateInfo = "New version detected, downloading...";
+                        //await mgr.DownloadReleases(updateInfo.ReleasesToApply);
+                        //this.assemblyUpdateInfo = "Download finished, Ready to apply the update.";
+                        //string resultPath = await mgr.ApplyReleases(updateInfo); //Error on this line : "The system cannot find the file specified"
+                        //this.assemblyUpdateInfo = "Update applied. You now need to restart !";
                         //mgr.KillAllExecutablesBelongingToPackage();
 
-                        //await mgr.UpdateApp();
-                        //this.assemblyUpdateInfo = "eWamLauncher updated :) ! Please restart the application !";
+                        await mgr.UpdateApp();
+                        this.assemblyUpdateInfo = "eWamLauncher updated :) ! Please restart the application !";
                      }
                      else
                      {
