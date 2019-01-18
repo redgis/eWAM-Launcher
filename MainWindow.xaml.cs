@@ -1968,6 +1968,10 @@ namespace eWamLauncher
                         await mgr.UpdateApp();
                         this.assemblyUpdateInfo = "eWamLauncher updated :) ! Please restart the application !";
                      }
+                     else
+                     {
+                        this.assemblyUpdateInfo = "You are up to date.";
+                     }
                   }
                }
                catch (Exception exception)
