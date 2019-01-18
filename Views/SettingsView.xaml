@@ -14,7 +14,7 @@
          Source code of this application is available online, feel free to contribute : 
          <Hyperlink NavigateUri="https://github.com/MphasisWyde/eWAM-Launcher" 
                     RequestNavigate="OnClickHLink">
-            https://github.com/redgis/eWAM-Launcher
+            https://github.com/MphasisWyde/eWAM-Launcher
          </Hyperlink>
       </TextBlock>
       <xctk:PropertyGrid x:Name="pgSettings" SelectedObject="{Binding}" NameColumnWidth="300" />

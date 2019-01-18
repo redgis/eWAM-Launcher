@@ -1942,42 +1942,62 @@ namespace eWamLauncher
       /// </summary>
       private void StartUpdater()
       {
-         Task.Run(async () =>
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
          {
-            using (var mgr = new UpdateManager(this.profile.settings.launcherUpdateServerURL))
+            Task.Run(async () =>
             {
-               UpdateInfo updateInfo = await mgr.CheckForUpdate();
-
-               this.assemblyUpdateInfo = "Latest version: " + updateInfo.FutureReleaseEntry.Version;
-
-               if (updateInfo.CurrentlyInstalledVersion.Version != updateInfo.FutureReleaseEntry.Version)
+               try
                {
-                  // Note, in most of these scenarios, the app exits after this method
-                  // completes!
-                  //SquirrelAwareApp.HandleEvents(
-                  //   onInitialInstall: v => mgr.CreateShortcutForThisExe(),
-                  //   onAppUpdate: v =>
-                  //   {
-                  //      mgr.CreateShortcutForThisExe();
-                  //      System.Windows.MessageBox.Show("Updated", "Update detected!", System.Windows.MessageBoxButton.OK);
-                  //   },
-                  //   onAppUninstall: v => mgr.RemoveShortcutForThisExe(),
-                  //   onFirstRun: () =>
-                  //   {
-                  //      System.Windows.MessageBox.Show("First run", "First run!", System.Windows.MessageBoxButton.OK);
-                  //   },
-                  //   onAppObsoleted: v =>
-                  //   {
-                  //      System.Windows.MessageBox.Show("Obsoleted", "App obsolete!", System.Windows.MessageBoxButton.OK);
-                  //   }
-                  //);
+                  using (var mgr = new UpdateManager(this.profile.settings.launcherUpdateServerURL))
+                  {
+                     UpdateInfo updateInfo = await mgr.CheckForUpdate();
 
-                  await mgr.UpdateApp();
+                     this.assemblyUpdateInfo = "Latest version: " + updateInfo.FutureReleaseEntry.Version;
 
-                  this.assemblyUpdateInfo = "eWamLauncher updated :) ! Please restart the application !";
+                     if (updateInfo.CurrentlyInstalledVersion.Version != updateInfo.FutureReleaseEntry.Version)
+                     {
+                        this.assemblyUpdateInfo = "New version detected, downloading...";
+
+                        await mgr.DownloadReleases(updateInfo.ReleasesToApply);
+
+                        this.assemblyUpdateInfo = "Download finished, Ready to apply the update.";
+
+                        string resultPath = await mgr.ApplyReleases(updateInfo);
+
+                        this.assemblyUpdateInfo = "Update applied. You now need to restart !";
+
+                        //mgr.KillAllExecutablesBelongingToPackage();
+
+                        //await mgr.UpdateApp();
+                        //this.assemblyUpdateInfo = "eWamLauncher updated :) ! Please restart the application !";
+                     }
+                  }
                }
-            }
-         });
+               catch (Exception exception)
+               {
+                  log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+                  System.Windows.MessageBox.Show(
+                     "Something went wrong ! \n\n" + exception.Message,
+                     "Oops",
+                     System.Windows.MessageBoxButton.OK,
+                     System.Windows.MessageBoxImage.Error);
+               }
+            });
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
+
       }
 
       /// <summary>
@@ -2005,20 +2025,20 @@ namespace eWamLauncher
 
                      if (updateInfo.CurrentlyInstalledVersion.Version != updateInfo.FutureReleaseEntry.Version)
                      {
-                        //this.assemblyUpdateInfo = "New version available, downloading...";
+                        this.assemblyUpdateInfo = "New version detected, downloading...";
 
-                        //await mgr.DownloadReleases(updateInfo.ReleasesToApply);
+                        await mgr.DownloadReleases(updateInfo.ReleasesToApply);
 
-                        //this.assemblyUpdateInfo = "Download finished, Ready to apply the update.";
+                        this.assemblyUpdateInfo = "Download finished, Ready to apply the update.";
 
-                        //string resultPath = await mgr.ApplyReleases(updateInfo);
+                        string resultPath = await mgr.ApplyReleases(updateInfo);
 
-                        //this.assemblyUpdateInfo = "Update applied. You now need to restart !";
+                        this.assemblyUpdateInfo = "Update applied. You now need to restart !";
 
                         //mgr.KillAllExecutablesBelongingToPackage();
 
-                        await mgr.UpdateApp();
-                        this.assemblyUpdateInfo = "eWamLauncher updated :) ! Please restart the application !";
+                        //await mgr.UpdateApp();
+                        //this.assemblyUpdateInfo = "eWamLauncher updated :) ! Please restart the application !";
                      }
                      else
                      {
