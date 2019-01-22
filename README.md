@@ -14,7 +14,10 @@ Feature documentation : [Documentation](Documentation/features.md)
 
 Current state of development : [Todo list](Documentation/todo.md)
 
-
 ![screen01](Documentation/screenshot-01.png)
 ![screen02](Documentation/screenshot-02.png)
 ![screen03](Documentation/screenshot-03.png)
+
+## References
+
+- WPF Samples: https://github.com/Microsoft/WPF-Samples.git
