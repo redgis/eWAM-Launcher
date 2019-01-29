@@ -8,12 +8,12 @@ using System.Windows;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("eWam Launcher")]
-[assembly: AssemblyDescription("eWam Launcher")]
+[assembly: AssemblyDescription("eWam Launcher, written By Régis Martinez")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Mphasis Wyde")]
 [assembly: AssemblyProduct("eWam.Launcher")]
 [assembly: AssemblyCopyright("Copyright ©  2019")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyTrademark("Mphasis Wyde")]
 [assembly: AssemblyCulture("")]
 
 //[assembly: AssemblyMetadata("SquirrelAwareVersion", "1")]
@@ -53,8 +53,8 @@ using System.Windows;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.61.*")]
-[assembly: AssemblyFileVersion("1.0.61.*")]
+[assembly: AssemblyVersion("1.0.62.*")]
+[assembly: AssemblyFileVersion("1.0.62.*")]
 [assembly: NeutralResourcesLanguage("en")]
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
 

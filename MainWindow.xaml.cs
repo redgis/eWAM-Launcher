@@ -50,6 +50,12 @@ namespace eWamLauncher
       /// </summary>
       public Profile profile { get { return _profile; } set { _profile = value; this.NotifyPropertyChanged(); } }
 
+      private string _assemblyDescription { get; set; }
+      /// <summary>
+      /// Used to display application version on main window
+      /// </summary>
+      public string assemblyDescription { get { return _assemblyDescription; } set { _assemblyDescription = value; this.NotifyPropertyChanged(); } }
+
       private string _assemblyVersion { get; set; }
       /// <summary>
       /// Used to display application version on main window
@@ -99,7 +105,7 @@ namespace eWamLauncher
 
          try
          {
-            this.assemblyVersion = Assembly.GetEntryAssembly().GetName().Name;
+            this.assemblyVersion = Assembly.GetEntryAssembly().GetName().Name + " - by Régis Martinez";
             this.assemblyVersion += " - " + Assembly.GetEntryAssembly().GetName().Version;
             this.assemblyVersion += " - (c) Mphasis Wyde";
             this.assemblyUpdateInfo = "";
@@ -592,11 +598,11 @@ namespace eWamLauncher
 
          try
          {
-            string newvalue = (string)((System.Windows.Controls.Button)e.OriginalSource).Tag;
+            string newvalue = (string)((System.Windows.FrameworkContentElement)e.OriginalSource).Tag;
 
             if (MainWindow.ChangePath(ref newvalue))
             {
-               ((System.Windows.Controls.Button)e.OriginalSource).Tag = newvalue;
+               ((System.Windows.FrameworkContentElement)e.OriginalSource).Tag = newvalue;
             }
                
          }
@@ -617,18 +623,43 @@ namespace eWamLauncher
          e.CanExecute = true;
       }
 
+      ///// <summary>
+      ///// Command handler to navigate (i.e. open an explorer window), to a path specified in the UI
+      ///// </summary>
+      ///// <param name="sender"></param>
+      ///// <param name="e"></param>
+      //private void OnExplorePath(object sender, RoutedEventArgs e)
+      //{
+      //   log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+      //   try
+      //   {
+      //      MainWindow.ExplorePath((string)((System.Windows.FrameworkContentElement)e.OriginalSource).Tag);
+      //   }
+      //   catch (Exception exception)
+      //   {
+      //      log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+      //      System.Windows.MessageBox.Show(
+      //         "Something went wrong ! \n\n" + exception.Message,
+      //         "Oops",
+      //         System.Windows.MessageBoxButton.OK,
+      //         System.Windows.MessageBoxImage.Error);
+      //   }
+      //}
+
       /// <summary>
       /// Command handler to navigate (i.e. open an explorer window), to a path specified in the UI
       /// </summary>
       /// <param name="sender"></param>
       /// <param name="e"></param>
-      private void OnExplorePath(object sender, ExecutedRoutedEventArgs e)
+      private void OnExplorePath(object sender, RoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
          try
          {
-            MainWindow.ExplorePath((string)((System.Windows.Controls.Button)e.OriginalSource).Tag);
+            MainWindow.ExplorePath((string)((System.Windows.FrameworkContentElement)e.OriginalSource).Tag);
          }
          catch (Exception exception)
          {
@@ -673,7 +704,7 @@ namespace eWamLauncher
       /// <param name="path"></param>
       public static void ExplorePath(string path)
       {
-         Process.Start("explorer.exe", path);
+         Process.Start("explorer.exe", System.Environment.ExpandEnvironmentVariables(path));
       }
 
       #endregion

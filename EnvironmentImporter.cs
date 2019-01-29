@@ -245,12 +245,14 @@ namespace eWamLauncher
          {
             StreamReader sr = new StreamReader(batch);
 
-            string pattern = @"(?<comment>^[\@\t\s]*(?:[rR][eE][mM]|:)+)?.*set[\t\s]+[""]?(?<key>[^=%]+)[\t\s]*=[\t\s]*(?<value>[^""]+)";
+            //string pattern = @"(?<comment>^[\@\t\s]*(?:[rR][eE][mM]|:)+)?.*set[\t\s]+[""]?(?<key>[^=%]+)[\t\s]*=[\t\s]*(?<value>[^""]+)";
+            string pattern = @"(?<comment>^[\@\t\s]*(?:[rR][eE][mM]|:)+)?(.*set[\t\s]+[""]?(?<key>[^=%]+)[\t\s]*=[\t\s]*(?<value>[^""]+)?|.*(?<key>path)[\t\s]+[""]?(?<value>[^""]+))";
             while (sr.Peek() >= 0)
             {
                string input = sr.ReadLine();
                Regex rgx = new Regex(pattern, RegexOptions.IgnoreCase);
                MatchCollection matches = rgx.Matches(input);
+               
                if (matches.Count > 0)
                {
                   foreach (Match match in matches)
@@ -258,7 +260,6 @@ namespace eWamLauncher
                      if (match.Groups["comment"].Value == "")
                      {
                         string newKey = match.Groups["key"].Value.ToUpper();
-
 
                         if (newKey == "WF-ROOT" && (this.environment.wfRoot == null || this.environment.wfRoot == ""))
                         {
@@ -295,12 +296,38 @@ namespace eWamLauncher
 
                            if (newKey == "PATH")
                            {
-                              if (this.environment.additionalPath != "" && match.Groups["value"].Value != "")
+                              //Remove eWAM binaries sub-pathes from path (they are automatically 
+                              //added when starting launchers)
+                              string pathAddition = match.Groups["value"].Value;
+
+                              string subPathes = Regex.Escape(this.settings.dllSearchPathes + ";" +
+                                 this.settings.cppdllSearchPathes + ";" +
+                                 this.settings.exeSearchPathes);
+
+                              subPathes = subPathes.Replace(";", "|");
+
+                              pathAddition = pathAddition.Trim(';');
+                              pathAddition = Regex.Replace(pathAddition, @";+", ";");
+                              pathAddition = Regex.Replace(pathAddition,
+                                 @"(^|;)([%]wyde-root[%][\\](" + subPathes + @")(;|$))+",
+                                 ";", RegexOptions.IgnoreCase);
+                              pathAddition = Regex.Replace(pathAddition,
+                                 @"(^|;)([%](WYDE-DLL|WYDE-ROOT|ENV-ROOT|WF-ROOT|WYDE-ASSEMBLIES)[%](;|$))+",
+                                 ";", RegexOptions.IgnoreCase);
+                              pathAddition = Regex.Replace(pathAddition, @"[%]path[%]", "", 
+                                 RegexOptions.IgnoreCase);
+
+                              if (this.environment.additionalPath != "" && 
+                                 match.Groups["value"].Value != "")
                               {
                                  this.environment.additionalPath += ";";
                               }
+                              this.environment.additionalPath += pathAddition;
 
-                              this.environment.additionalPath += match.Groups["value"].Value;
+                              this.environment.additionalPath = 
+                                 this.environment.additionalPath.Trim(';');
+                              this.environment.additionalPath = 
+                                 Regex.Replace(this.environment.additionalPath, @";+", ";");
                            }
                            else
                            {
@@ -415,7 +442,7 @@ namespace eWamLauncher
             WydeNetWorkConfiguration rawNetConf = WydeNetWorkConfiguration.CreateFromWNetConfIni(path);
             this.environment.wNetConf = new WNetConf(rawNetConf);
          }
-         catch (FileNotFoundException exception)
+         catch (Exception exception)
          {
             log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
          }

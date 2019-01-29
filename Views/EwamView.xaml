@@ -78,17 +78,20 @@
                      <TextBox Text="{Binding SelectedItem.exePathes, ElementName=lbBinariesSets, Mode=TwoWay}"
                               AcceptsReturn="True"
                               ToolTip="One path per line. '\n' seperated pathes."
-                              Grid.Column="1" Grid.Row="1" Margin="5"/>
+                              Grid.Column="1" Grid.Row="1" Margin="5"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto"/>
                      <Label Content="Dll pathes: " Grid.Column="0" Grid.Row="2"/>
                      <TextBox Text="{Binding SelectedItem.dllPathes, ElementName=lbBinariesSets, Mode=TwoWay}"
                               AcceptsReturn="True"
                               ToolTip="One path per line. '\n' seperated pathes."
-                              Grid.Column="1" Grid.Row="2" Margin="5"/>
+                              Grid.Column="1" Grid.Row="2" Margin="5"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto"/>
                      <Label Content="CppDll pathes: " Grid.Column="0" Grid.Row="3"/>
                      <TextBox Text="{Binding SelectedItem.cppdllPathes, ElementName=lbBinariesSets, Mode=TwoWay}"
                               AcceptsReturn="True"
                               ToolTip="One path per line. '\n' seperated pathes."
-                              Grid.Column="1" Grid.Row="3" Margin="5"/>
+                              Grid.Column="1" Grid.Row="3" Margin="5"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto"/>
                   </Grid>
                </Grid>
             </DockPanel>

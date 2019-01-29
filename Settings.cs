@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using log4net;
 
 namespace eWamLauncher
 {
@@ -18,20 +19,22 @@ namespace eWamLauncher
    [DataContract(Name = "Settings", Namespace = "http://www.wyde.com")]
    public class Settings : ICloneable, INotifyPropertyChanged
    {
+      private static readonly ILog log = LogManager.GetLogger(typeof(EwamImporter));
+
       // TODO : when setting or getting, transform "\n" seperated list to ";" seperated list, and vice versa.
-      private string _exeSearchPathes = @"bin;WydeServer\wsmServer;WydeServer\wwClient";
-      [Category("Environment import settings")]
+      private string _exeSearchPathes = @"bin;bin64;WydeServer\wsmServer;WydeServer\wwClient";
+      [Category("eWAM import settings")]
       [DisplayName("Search pathes for eWam binaries")]
       [Description("Comma seperated list of sub folder to be looked into.")]
       [DataMember()] public string exeSearchPathes { get { return _exeSearchPathes; } set { _exeSearchPathes= value; NotifyPropertyChanged(); } }
 
-      private string _dllSearchPathes = @"dll;dll.debug";
+      private string _dllSearchPathes = @"dll;dll.debug;EjbDll;dll64;dll64.debug;EjbDll64";
       [Category("eWAM import settings")]
       [DisplayName("Search pathes for eWam dlls")]
       [Description("Comma seperated list of sub folder to be looked into.")]
       [DataMember()] public string dllSearchPathes { get { return _dllSearchPathes; } set { _dllSearchPathes = value; NotifyPropertyChanged(); } }
 
-      private string _cppdllSearchPathes = @"cppdll;cppdll.debug";
+      private string _cppdllSearchPathes = @"cppdll;cppdll.debug;cppdll64;cppdll64.debug";
       [Category("eWAM import settings")]
       [DisplayName("Search pathes for CppDlls")]
       [Description("Comma seperated list of sub folder to be looked into.")]
@@ -119,6 +122,7 @@ namespace eWamLauncher
          { "9.0", "2008" },
          { "10.0", "2010" },
          { "11.0", "2012" },
+         { "12.0", "2013" },
          { "14.0", "2015" },
          { "15.0", "2017" },
          { "16.0", "2019" }
@@ -126,9 +130,9 @@ namespace eWamLauncher
 
       public Settings()
       {
-         this.exeSearchPathes = @"bin;WydeServer\wsmServer;WydeServer\wwClient";
-         this.dllSearchPathes = @"dll;dll.debug";
-         this.cppdllSearchPathes = @"cppdll;cppdll.debug";
+         this.exeSearchPathes = @"bin;bin64;WydeServer\wsmServer;WydeServer\wwClient";
+         this.dllSearchPathes = @"dll;dll.debug;EjbDll;dll64;dll64.debug;EjbDll64";
+         this.cppdllSearchPathes = @"cppdll;cppdll.debug;cppdll64;cppdll64.debug";
          this.launcherSearchPathes = @"bin;batch;batches;launchers;environments";
          this.batchSearchPathes = @"bin;batch;batches";
          this.tgvSearchPathes = @"tgv";
@@ -150,44 +154,54 @@ namespace eWamLauncher
       /// </summary>
       public void AutoDetectVisualStudios()
       {
-         this.visualStudios.Clear();
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
-         // All Visual Studio versions are registered under this registry key
-         RegistryKey VSVersionPathsKey = 
-            Registry.LocalMachine.OpenSubKey(@"SOFTWARE\WOW6432Node\Microsoft\VisualStudio\SxS\VS7");
-
-         // for each entry found (each entry should be a different visual studio instance
-         foreach (string valueName in VSVersionPathsKey.GetValueNames())
+         try
          {
-            string vsPath = (string)Registry.GetValue(VSVersionPathsKey.Name, valueName, "");
 
-            if (vsPath != null && vsPath != "")
+            this.visualStudios.Clear();
+
+            // All Visual Studio versions are registered under this registry key
+            RegistryKey VSVersionPathsKey =
+               Registry.LocalMachine.OpenSubKey(@"SOFTWARE\WOW6432Node\Microsoft\VisualStudio\SxS\VS7");
+
+            // for each entry found (each entry should be a different visual studio instance
+            foreach (string valueName in VSVersionPathsKey.GetValueNames())
             {
-               // create the object that will hold all the information of this VS instance
-               VisualStudioDefinition vsDef = 
-                  new VisualStudioDefinition() { basePath = vsPath, version = valueName, name = vsNames[valueName] };
+               string vsPath = (string)Registry.GetValue(VSVersionPathsKey.Name, valueName, "");
 
-               // Look for vcvars32.bat
-               List<String> vcvars32 = 
-                  StripPrefix(vsDef.basePath, Directory.GetFiles(vsDef.basePath, "vcvars32.bat", SearchOption.AllDirectories));
-
-               // Look for vcvarsamd64.bat or vcvars64.bat
-               List<String> vcvars64 = 
-                  StripPrefix(vsDef.basePath, Directory.GetFiles(vsDef.basePath, "vcvarsamd64.bat", SearchOption.AllDirectories));
-               if (vcvars64.Count() == 0)
+               if (vsPath != null && vsPath != "")
                {
-                  vcvars64 =
-                     StripPrefix(vsDef.basePath, Directory.GetFiles(vsDef.basePath, "vcvars64.bat", SearchOption.AllDirectories));
+                  // create the object that will hold all the information of this VS instance
+                  VisualStudioDefinition vsDef =
+                     new VisualStudioDefinition() { basePath = vsPath, version = valueName, name = vsNames[valueName] };
+
+                  // Look for vcvars32.bat
+                  List<String> vcvars32 =
+                     StripPrefix(vsDef.basePath, Directory.GetFiles(vsDef.basePath, "vcvars32.bat", SearchOption.AllDirectories));
+
+                  // Look for vcvarsamd64.bat or vcvars64.bat
+                  List<String> vcvars64 =
+                     StripPrefix(vsDef.basePath, Directory.GetFiles(vsDef.basePath, "vcvarsamd64.bat", SearchOption.AllDirectories));
+                  if (vcvars64.Count() == 0)
+                  {
+                     vcvars64 =
+                        StripPrefix(vsDef.basePath, Directory.GetFiles(vsDef.basePath, "vcvars64.bat", SearchOption.AllDirectories));
+                  }
+
+                  if (vcvars32.Count() != 0)
+                     vsDef.vcvarSubPath32 = vcvars32[0];
+
+                  if (vcvars64.Count() != 0)
+                     vsDef.vcvarSubPath64 = vcvars64[0];
+
+                  this.visualStudios.Add(vsDef);
                }
-
-               if (vcvars32.Count() != 0)
-                  vsDef.vcvarSubPath32 = vcvars32[0];
-
-               if (vcvars64.Count() != 0)
-                  vsDef.vcvarSubPath64 = vcvars64[0];
-
-               this.visualStudios.Add(vsDef);
             }
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
          }
       }
 
@@ -220,5 +234,6 @@ namespace eWamLauncher
 
          return result;
       }
+
    }
 }

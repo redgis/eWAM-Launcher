@@ -80,6 +80,7 @@
         
       <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" HorizontalAlignment="Center">
          <Image Source="pack://application:,,,/icon.ico" Width="32" Height="32" Margin="10" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
+         <TextBlock Text="{Binding assemblyDescription}" HorizontalAlignment="Center" VerticalAlignment="Center" FontStyle="Italic" FontSize="15" Margin="50,0"/>
          <TextBlock Text="{Binding assemblyVersion}" HorizontalAlignment="Center" VerticalAlignment="Center" FontStyle="Italic" FontSize="15" Margin="50,0"/>
          <TextBlock Text="{Binding assemblyUpdateInfo}" HorizontalAlignment="Center" VerticalAlignment="Center" FontStyle="Italic" FontSize="15" Margin="50,0"/>
          <Button x:Name="btUpdate" Click="OnCheckUpdate" Content="Check for update" VerticalAlignment="Center" HorizontalAlignment="Center"/>
@@ -184,8 +185,9 @@
                      ItemsSource="{Binding productsPackages, Mode=TwoWay}"
                      DisplayMemberPath="Key"
                      SelectedIndex="0"
-                     MinHeight="200"
-                     Loaded="OnLoadPackagesIfNeeded"/>
+                     MinHeight="200" />
+                  <!--IsVisibleChanged="OnLoadPackagesIfNeeded"-->
+                  <!--Loaded="OnLoadPackagesIfNeeded"-->
 
                </DockPanel>
                
@@ -301,7 +303,14 @@
 
          <TabItem Header="Logs  ">
             <DockPanel>
-               <TextBox Text="{Binding logAppender.Notification, Mode=OneWay}" Margin="5" IsReadOnly="True" TextWrapping="Wrap"/>
+               <TextBlock VerticalAlignment="Center" Margin="5" DockPanel.Dock="Bottom">
+                  Goto log folder :
+                  <Hyperlink Tag="%LOCALAPPDATA%\eWAMLauncher"
+                             Click="OnExplorePath">
+                     %LOCALAPPDATA%\eWAMLauncher
+                  </Hyperlink>
+               </TextBlock>
+               <TextBox Text="{Binding logAppender.Notification, Mode=OneWay}" Margin="5" IsReadOnly="True" TextWrapping="Wrap" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
             </DockPanel>
          </TabItem>
 

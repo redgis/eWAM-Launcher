@@ -7,6 +7,7 @@ To generate C# class from a reference XML file : XML => xsd => .cs  : https://st
 
 # Todo
 
+
 ### Importing
 - [ ] eWAM import : detect if 64 or 32 bits : https://superuser.com/questions/358434/how-to-check-if-a-binary-is-32-or-64-bit-on-windows
    https://stackoverflow.com/questions/1001404/check-if-unmanaged-dll-is-32-bit-or-64-bit
@@ -35,6 +36,21 @@ To generate C# class from a reference XML file : XML => xsd => .cs  : https://st
 
 # Changelog
 
+
+## 1.0.0.62 - 2019/01/30
+- [x] Add feature to Reset settings to defaults
+- [x] Import "PATH=" to Additional Path, when importing environment
+- [x] Add scrollbar to log window
+- [x] Add link/button to log folder
+- [x] Add link/button to settings folder
+- [x] Add Author's Name
+- [x] Add link to WydeWeb CommandLine
+- [x] Updated Icon
+- [x] Added VS2013 in VS list
+- [x] Fixed category for setting "Search pathes for eWam binaries"
+
+## 1.0.0.61 - 2019/01/22
+- [x] Various fixes
 
 ## 1.0.0.53/54 - 2019/01/11
 - [x] bug fix : error when importing a package

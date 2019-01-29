@@ -157,9 +157,14 @@
                         Margin="5"
                         MinWidth="150"/>
                   <TextBlock VerticalAlignment="Center" Margin="20,0">
+                     Command-Line options:
                      <Hyperlink NavigateUri="https://mphasiswyde.atlassian.net/wiki/spaces/PTD/pages/67174695/Executable+Command+Line+Options"
                         RequestNavigate="OnClickHLink">
-                        Help : eWAM Command-Line options
+                        eWAM
+                     </Hyperlink> | 
+                     <Hyperlink NavigateUri="https://mphasiswyde.atlassian.net/wiki/spaces/PTD/pages/78545357/WydeWeb"
+                        RequestNavigate="OnClickHLink">
+                        WydeWeb
                      </Hyperlink>
                   </TextBlock>
                   <Button Click="OnFileExportAllLaunchers" Content="Export Launchers to Batch Scripts" Margin="10,2" />

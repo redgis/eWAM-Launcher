@@ -46,7 +46,7 @@ namespace eWamLauncher.Views
       /// </summary>
       /// <param name="sender"></param>
       /// <param name="e"></param>
-      public void OnClickHLink(object sender, RequestNavigateEventArgs e)
+      private void OnClickHLink(object sender, RequestNavigateEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
@@ -67,5 +67,54 @@ namespace eWamLauncher.Views
          }
       }
 
+      /// <summary>
+      /// Command handler to navigate (i.e. open an explorer window), to a path specified in the UI
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
+      private void OnExplorePath(object sender, RoutedEventArgs e)
+      {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
+         {
+            MainWindow.ExplorePath((string)((System.Windows.FrameworkContentElement)e.OriginalSource).Tag);
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
+      }
+
+      /// <summary>
+      /// Command handler to reset settings to defaults
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
+      private void OnResetSettings(object sender, RoutedEventArgs e)
+      {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
+         {
+            ((MainWindow)Application.Current.MainWindow).profile.settings = new Settings();
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
+      }
    }
 }
