@@ -491,13 +491,13 @@ namespace eWamLauncher.Views
          char[] delimiters = { '\n', ';', '\r', '\b' };
 
          // Set %PATH%
-         List<string> binSubPathes = new List<string>();
-         binSubPathes.AddRange(environment.binariesSet.dllPathes.Split(delimiters));
-         binSubPathes.AddRange(environment.binariesSet.cppdllPathes.Split(delimiters));
-         binSubPathes.AddRange(environment.binariesSet.exePathes.Split(delimiters));
+         List<string> binSubPaths = new List<string>();
+         binSubPaths.AddRange(environment.binariesSet.dllPaths.Split(delimiters));
+         binSubPaths.AddRange(environment.binariesSet.cppdllPaths.Split(delimiters));
+         binSubPaths.AddRange(environment.binariesSet.exePaths.Split(delimiters));
 
          string pathVariable = "";
-         foreach (string subBinPath in binSubPathes)
+         foreach (string subBinPath in binSubPaths)
          {
             if (subBinPath != "")
             {
@@ -514,11 +514,11 @@ namespace eWamLauncher.Views
          SetEnvVarToProcessInfo(startInfo, "PATH", pathVariable);
 
          // Put CppDll Folders in WYDE-DLL
-         string[] cppdlls = environment.binariesSet.cppdllPathes.Split(delimiters);
+         string[] cppdlls = environment.binariesSet.cppdllPaths.Split(delimiters);
          SetEnvVarToProcessInfo(startInfo, "WYDE-DLL", environment.ewam.basePath + "\\" + cppdlls[0]);
 
-         // TODO : to use when WYDE-DLL support ';' seperated list of pathes.
-         //string cppdlls = launcher.binariesSet.cppdllPathes.Replace('\n', ';');
+         // TODO : to use when WYDE-DLL support ';' seperated list of paths.
+         //string cppdlls = launcher.binariesSet.cppdllPaths.Replace('\n', ';');
          //startInfo.EnvironmentVariables.Add("WYDE-DLL", cppdlls);
          //startInfo.EnvironmentVariables.Add("WYDE-ROOT", ((Environment)this.DataContext).ewam.basePath);
 

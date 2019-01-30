@@ -74,22 +74,22 @@
                      <TextBox Text="{Binding SelectedItem.name, ElementName=lbBinariesSets, Mode=TwoWay}" 
                               AcceptsReturn="True"
                               Grid.Column="1" Grid.Row="0" Margin="5"/>
-                     <Label Content="Binaries pathes: " Grid.Column="0" Grid.Row="1"/>
-                     <TextBox Text="{Binding SelectedItem.exePathes, ElementName=lbBinariesSets, Mode=TwoWay}"
+                     <Label Content="Binaries paths: " Grid.Column="0" Grid.Row="1"/>
+                     <TextBox Text="{Binding SelectedItem.exePaths, ElementName=lbBinariesSets, Mode=TwoWay}"
                               AcceptsReturn="True"
-                              ToolTip="One path per line. '\n' seperated pathes."
+                              ToolTip="One path per line. '\n' seperated paths."
                               Grid.Column="1" Grid.Row="1" Margin="5"
                               ScrollViewer.VerticalScrollBarVisibility="Auto"/>
-                     <Label Content="Dll pathes: " Grid.Column="0" Grid.Row="2"/>
-                     <TextBox Text="{Binding SelectedItem.dllPathes, ElementName=lbBinariesSets, Mode=TwoWay}"
+                     <Label Content="Dll paths: " Grid.Column="0" Grid.Row="2"/>
+                     <TextBox Text="{Binding SelectedItem.dllPaths, ElementName=lbBinariesSets, Mode=TwoWay}"
                               AcceptsReturn="True"
-                              ToolTip="One path per line. '\n' seperated pathes."
+                              ToolTip="One path per line. '\n' seperated paths."
                               Grid.Column="1" Grid.Row="2" Margin="5"
                               ScrollViewer.VerticalScrollBarVisibility="Auto"/>
-                     <Label Content="CppDll pathes: " Grid.Column="0" Grid.Row="3"/>
-                     <TextBox Text="{Binding SelectedItem.cppdllPathes, ElementName=lbBinariesSets, Mode=TwoWay}"
+                     <Label Content="CppDll paths: " Grid.Column="0" Grid.Row="3"/>
+                     <TextBox Text="{Binding SelectedItem.cppdllPaths, ElementName=lbBinariesSets, Mode=TwoWay}"
                               AcceptsReturn="True"
-                              ToolTip="One path per line. '\n' seperated pathes."
+                              ToolTip="One path per line. '\n' seperated paths."
                               Grid.Column="1" Grid.Row="3" Margin="5"
                               ScrollViewer.VerticalScrollBarVisibility="Auto"/>
                   </Grid>

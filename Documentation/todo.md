@@ -33,6 +33,9 @@ To generate C# class from a reference XML file : XML => xsd => .cs  : https://st
    
 # Changelog
 
+## 1.0.0.64 - 2019/01/30
+- [x] Fixed "pathes" typo
+
 ## 1.0.0.63 - 2019/01/30
 - [x] Add "Save configuration" as opposed to "Save configuration AS", with associated shortcuts
 
@@ -47,7 +50,7 @@ To generate C# class from a reference XML file : XML => xsd => .cs  : https://st
 - [x] Add link to WydeWeb CommandLine
 - [x] Updated Icon
 - [x] Added VS2013 in VS list
-- [x] Fixed category for setting "Search pathes for eWam binaries"
+- [x] Fixed category for setting "Search paths for eWam binaries"
 
 ## 1.0.0.61 - 2019/01/22
 - [x] Various fixes
@@ -109,14 +112,14 @@ To generate C# class from a reference XML file : XML => xsd => .cs  : https://st
 - [x] Should we discard WYDE-ROOT, and use ewam basePath ?
 - [x] have a list of predefined subfolders in settings, to lookup into, for each type of thing to import
    e.g., for binaries : bin/, bin/win32/debug/, bin/win32/release, bin/release/op, etc... or just recursively lookup for binaries and dlls ?
-- [x] eWAM import : remove eWAM root prefix from binaries pathes : only keep the sub-folders path. e.g. CppDll\Win32\Debug
+- [x] eWAM import : remove eWAM root prefix from binaries paths : only keep the sub-folders path. e.g. CppDll\Win32\Debug
    
 ### General settings
 - [x] Implement application settings class, make it serializable
 - [x] have a list of folder in which to lookup when importing a new environment
 - [x] reload last session (based on last session file opened, default is in %appdata%)
 - [x] address of update server
-- [x] Add "Additional pathes", and forbid "PATH" in environment variables
+- [x] Add "Additional paths", and forbid "PATH" in environment variables
 - [x] Add Section with VS2010, VS2012 path to be called if needed, find a way to enable that in an environment.
    See https://stackoverflow.com/questions/1842491/how-do-i-find-the-path-of-visual-studio-in-the-registry-using-python :
       - HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\SxS\VC7

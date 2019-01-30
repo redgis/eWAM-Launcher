@@ -73,52 +73,52 @@ namespace eWamLauncher
          
          this.ewam = new Ewam(path);
 
-         // dictionaries to store (key:binaries set name) => (value:pathes)
-         Dictionary<string, string> exePathes = new Dictionary<string, string>();
-         Dictionary<string, string> dllPathes = new Dictionary<string, string>();
-         Dictionary<string, string> cppdllPathes = new Dictionary<string, string>();
+         // dictionaries to store (key:binaries set name) => (value:paths)
+         Dictionary<string, string> exePaths = new Dictionary<string, string>();
+         Dictionary<string, string> dllPaths = new Dictionary<string, string>();
+         Dictionary<string, string> cppdllPaths = new Dictionary<string, string>();
 
          char[] delimiters = { ';', '\n' };
 
-         // Retrieve pathes for each binaries set (release, debug, etc), for exe, dlls, cppdlls, based on settings search pathes.
-         this.FindPathes(path, this.settings.exeSearchPathes.Split(delimiters), "*.exe", exePathes);
-         this.FindPathes(path, this.settings.dllSearchPathes.Split(delimiters), "*.dll", dllPathes);
-         this.FindPathes(path, this.settings.cppdllSearchPathes.Split(delimiters), "*.dll", cppdllPathes);
+         // Retrieve paths for each binaries set (release, debug, etc), for exe, dlls, cppdlls, based on settings search paths.
+         this.FindPaths(path, this.settings.exeSearchPaths.Split(delimiters), "*.exe", exePaths);
+         this.FindPaths(path, this.settings.dllSearchPaths.Split(delimiters), "*.dll", dllPaths);
+         this.FindPaths(path, this.settings.cppdllSearchPaths.Split(delimiters), "*.dll", cppdllPaths);
          
-         //Recombine the binaries sets collected pathes into a single BinariesSet object.
+         //Recombine the binaries sets collected paths into a single BinariesSet object.
          Dictionary<string, BinariesSet> binariesSets = new Dictionary<string, BinariesSet>();
 
-         foreach (KeyValuePair<string, string> binSetPathes in exePathes)
+         foreach (KeyValuePair<string, string> binSetPaths in exePaths)
          {
-            if (!binariesSets.ContainsKey(binSetPathes.Key))
+            if (!binariesSets.ContainsKey(binSetPaths.Key))
             {
-               binariesSets.Add(binSetPathes.Key, new BinariesSet());
+               binariesSets.Add(binSetPaths.Key, new BinariesSet());
             }
 
-            binariesSets[binSetPathes.Key].name = binSetPathes.Key;
-            binariesSets[binSetPathes.Key].exePathes = binSetPathes.Value;
+            binariesSets[binSetPaths.Key].name = binSetPaths.Key;
+            binariesSets[binSetPaths.Key].exePaths = binSetPaths.Value;
          }
 
-         foreach (KeyValuePair<string, string> binSetPathes in dllPathes)
+         foreach (KeyValuePair<string, string> binSetPaths in dllPaths)
          {
-            if (!binariesSets.ContainsKey(binSetPathes.Key))
+            if (!binariesSets.ContainsKey(binSetPaths.Key))
             {
-               binariesSets.Add(binSetPathes.Key, new BinariesSet());
+               binariesSets.Add(binSetPaths.Key, new BinariesSet());
             }
 
-            binariesSets[binSetPathes.Key].name = binSetPathes.Key;
-            binariesSets[binSetPathes.Key].dllPathes = binSetPathes.Value;
+            binariesSets[binSetPaths.Key].name = binSetPaths.Key;
+            binariesSets[binSetPaths.Key].dllPaths = binSetPaths.Value;
          }
 
-         foreach (KeyValuePair<string, string> binSetPathes in cppdllPathes)
+         foreach (KeyValuePair<string, string> binSetPaths in cppdllPaths)
          {
-            if (!binariesSets.ContainsKey(binSetPathes.Key))
+            if (!binariesSets.ContainsKey(binSetPaths.Key))
             {
-               binariesSets.Add(binSetPathes.Key, new BinariesSet());
+               binariesSets.Add(binSetPaths.Key, new BinariesSet());
             }
 
-            binariesSets[binSetPathes.Key].name = binSetPathes.Key;
-            binariesSets[binSetPathes.Key].cppdllPathes = binSetPathes.Value;
+            binariesSets[binSetPaths.Key].name = binSetPaths.Key;
+            binariesSets[binSetPaths.Key].cppdllPaths = binSetPaths.Value;
          }
 
          // store binaries sets in current ewam
@@ -139,18 +139,18 @@ namespace eWamLauncher
       }
 
       /// <summary>
-      /// Internal method used to find the set of sub pathes used by this ewam instance for a specified file type.
+      /// Internal method used to find the set of sub paths used by this ewam instance for a specified file type.
       /// </summary>
       /// <param name="basePath">root path to look into</param>
-      /// <param name="subPathes">list of sub pathes in which to lookup</param>
+      /// <param name="subPaths">list of sub paths in which to lookup</param>
       /// <param name="fileType">file types to lookup</param>
-      /// <param name="foundPathes">pathes containing given file types</param>
-      private void FindPathes(string basePath, string[] subPathes, string fileType,
-         Dictionary<string, string> foundPathes)
+      /// <param name="foundPaths">paths containing given file types</param>
+      private void FindPaths(string basePath, string[] subPaths, string fileType,
+         Dictionary<string, string> foundPaths)
       {
          basePath = MainWindow.NormalizePath(basePath);
 
-         foreach (string subSearchPath in subPathes)
+         foreach (string subSearchPath in subPaths)
          {
             string defaultBinariesSetName = "release";
 
@@ -163,8 +163,8 @@ namespace eWamLauncher
 
             try
             {
-               string[] pathes = Directory.GetFiles(searchPath, fileType, SearchOption.AllDirectories);
-               foreach (string fullFilename in pathes)
+               string[] paths = Directory.GetFiles(searchPath, fileType, SearchOption.AllDirectories);
+               foreach (string fullFilename in paths)
                {
                   string fullPath = Path.GetDirectoryName(fullFilename);
 
@@ -175,9 +175,9 @@ namespace eWamLauncher
                      setName = fullPath.Substring(searchPath.Length + 1).ToLower();
                   }
 
-                  if (!foundPathes.ContainsKey(setName))
+                  if (!foundPaths.ContainsKey(setName))
                   {
-                     foundPathes.Add(setName, "");
+                     foundPaths.Add(setName, "");
                   }
 
                   string normalizedFullPath = Path.GetFullPath(new Uri(fullPath).LocalPath)
@@ -187,11 +187,11 @@ namespace eWamLauncher
                   string foundSubPath = normalizedFullPath.Substring(basePath.Length + 1)
                      .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
-                  if (!foundPathes[setName].Contains(foundSubPath))
+                  if (!foundPaths[setName].Contains(foundSubPath))
                   {
                      if (normalizedFullPath.StartsWith(basePath))
                      {
-                        foundPathes[setName] += foundSubPath + "\n";
+                        foundPaths[setName] += foundSubPath + "\n";
                      }
                   }
                }

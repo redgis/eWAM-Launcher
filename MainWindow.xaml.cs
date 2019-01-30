@@ -548,7 +548,7 @@ namespace eWamLauncher
       #region Path actions
 
       /// <summary>
-      /// Normalizes a path name. This is necessary, for instance, when comparing two pathes.
+      /// Normalizes a path name. This is necessary, for instance, when comparing two paths.
       /// </summary>
       /// <param name="path"></param>
       /// <returns></returns>
@@ -575,7 +575,7 @@ namespace eWamLauncher
       }
 
       /// <summary>
-      /// Returns the longest common prefix of to pathes. Used to extract the sub folders 
+      /// Returns the longest common prefix of to paths. Used to extract the sub folders 
       /// relative to a common parent folder.
       /// </summary>
       /// <param name="path1"></param>

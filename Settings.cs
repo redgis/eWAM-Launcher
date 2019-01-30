@@ -22,41 +22,41 @@ namespace eWamLauncher
       private static readonly ILog log = LogManager.GetLogger(typeof(EwamImporter));
 
       // TODO : when setting or getting, transform "\n" seperated list to ";" seperated list, and vice versa.
-      private string _exeSearchPathes = @"bin;bin64;WydeServer\wsmServer;WydeServer\wwClient";
+      private string _exeSearchPaths = @"bin;bin64;WydeServer\wsmServer;WydeServer\wwClient";
       [Category("eWAM import settings")]
-      [DisplayName("Search pathes for eWam binaries")]
+      [DisplayName("Search paths for eWam binaries")]
       [Description("Comma seperated list of sub folder to be looked into.")]
-      [DataMember()] public string exeSearchPathes { get { return _exeSearchPathes; } set { _exeSearchPathes= value; NotifyPropertyChanged(); } }
+      [DataMember()] public string exeSearchPaths { get { return _exeSearchPaths; } set { _exeSearchPaths= value; NotifyPropertyChanged(); } }
 
-      private string _dllSearchPathes = @"dll;dll.debug;EjbDll;dll64;dll64.debug;EjbDll64";
+      private string _dllSearchPaths = @"dll;dll.debug;EjbDll;dll64;dll64.debug;EjbDll64";
       [Category("eWAM import settings")]
-      [DisplayName("Search pathes for eWam dlls")]
+      [DisplayName("Search paths for eWam dlls")]
       [Description("Comma seperated list of sub folder to be looked into.")]
-      [DataMember()] public string dllSearchPathes { get { return _dllSearchPathes; } set { _dllSearchPathes = value; NotifyPropertyChanged(); } }
+      [DataMember()] public string dllSearchPaths { get { return _dllSearchPaths; } set { _dllSearchPaths = value; NotifyPropertyChanged(); } }
 
-      private string _cppdllSearchPathes = @"cppdll;cppdll.debug;cppdll64;cppdll64.debug";
+      private string _cppdllSearchPaths = @"cppdll;cppdll.debug;cppdll64;cppdll64.debug";
       [Category("eWAM import settings")]
-      [DisplayName("Search pathes for CppDlls")]
+      [DisplayName("Search paths for CppDlls")]
       [Description("Comma seperated list of sub folder to be looked into.")]
-      [DataMember()] public string cppdllSearchPathes { get { return _cppdllSearchPathes; } set { _cppdllSearchPathes = value; NotifyPropertyChanged(); } }
+      [DataMember()] public string cppdllSearchPaths { get { return _cppdllSearchPaths; } set { _cppdllSearchPaths = value; NotifyPropertyChanged(); } }
 
-      private string _launcherSearchPathes = @"bin;batch;batches;launchers;environments";
+      private string _launcherSearchPaths = @"bin;batch;batches;launchers;environments";
       [Category("Environment import settings")]
-      [DisplayName("Search pathes for launchers")]
+      [DisplayName("Search paths for launchers")]
       [Description("Comma seperated list of sub folder to be looked into.")]
-      [DataMember()] public string launcherSearchPathes { get { return _launcherSearchPathes; } set { _launcherSearchPathes = value; NotifyPropertyChanged(); } }
+      [DataMember()] public string launcherSearchPaths { get { return _launcherSearchPaths; } set { _launcherSearchPaths = value; NotifyPropertyChanged(); } }
 
-      private string _batchSearchPathes = @"bin;batch;batches";
+      private string _batchSearchPaths = @"bin;batch;batches";
       [Category("Environment import settings")]
-      [DisplayName("Search pathes for batch files")]
+      [DisplayName("Search paths for batch files")]
       [Description("Comma seperated list of sub folder to be looked into.")]
-      [DataMember()] public string batchSearchPathes { get { return _batchSearchPathes; } set { _batchSearchPathes = value; NotifyPropertyChanged(); } }
+      [DataMember()] public string batchSearchPaths { get { return _batchSearchPaths; } set { _batchSearchPaths = value; NotifyPropertyChanged(); } }
 
-      private string _tgvSearchPathes = @"tgv";
+      private string _tgvSearchPaths = @"tgv";
       [Category("Environment import settings")]
-      [DisplayName("Search pathes for TGV")]
+      [DisplayName("Search paths for TGV")]
       [Description("Comma seperated list of sub folder to be looked into.")]
-      [DataMember()] public string tgvSearchPathes { get { return _tgvSearchPathes; } set { _tgvSearchPathes = value; NotifyPropertyChanged(); } }
+      [DataMember()] public string tgvSearchPaths { get { return _tgvSearchPaths; } set { _tgvSearchPaths = value; NotifyPropertyChanged(); } }
       
       private string _ewamexes = "ewam.exe;ewamconsole.exe;wyseman.exe;wydeweb.exe;remoteewam.exe;wedrpcserver.exe;wsmadmin.exe;RemoteWAM.exe";
       [Category("Unused settings")]
@@ -130,12 +130,12 @@ namespace eWamLauncher
 
       public Settings()
       {
-         this.exeSearchPathes = @"bin;bin64;WydeServer\wsmServer;WydeServer\wwClient";
-         this.dllSearchPathes = @"dll;dll.debug;EjbDll;dll64;dll64.debug;EjbDll64";
-         this.cppdllSearchPathes = @"cppdll;cppdll.debug;cppdll64;cppdll64.debug";
-         this.launcherSearchPathes = @"bin;batch;batches;launchers;environments";
-         this.batchSearchPathes = @"bin;batch;batches";
-         this.tgvSearchPathes = @"tgv";
+         this.exeSearchPaths = @"bin;bin64;WydeServer\wsmServer;WydeServer\wwClient";
+         this.dllSearchPaths = @"dll;dll.debug;EjbDll;dll64;dll64.debug;EjbDll64";
+         this.cppdllSearchPaths = @"cppdll;cppdll.debug;cppdll64;cppdll64.debug";
+         this.launcherSearchPaths = @"bin;batch;batches;launchers;environments";
+         this.batchSearchPaths = @"bin;batch;batches";
+         this.tgvSearchPaths = @"tgv";
 
          this.ewamexes = "ewam.exe;ewamconsole.exe;wyseman.exe;wydeweb.exe;remoteewam.exe;wedrpcserver.exe;wsmadmin.exe;RemoteWAM.exe";
 
@@ -206,7 +206,7 @@ namespace eWamLauncher
       }
 
       /// <summary>
-      /// Removes a prefix path from larger pathes (used to retrieve only the remaining subpath)
+      /// Removes a prefix path from larger paths (used to retrieve only the remaining subpath)
       /// </summary>
       /// <param name="prefix">the prefix to be remove</param>
       /// <param name="files">the list of files from which the prefix must be removed</param>

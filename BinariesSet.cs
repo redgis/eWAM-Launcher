@@ -12,7 +12,7 @@ using System.ComponentModel;
 namespace eWamLauncher
 {
    /// <summary>
-   /// Set of binaries paths to be part of an eWAM instance. a Set of binaries includes a pathes
+   /// Set of binaries paths to be part of an eWAM instance. a Set of binaries includes a path
    /// to the .exe files, a path to dlls, and a path to cppdlls.
    /// </summary>
    [DataContract(Name = "BinariesSet", Namespace = "http://www.wyde.com")]
@@ -21,23 +21,23 @@ namespace eWamLauncher
       private string _name;
       [DataMember()] public string name { get { return _name; } set { _name = value;  NotifyPropertyChanged(); } }
 
-      private string _exePathes;
+      private string _exePaths;
       /// <summary>
-      /// Pathes to executables
+      /// Paths to executables
       /// </summary>
-      [DataMember()] public string exePathes { get { return _exePathes; } set { _exePathes = value;  NotifyPropertyChanged(); } }
+      [DataMember()] public string exePaths { get { return _exePaths; } set { _exePaths = value;  NotifyPropertyChanged(); } }
 
-      private string _dllPathes;
+      private string _dllPaths;
       /// <summary>
-      /// Pathes to Dlls
+      /// Paths to Dlls
       /// </summary>
-      [DataMember()] public string dllPathes { get { return _dllPathes; } set { _dllPathes = value;  NotifyPropertyChanged(); } }
+      [DataMember()] public string dllPaths { get { return _dllPaths; } set { _dllPaths = value;  NotifyPropertyChanged(); } }
 
-      private string _cppdllPathes;
+      private string _cppdllPaths;
       /// <summary>
-      /// Pathes to CPPDLLs
+      /// Paths to CPPDLLs
       /// </summary>
-      [DataMember()] public string cppdllPathes { get { return _cppdllPathes; } set { _cppdllPathes = value;  NotifyPropertyChanged(); } }
+      [DataMember()] public string cppdllPaths { get { return _cppdllPaths; } set { _cppdllPaths = value;  NotifyPropertyChanged(); } }
 
       public event PropertyChangedEventHandler PropertyChanged;
 
@@ -52,9 +52,9 @@ namespace eWamLauncher
       public BinariesSet(string name = "")
       {
          this.name = name;
-         this.exePathes = "";
-         this.dllPathes = "";
-         this.cppdllPathes = "";
+         this.exePaths = "";
+         this.dllPaths = "";
+         this.cppdllPaths = "";
       }
 
       public object Clone()

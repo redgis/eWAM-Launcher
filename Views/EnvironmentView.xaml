@@ -85,7 +85,7 @@
 
                <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" DockPanel.Dock="Bottom">
                   <TextBlock  TextWrapping="WrapWithOverflow" Margin="5,20,5,5">
-                     WARNING: ONLY CONTAIN ADDITIONAL PATHES. DON'T ADD "%PATH%", nor bin/ dll/ cppdll/.
+                     WARNING: ONLY CONTAIN ADDITIONAL PATHS. DON'T ADD "%PATH%", nor bin/ dll/ cppdll/.
                      THOSE ARE AUTOMATICALLY ADDED FROM SELECTED EWAM AND ENVIRONMENT SETTINGS.
                   </TextBlock>
                   <Label Content="Additional Paths (semi-colon seperated list): " FontWeight="Bold"/>
