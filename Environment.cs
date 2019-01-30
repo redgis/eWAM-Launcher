@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Xml.Serialization;
 using System.Windows.Forms;
+using System.IO;
 
 namespace eWamLauncher
 {
@@ -460,6 +461,71 @@ namespace eWamLauncher
             System.IO.File.WriteAllText(path + "\\" + launcher.name + ".bat", launcher.GenerateBatch(eWamSetEnv));
          }
       }
+
+      /// <summary>
+      /// Generic method to save an environment to an JSON file
+      /// </summary>
+      /// <param name="fileName"></param>
+      public void SaveEnvironmentToJSON(string fileName)
+      {
+         Directory.CreateDirectory(Path.GetDirectoryName(fileName));
+
+         Environment envCopy = (Environment)this.Clone();
+         envCopy.binariesSet = null;
+         envCopy.ewam = null;
+
+         if (envCopy.envRoot != null && envCopy.envRoot != "" &&
+             envCopy.wfRoot != null && envCopy.wfRoot != "")
+         {
+            string commonPath = MainWindow.FindLongestCommonPath(envCopy.envRoot, envCopy.wfRoot);
+            envCopy.envRoot = envCopy.envRoot.Substring(Math.Min(envCopy.envRoot.Length, commonPath.Length + 1));
+            envCopy.wfRoot = envCopy.wfRoot.Substring(Math.Min(envCopy.wfRoot.Length, commonPath.Length + 1));
+         }
+         else
+         {
+            envCopy.envRoot = "";
+            envCopy.wfRoot = "";
+         }
+
+         FileStream writer = new FileStream(fileName, FileMode.Create);
+         DataContractJsonSerializer jsonSerializer =
+             new DataContractJsonSerializer(typeof(Environment));
+         jsonSerializer.WriteObject(writer, envCopy);
+         writer.Close();
+      }
+
+      /// <summary>
+      /// Generic method to save an environment to an XML file
+      /// </summary>
+      /// <param name="fileName"></param>
+      /// <param name="environment"></param>
+      public void SaveEnvironmentToXML(string fileName)
+      {
+         Directory.CreateDirectory(Path.GetDirectoryName(fileName));
+
+         Environment envCopy = (Environment)this.Clone();
+         envCopy.binariesSet = null;
+         envCopy.ewam = null;
+
+         if (envCopy.envRoot != null && envCopy.envRoot != "" &&
+             envCopy.wfRoot != null && envCopy.wfRoot != "")
+         {
+            string commonPath = MainWindow.FindLongestCommonPath(envCopy.envRoot, envCopy.wfRoot);
+            envCopy.envRoot = envCopy.envRoot.Substring(Math.Min(envCopy.envRoot.Length, commonPath.Length + 1));
+            envCopy.wfRoot = envCopy.wfRoot.Substring(Math.Min(envCopy.wfRoot.Length, commonPath.Length + 1));
+         }
+         else
+         {
+            envCopy.envRoot = "";
+            envCopy.wfRoot = "";
+         }
+
+         FileStream writer = new FileStream(fileName, FileMode.Create);
+         DataContractSerializer xmlSerializer = new DataContractSerializer(typeof(Environment));
+         xmlSerializer.WriteObject(writer, envCopy);
+         writer.Close();
+      }
+
 
    }
 }

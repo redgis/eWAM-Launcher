@@ -38,6 +38,7 @@ To generate C# class from a reference XML file : XML => xsd => .cs  : https://st
 
 
 ## 1.0.0.62 - 2019/01/30
+- [x] Add ability to generate *.xwam, *.jswam, *.xenv, *.jsenv for all env / ewams
 - [x] Add feature to Reset settings to defaults
 - [x] Import "PATH=" to Additional Path, when importing environment
 - [x] Add scrollbar to log window

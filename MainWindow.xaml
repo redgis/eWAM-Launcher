@@ -113,6 +113,7 @@
                      <Button Click="OnMoveDownEnvironment" Content="Move Down" Margin="2,2"/>
                      <Button Click="OnFileExportEnvironment" Content="Export to File" Margin="2,2"/>
                      <Button Click="OnFileImportEnvironment" Content="Import from File" Margin="2,2"/>
+                     <Button Click="OnFileExportAllEnvironments" Content="Export all" Margin="2,2"/>
                   </WrapPanel>
                   <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" DockPanel.Dock="Top"
                      Margin="5"
@@ -143,6 +144,7 @@
                      <Button Click="OnImportEwam" Content="Import" Margin="2,2"/>
                      <Button Click="OnFileImportEwam" Content="Import from File" Margin="2,2"/>
                      <Button Click="OnFileExportEwam" Content="Export to File" Margin="2,2"/>
+                     <Button Click="OnFileExportAllEwams" Content="Export all" Margin="2,2"/>
                      <Button Click="OnMoveUpEwam" Content="Move Up" Margin="2,2"/>
                      <Button Click="OnMoveDownEwam" Content="Move Down" Margin="2,2"/>
                   </WrapPanel>

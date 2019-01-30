@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -58,6 +60,40 @@ namespace eWamLauncher
          }
 
          return clone;
+      }
+
+      /// <summary>
+      /// Generic method to save an ewam to an JSON file
+      /// </summary>
+      /// <param name="fileName"></param>
+      public void SaveEwamToJSON(string fileName)
+      {
+         Directory.CreateDirectory(Path.GetDirectoryName(fileName));
+
+         Ewam ewamCopy = (Ewam)this.Clone();
+         ewamCopy.basePath = "";
+         FileStream writer = new FileStream(fileName, FileMode.Create);
+         DataContractJsonSerializer jsonSerializer =
+             new DataContractJsonSerializer(typeof(Ewam));
+         jsonSerializer.WriteObject(writer, ewamCopy);
+         writer.Close();
+      }
+
+      /// <summary>
+      /// Generic method to save an ewam to an XML file
+      /// </summary>
+      /// <param name="fileName"></param>
+      /// <param name="environment"></param>
+      public void SaveEwamToXML(string fileName)
+      {
+         Directory.CreateDirectory(Path.GetDirectoryName(fileName));
+
+         Ewam ewamCopy = (Ewam)this.Clone();
+         ewamCopy.basePath = "";
+         FileStream writer = new FileStream(fileName, FileMode.Create);
+         DataContractSerializer xmlSerializer = new DataContractSerializer(typeof(Ewam));
+         xmlSerializer.WriteObject(writer, ewamCopy);
+         writer.Close();
       }
 
    }

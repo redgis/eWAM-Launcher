@@ -1009,11 +1009,11 @@ namespace eWamLauncher
             {
                if (Path.GetExtension(fileBrowser.FileName).ToLower() == ".xenv")
                {
-                  this.SaveEnvironmentToXML(fileBrowser.FileName, (Environment)lbEnvList.SelectedItem);
+                  ((Environment)lbEnvList.SelectedItem).SaveEnvironmentToXML(fileBrowser.FileName);
                }
                else if (Path.GetExtension(fileBrowser.FileName).ToLower() == ".jsenv")
                {
-                  this.SaveEnvironmentToJSON(fileBrowser.FileName, (Environment)lbEnvList.SelectedItem);
+                  ((Environment)lbEnvList.SelectedItem).SaveEnvironmentToJSON(fileBrowser.FileName);
                }
             }
          }
@@ -1129,38 +1129,6 @@ namespace eWamLauncher
       }
 
       /// <summary>
-      /// Generic method to save an environment to an XML file
-      /// </summary>
-      /// <param name="fileName"></param>
-      /// <param name="environment"></param>
-      public void SaveEnvironmentToXML(string fileName, Environment environment)
-      {
-         Directory.CreateDirectory(Path.GetDirectoryName(fileName));
-
-         Environment envCopy = (Environment)environment.Clone();
-         envCopy.binariesSet = null;
-         envCopy.ewam = null;
-
-         if (envCopy.envRoot != null && envCopy.envRoot != "" && 
-             envCopy.wfRoot != null && envCopy.wfRoot != "")
-         {
-            string commonPath = FindLongestCommonPath(envCopy.envRoot, envCopy.wfRoot);
-            envCopy.envRoot = envCopy.envRoot.Substring(Math.Min(envCopy.envRoot.Length, commonPath.Length + 1));
-            envCopy.wfRoot = envCopy.wfRoot.Substring(Math.Min(envCopy.wfRoot.Length, commonPath.Length + 1));
-         }
-         else
-         {
-            envCopy.envRoot = "";
-            envCopy.wfRoot = "";
-         }
-
-         FileStream writer = new FileStream(fileName, FileMode.Create);
-         DataContractSerializer xmlSerializer = new DataContractSerializer(typeof(Environment));
-         xmlSerializer.WriteObject(writer, envCopy);
-         writer.Close();
-      }
-
-      /// <summary>
       /// Generic method to load an environment from an JSON file
       /// </summary>
       /// <param name="fileName"></param>
@@ -1196,35 +1164,23 @@ namespace eWamLauncher
       }
 
       /// <summary>
-      /// Generic method to save an environment to an JSON file
+      /// Export all environments to %wf-root%\Launchers\<name>.jsenv and .xenv.
       /// </summary>
-      /// <param name="fileName"></param>
-      public void SaveEnvironmentToJSON(string fileName, Environment environment)
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
+      private void OnFileExportAllEnvironments(object sender, RoutedEventArgs e)
       {
-         Directory.CreateDirectory(Path.GetDirectoryName(fileName));
-
-         Environment envCopy = (Environment)environment.Clone();
-         envCopy.binariesSet = null;
-         envCopy.ewam = null;
-
-         if (envCopy.envRoot != null && envCopy.envRoot != "" &&
-             envCopy.wfRoot != null && envCopy.wfRoot != "")
+         try
          {
-            string commonPath = FindLongestCommonPath(envCopy.envRoot, envCopy.wfRoot);
-            envCopy.envRoot = envCopy.envRoot.Substring(Math.Min(envCopy.envRoot.Length, commonPath.Length + 1));
-            envCopy.wfRoot = envCopy.wfRoot.Substring(Math.Min(envCopy.wfRoot.Length, commonPath.Length + 1));
+            System.Windows.MessageBox.Show(@"Each environment will be saved to %wf-root%\Launchers\<name>.jsenv and .xenv", "Export All Environment Definitions", MessageBoxButton.OK);
+
+            this.profile.ExportAllEnvironments(@"%wf-root%\Launchers");
          }
-         else
+         catch (Exception exception)
          {
-            envCopy.envRoot = "";
-            envCopy.wfRoot = "";
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
          }
 
-         FileStream writer = new FileStream(fileName, FileMode.Create);
-         DataContractJsonSerializer jsonSerializer =
-             new DataContractJsonSerializer(typeof(Environment));
-         jsonSerializer.WriteObject(writer, envCopy);
-         writer.Close();
       }
 
       #endregion
@@ -1407,11 +1363,11 @@ namespace eWamLauncher
                {
                   if (Path.GetExtension(fileBrowser.FileName).ToLower() == ".xwam")
                   {
-                     this.SaveEwamToXML(fileBrowser.FileName, (Ewam)lbEwamList.SelectedItem);
+                     ((Ewam)lbEwamList.SelectedItem).SaveEwamToXML(fileBrowser.FileName);
                   }
                   else if (Path.GetExtension(fileBrowser.FileName).ToLower() == ".jswam")
                   {
-                     this.SaveEwamToJSON(fileBrowser.FileName, (Ewam)lbEwamList.SelectedItem);
+                     ((Ewam)lbEwamList.SelectedItem).SaveEwamToJSON(fileBrowser.FileName);
                   }
                }
                catch (Exception exception)
@@ -1532,23 +1488,6 @@ namespace eWamLauncher
       }
 
       /// <summary>
-      /// Generic method to save an ewam to an XML file
-      /// </summary>
-      /// <param name="fileName"></param>
-      /// <param name="environment"></param>
-      public void SaveEwamToXML(string fileName, Ewam ewam)
-      {
-         Directory.CreateDirectory(Path.GetDirectoryName(fileName));
-
-         Ewam ewamCopy = (Ewam)ewam.Clone();
-         ewamCopy.basePath = "";
-         FileStream writer = new FileStream(fileName, FileMode.Create);
-         DataContractSerializer xmlSerializer = new DataContractSerializer(typeof(Ewam));
-         xmlSerializer.WriteObject(writer, ewamCopy);
-         writer.Close();
-      }
-
-      /// <summary>
       /// Generic method to load an ewam from an JSON file
       /// </summary>
       /// <param name="fileName"></param>
@@ -1581,23 +1520,6 @@ namespace eWamLauncher
             log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
             return null;
          }
-      }
-
-      /// <summary>
-      /// Generic method to save an ewam to an JSON file
-      /// </summary>
-      /// <param name="fileName"></param>
-      public void SaveEwamToJSON(string fileName, Ewam ewam)
-      {
-         Directory.CreateDirectory(Path.GetDirectoryName(fileName));
-
-         Ewam ewamCopy = (Ewam)ewam.Clone();
-         ewamCopy.basePath = "";
-         FileStream writer = new FileStream(fileName, FileMode.Create);
-         DataContractJsonSerializer jsonSerializer =
-             new DataContractJsonSerializer(typeof(Ewam));
-         jsonSerializer.WriteObject(writer, ewamCopy);
-         writer.Close();
       }
 
       /// <summary>
@@ -1657,6 +1579,33 @@ namespace eWamLauncher
             {
                this.profile.ewams.Move(wamIndex, wamIndex + 1);
             }
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
+      }
+
+      /// <summary>
+      /// Export all ewams to %wyde-root%\Launchers\<name>.jswam and .xwam
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
+      public void OnFileExportAllEwams(object sender, RoutedEventArgs e)
+      {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
+         {
+            System.Windows.MessageBox.Show(@"Each ewam will be saved to %wyde-root%\Launchers\<name>.jswam and .xwam", "Export All eWAM Definitions", MessageBoxButton.OK);
+
+            this.profile.ExportAllEwams(@"%wyde-root%\Launchers");
          }
          catch (Exception exception)
          {
@@ -2096,5 +2045,6 @@ namespace eWamLauncher
       }
 
       #endregion
+
    }
 }

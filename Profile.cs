@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace eWamLauncher
@@ -50,6 +51,34 @@ namespace eWamLauncher
          this.environments = new ObservableCollection<Environment>();
          this.ewams = new ObservableCollection<Ewam>();
          this.settings = new Settings();
+      }
+
+      /// <summary>
+      /// Export all environments to XML and JSON, in a specified path, that may 
+      /// contain environment variables (e.g. like %env-root% or %wf-root%).
+      /// </summary>
+      /// <param name="path">path to which the files will be generated</param>
+      public void ExportAllEnvironments(string path)
+      {
+         foreach (var env in this.environments)
+         {
+            env.SaveEnvironmentToJSON(env.ExpandString(path) + "\\" + env.name + ".jsenv");
+            env.SaveEnvironmentToXML(env.ExpandString(path) + "\\" + env.name + ".xenv");
+         }
+      }
+
+      /// <summary>
+      /// Export all ewams to XML and JSON, in a specified path, that may 
+      /// contain %wyde-root%.
+      /// </summary>
+      /// <param name="path">path to which the files will be generated</param>
+      public void ExportAllEwams(string path)
+      {
+         foreach (var ewam in this.ewams)
+         {
+            ewam.SaveEwamToJSON(Regex.Replace(path, @"[%]wyde-root[%]", ewam.basePath) + "\\" + ewam.name + ".jswam");
+            ewam.SaveEwamToXML(Regex.Replace(path, @"[%]wyde-root[%]", ewam.basePath) + "\\" + ewam.name + ".xwam");
+         }
       }
 
       public object Clone()
