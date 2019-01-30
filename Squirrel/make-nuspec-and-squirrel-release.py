@@ -19,7 +19,7 @@ for line in search:
 		sourceFile.close()
 		
 		os.system("nuget pack -Version " + version + " -OutputDirectory Squirrel\\ Squirrel\\Ewam.Launcher." + version + ".nuspec")
-		os.system("packages\\squirrel.windows.1.9.0\\tools\\Squirrel.exe --releasify Squirrel\\Ewam.Launcher." + version + ".nupkg --releaseDir=Squirrel\\Releases\\ --packagesDir=packages\\ -icon icon.ico -setupIcon icon.ico")
+		os.system("packages\\squirrel.windows.1.9.0\\tools\\Squirrel.exe --releasify Squirrel\\Ewam.Launcher." + version + ".nupkg --releaseDir=Squirrel\\Releases\\ --packagesDir=packages\\ --icon icon.ico --setupIcon icon.ico")
 		os.system("git add " + targetSpec)
 		os.system("git add " + targetPkg)
 		os.system("git add " + "Squirrel\\Releases\\Ewam.Launcher-" + version + "-delta.nupkg")
