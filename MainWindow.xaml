@@ -196,9 +196,8 @@
                      ItemsSource="{Binding productsPackages, Mode=TwoWay}"
                      DisplayMemberPath="Key"
                      SelectedIndex="0"
-                     MinHeight="200" />
-                  <!--IsVisibleChanged="OnLoadPackagesIfNeeded"-->
-                  <!--Loaded="OnLoadPackagesIfNeeded"-->
+                     MinHeight="200"
+                     Loaded="OnLoadPackagesIfNeeded" />
 
                </DockPanel>
                

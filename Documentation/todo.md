@@ -4,9 +4,7 @@
 To generate C# class from a reference XML file : XML => xsd => .cs  : https://stackoverflow.com/questions/3187444/convert-xml-string-to-object
 
 
-
 # Todo
-
 
 ### Importing
 - [ ] eWAM import : detect if 64 or 32 bits : https://superuser.com/questions/358434/how-to-check-if-a-binary-is-32-or-64-bit-on-windows
@@ -32,10 +30,8 @@ To generate C# class from a reference XML file : XML => xsd => .cs  : https://st
 - [ ] Retrieve launch status with standard output / error output
    => use WYDE-TGV env var to find matches
 
-
-
+   
 # Changelog
-
 
 ## 1.0.0.63 - 2019/01/30
 - [x] Add "Save configuration" as opposed to "Save configuration AS", with associated shortcuts

@@ -135,12 +135,6 @@ namespace eWamLauncher
             InitializeComponent();
             this.DataContext = this;
 
-            //this.notifier.MouseDown += new System.Windows.Forms.MouseEventHandler(OnNotifyIconClicked);
-            //this.notifier.Icon = System.Drawing.Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
-            //this.notifier.Visible = true;
-
-            //this.menu = (System.Windows.Controls.ContextMenu)this.FindResource("NotifierContextMenu");
-
             this.LoadPackagesAsync();
 
             StartUpdater();
