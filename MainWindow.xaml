@@ -12,12 +12,19 @@
    Title="eWAM Launcher" Height="600" Width="1200" ResizeMode="CanResizeWithGrip">
 
    <Window.CommandBindings>
-      <CommandBinding Command="Open" Executed="OpenConfiguration" CanExecute="OpenConfiguration_CanExecute" />
+      <CommandBinding Command="Open" Executed="LoadConfiguration" CanExecute="LoadConfiguration_CanExecute" />
       <CommandBinding Command="Save" Executed="SaveConfiguration" CanExecute="SaveConfiguration_CanExecute" />
+      <CommandBinding Command="SaveAs" Executed="SaveConfigurationAs" CanExecute="SaveConfigurationAs_CanExecute" />
       <CommandBinding Command="ApplicationCommands.Close" Executed="CloseCommandHandler" />
       <CommandBinding Command="local:Commands.ChangePath" Executed="OnChangePath" CanExecute="OnChangePath_CanExecute"/>
       <CommandBinding Command="local:Commands.ExplorePath" Executed="OnExplorePath" CanExecute="OnExplorePath_CanExecute"/>
    </Window.CommandBindings>
+
+   <Window.InputBindings>
+      <KeyBinding Modifiers="Control+Shift" 
+                Key="S" 
+                Command="SaveAs"/>
+   </Window.InputBindings>
 
    <Window.Resources>
 
@@ -64,8 +71,10 @@
    <DockPanel>
       <Menu DockPanel.Dock="Top">
          <MenuItem Header="_File">
-            <MenuItem Header="_Open" Command="Open"/>
-            <MenuItem Header="_Save" Command="Save"/>
+            <MenuItem Header="_Load Configuration" Command="Open"/>
+            <MenuItem Header="_Save Configuration" Command="Save"/>
+            <MenuItem Header="Save Configuration _As" Command="SaveAs"
+                      InputGestureText="Ctrl+Shift+S"/>
             <MenuItem Header="_Close" Command="ApplicationCommands.Close"/>
          </MenuItem>
          <!--<MenuItem Header="_Environment">

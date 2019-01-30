@@ -277,7 +277,7 @@ namespace eWamLauncher
       /// </summary>
       /// <param name="sender"></param>
       /// <param name="e"></param>
-      private void OpenConfiguration(object sender, ExecutedRoutedEventArgs e)
+      private void LoadConfiguration(object sender, ExecutedRoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
@@ -314,7 +314,40 @@ namespace eWamLauncher
          }
       }
 
-      private void OpenConfiguration_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+      private void LoadConfiguration_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+      {
+         e.CanExecute = true;
+      }
+
+      /// <summary>
+      /// Command to save configuration into default location (%localappdata%\ewamLauncher\*)
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
+      private void SaveConfiguration(object sender, ExecutedRoutedEventArgs e)
+      {
+         log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
+
+         try
+         {
+            string defaultXMLSettings = System.Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%\\ewamLauncher\\ewamLauncher.config.xml");
+            string defaultJSONSettings = System.Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%\\ewamLauncher\\ewamLauncher.config.json");
+            SaveCfgToXML(defaultXMLSettings);
+            SaveCfgToJSON(defaultJSONSettings);
+         }
+         catch (Exception exception)
+         {
+            log.Error(System.Reflection.MethodBase.GetCurrentMethod().ToString() + " : " + exception.Message);
+
+            System.Windows.MessageBox.Show(
+               "Something went wrong ! \n\n" + exception.Message,
+               "Oops",
+               System.Windows.MessageBoxButton.OK,
+               System.Windows.MessageBoxImage.Error);
+         }
+      }
+
+      private void SaveConfiguration_CanExecute(object sender, CanExecuteRoutedEventArgs e)
       {
          e.CanExecute = true;
       }
@@ -324,7 +357,7 @@ namespace eWamLauncher
       /// </summary>
       /// <param name="sender"></param>
       /// <param name="e"></param>
-      private void SaveConfiguration(object sender, ExecutedRoutedEventArgs e)
+      private void SaveConfigurationAs(object sender, ExecutedRoutedEventArgs e)
       {
          log.Info(System.Reflection.MethodBase.GetCurrentMethod().ToString());
 
@@ -362,10 +395,11 @@ namespace eWamLauncher
          }
       }
 
-      private void SaveConfiguration_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+      private void SaveConfigurationAs_CanExecute(object sender, CanExecuteRoutedEventArgs e)
       {
          e.CanExecute = true;
       }
+
 
       #endregion
 

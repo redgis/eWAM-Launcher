@@ -37,6 +37,9 @@ To generate C# class from a reference XML file : XML => xsd => .cs  : https://st
 # Changelog
 
 
+## 1.0.0.63 - 2019/01/30
+- [x] Add "Save configuration" as opposed to "Save configuration AS", with associated shortcuts
+
 ## 1.0.0.62 - 2019/01/30
 - [x] Add ability to generate *.xwam, *.jswam, *.xenv, *.jsenv for all env / ewams
 - [x] Add feature to Reset settings to defaults
