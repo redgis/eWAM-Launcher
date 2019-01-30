@@ -6,8 +6,8 @@
         <title>EwamLauncher</title>
         <authors>Regis Martinez</authors>
         <owners>Mphasis Wyde</owners>
-        <projectUrl>http://regismt470p.wyde.paris.local/wLauncherUpdate/</projectUrl>
-        <iconUrl>http://regismt470p.wyde.paris.local/wLauncherUpdate/icon.ico</iconUrl>
+        <projectUrl>https://github.com/MphasisWyde/eWAM-Launcher</projectUrl>
+        <iconUrl>https://www.wyde.com/content/dam/wyde-com/logo/favicon.ico</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>eWAM Environment manager and launcher</description>
         <summary>eWAM Environment manager and launcher</summary>
