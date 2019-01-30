@@ -82,7 +82,7 @@ namespace eWamLauncher
          // Look for TGVs
          if (this.environment.tgvSubPath == null || this.environment.tgvSubPath == "")
          {
-            foreach (string subPath in this.settings.tgvSearchPaths.Split(delimiters))
+            foreach (string subPath in this.settings.tgvSearchPathes.Split(delimiters))
             {
                if (File.Exists(path + "\\" + subPath + "\\W001001.TGV") && File.Exists(path + "\\" + subPath + "\\W003001.TGV"))
                {
@@ -108,7 +108,7 @@ namespace eWamLauncher
          }
 
          // Look for env vars
-         foreach (string subPath in this.settings.batchSearchPaths.Split(delimiters))
+         foreach (string subPath in this.settings.batchSearchPathes.Split(delimiters))
          {
             try
             {
@@ -173,7 +173,7 @@ namespace eWamLauncher
          }
 
          // Look for launchers, load launcher-specific env. variables
-         foreach (string subPath in this.settings.batchSearchPaths.Split(delimiters))
+         foreach (string subPath in this.settings.batchSearchPathes.Split(delimiters))
          { 
             try
             {
@@ -300,16 +300,16 @@ namespace eWamLauncher
                               //added when starting launchers)
                               string pathAddition = match.Groups["value"].Value;
 
-                              string subPaths = Regex.Escape(this.settings.dllSearchPaths + ";" +
-                                 this.settings.cppdllSearchPaths + ";" +
-                                 this.settings.exeSearchPaths);
+                              string subPathes = Regex.Escape(this.settings.dllSearchPathes + ";" +
+                                 this.settings.cppdllSearchPathes + ";" +
+                                 this.settings.exeSearchPathes);
 
-                              subPaths = subPaths.Replace(";", "|");
+                              subPathes = subPathes.Replace(";", "|");
 
                               pathAddition = pathAddition.Trim(';');
                               pathAddition = Regex.Replace(pathAddition, @";+", ";");
                               pathAddition = Regex.Replace(pathAddition,
-                                 @"(^|;)([%]wyde-root[%][\\](" + subPaths + @")(;|$))+",
+                                 @"(^|;)([%]wyde-root[%][\\](" + subPathes + @")(;|$))+",
                                  ";", RegexOptions.IgnoreCase);
                               pathAddition = Regex.Replace(pathAddition,
                                  @"(^|;)([%](WYDE-DLL|WYDE-ROOT|ENV-ROOT|WF-ROOT|WYDE-ASSEMBLIES)[%](;|$))+",

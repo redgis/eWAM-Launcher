@@ -224,7 +224,7 @@ namespace eWamLauncher
          if (name.ToUpper() == "WYDE-DLL" && this.ewam != null)
          {
             char[] delimiters = { '\n', ';', '\r', '\b' };
-            string[] cppdlls = this.binariesSet.cppdllPaths.Split(delimiters);
+            string[] cppdlls = this.binariesSet.cppdllPathes.Split(delimiters);
             result = new EnvironmentVariable("WYDE-DLL", "%WYDE-ROOT%" + "\\" + cppdlls[0]);
          }
 
@@ -391,7 +391,7 @@ namespace eWamLauncher
          char[] delimiters = { '\n', ';', '\r', '\b' };
 
          variables.Add("WYDE-ROOT", this.ewam.basePath);
-         string[] cppdlls = this.binariesSet.cppdllPaths.Split(delimiters);
+         string[] cppdlls = this.binariesSet.cppdllPathes.Split(delimiters);
          variables.Add("WYDE-DLL", "%WYDE-ROOT%" + "\\" + cppdlls[0]);
 
          variables.Add("ENV-ROOT", this.envRoot);
@@ -412,13 +412,13 @@ namespace eWamLauncher
 
 
          // Add raw PATHs
-         List<string> binSubPaths = new List<string>();
-         binSubPaths.AddRange(this.binariesSet.dllPaths.Split(delimiters));
-         binSubPaths.AddRange(this.binariesSet.cppdllPaths.Split(delimiters));
-         binSubPaths.AddRange(this.binariesSet.exePaths.Split(delimiters));
+         List<string> binSubPathes = new List<string>();
+         binSubPathes.AddRange(this.binariesSet.dllPathes.Split(delimiters));
+         binSubPathes.AddRange(this.binariesSet.cppdllPathes.Split(delimiters));
+         binSubPathes.AddRange(this.binariesSet.exePathes.Split(delimiters));
 
          string pathVariable = "";
-         foreach (string subBinPath in binSubPaths)
+         foreach (string subBinPath in binSubPathes)
          {
             if (subBinPath != "")
             {
