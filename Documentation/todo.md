@@ -33,6 +33,8 @@ To generate C# class from a reference XML file : XML => xsd => .cs  : https://st
    
 # Changelog
 
+## 1.0.0.68 - 2019/01/30
+- [x] Fixed package icon issues
 
 ## 1.0.0.65 - 2019/01/30
 - [x] Fixed issue with ChangePath and ExplorePath
