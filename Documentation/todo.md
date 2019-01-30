@@ -33,8 +33,12 @@ To generate C# class from a reference XML file : XML => xsd => .cs  : https://st
    
 # Changelog
 
+
+## 1.0.0.65 - 2019/01/30
+- [x] Fixed issue with ChangePath and ExplorePath
+
 ## 1.0.0.64 - 2019/01/30
-- [x] Fixed "pathes" typo
+- [x] Fixed "pathes" typo as much as I could
 
 ## 1.0.0.63 - 2019/01/30
 - [x] Add "Save configuration" as opposed to "Save configuration AS", with associated shortcuts

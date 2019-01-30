@@ -626,13 +626,11 @@ namespace eWamLauncher
 
          try
          {
-            
-            //string newvalue = (string)((System.Windows.FrameworkContentElement)e.OriginalSource).Tag;
             string newvalue = (string)e.OriginalSource.GetType().GetField("Tag").GetValue(e.OriginalSource);
 
             if (MainWindow.ChangePath(ref newvalue))
             {
-               ((System.Windows.FrameworkContentElement)e.OriginalSource).Tag = newvalue;
+               e.OriginalSource.GetType().GetProperty("Tag").SetValue(e.OriginalSource, newvalue);
             }
                
          }
@@ -689,7 +687,7 @@ namespace eWamLauncher
 
          try
          {
-            MainWindow.ExplorePath((string)((System.Windows.FrameworkContentElement)e.OriginalSource).Tag);
+            MainWindow.ExplorePath((string)e.OriginalSource.GetType().GetProperty("Tag").GetValue(e.OriginalSource));
          }
          catch (Exception exception)
          {

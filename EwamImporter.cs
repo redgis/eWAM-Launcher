@@ -74,51 +74,51 @@ namespace eWamLauncher
          this.ewam = new Ewam(path);
 
          // dictionaries to store (key:binaries set name) => (value:paths)
-         Dictionary<string, string> exePaths = new Dictionary<string, string>();
-         Dictionary<string, string> dllPaths = new Dictionary<string, string>();
-         Dictionary<string, string> cppdllPaths = new Dictionary<string, string>();
+         Dictionary<string, string> exePathes = new Dictionary<string, string>();
+         Dictionary<string, string> dllPathes = new Dictionary<string, string>();
+         Dictionary<string, string> cppdllPathes = new Dictionary<string, string>();
 
          char[] delimiters = { ';', '\n' };
 
          // Retrieve paths for each binaries set (release, debug, etc), for exe, dlls, cppdlls, based on settings search paths.
-         this.FindPaths(path, this.settings.exeSearchPaths.Split(delimiters), "*.exe", exePaths);
-         this.FindPaths(path, this.settings.dllSearchPaths.Split(delimiters), "*.dll", dllPaths);
-         this.FindPaths(path, this.settings.cppdllSearchPaths.Split(delimiters), "*.dll", cppdllPaths);
+         this.FindPathes(path, this.settings.exeSearchPathes.Split(delimiters), "*.exe", exePathes);
+         this.FindPathes(path, this.settings.dllSearchPathes.Split(delimiters), "*.dll", dllPathes);
+         this.FindPathes(path, this.settings.cppdllSearchPathes.Split(delimiters), "*.dll", cppdllPathes);
          
          //Recombine the binaries sets collected paths into a single BinariesSet object.
          Dictionary<string, BinariesSet> binariesSets = new Dictionary<string, BinariesSet>();
 
-         foreach (KeyValuePair<string, string> binSetPaths in exePaths)
+         foreach (KeyValuePair<string, string> binSetPathes in exePathes)
          {
-            if (!binariesSets.ContainsKey(binSetPaths.Key))
+            if (!binariesSets.ContainsKey(binSetPathes.Key))
             {
-               binariesSets.Add(binSetPaths.Key, new BinariesSet());
+               binariesSets.Add(binSetPathes.Key, new BinariesSet());
             }
 
-            binariesSets[binSetPaths.Key].name = binSetPaths.Key;
-            binariesSets[binSetPaths.Key].exePaths = binSetPaths.Value;
+            binariesSets[binSetPathes.Key].name = binSetPathes.Key;
+            binariesSets[binSetPathes.Key].exePathes = binSetPathes.Value;
          }
 
-         foreach (KeyValuePair<string, string> binSetPaths in dllPaths)
+         foreach (KeyValuePair<string, string> binSetPathes in dllPathes)
          {
-            if (!binariesSets.ContainsKey(binSetPaths.Key))
+            if (!binariesSets.ContainsKey(binSetPathes.Key))
             {
-               binariesSets.Add(binSetPaths.Key, new BinariesSet());
+               binariesSets.Add(binSetPathes.Key, new BinariesSet());
             }
 
-            binariesSets[binSetPaths.Key].name = binSetPaths.Key;
-            binariesSets[binSetPaths.Key].dllPaths = binSetPaths.Value;
+            binariesSets[binSetPathes.Key].name = binSetPathes.Key;
+            binariesSets[binSetPathes.Key].dllPathes = binSetPathes.Value;
          }
 
-         foreach (KeyValuePair<string, string> binSetPaths in cppdllPaths)
+         foreach (KeyValuePair<string, string> binSetPathes in cppdllPathes)
          {
-            if (!binariesSets.ContainsKey(binSetPaths.Key))
+            if (!binariesSets.ContainsKey(binSetPathes.Key))
             {
-               binariesSets.Add(binSetPaths.Key, new BinariesSet());
+               binariesSets.Add(binSetPathes.Key, new BinariesSet());
             }
 
-            binariesSets[binSetPaths.Key].name = binSetPaths.Key;
-            binariesSets[binSetPaths.Key].cppdllPaths = binSetPaths.Value;
+            binariesSets[binSetPathes.Key].name = binSetPathes.Key;
+            binariesSets[binSetPathes.Key].cppdllPathes = binSetPathes.Value;
          }
 
          // store binaries sets in current ewam
@@ -142,15 +142,15 @@ namespace eWamLauncher
       /// Internal method used to find the set of sub paths used by this ewam instance for a specified file type.
       /// </summary>
       /// <param name="basePath">root path to look into</param>
-      /// <param name="subPaths">list of sub paths in which to lookup</param>
+      /// <param name="subPathes">list of sub paths in which to lookup</param>
       /// <param name="fileType">file types to lookup</param>
-      /// <param name="foundPaths">paths containing given file types</param>
-      private void FindPaths(string basePath, string[] subPaths, string fileType,
-         Dictionary<string, string> foundPaths)
+      /// <param name="foundPathes">paths containing given file types</param>
+      private void FindPathes(string basePath, string[] subPathes, string fileType,
+         Dictionary<string, string> foundPathes)
       {
          basePath = MainWindow.NormalizePath(basePath);
 
-         foreach (string subSearchPath in subPaths)
+         foreach (string subSearchPath in subPathes)
          {
             string defaultBinariesSetName = "release";
 
@@ -163,8 +163,8 @@ namespace eWamLauncher
 
             try
             {
-               string[] paths = Directory.GetFiles(searchPath, fileType, SearchOption.AllDirectories);
-               foreach (string fullFilename in paths)
+               string[] pathes = Directory.GetFiles(searchPath, fileType, SearchOption.AllDirectories);
+               foreach (string fullFilename in pathes)
                {
                   string fullPath = Path.GetDirectoryName(fullFilename);
 
@@ -175,9 +175,9 @@ namespace eWamLauncher
                      setName = fullPath.Substring(searchPath.Length + 1).ToLower();
                   }
 
-                  if (!foundPaths.ContainsKey(setName))
+                  if (!foundPathes.ContainsKey(setName))
                   {
-                     foundPaths.Add(setName, "");
+                     foundPathes.Add(setName, "");
                   }
 
                   string normalizedFullPath = Path.GetFullPath(new Uri(fullPath).LocalPath)
@@ -187,11 +187,11 @@ namespace eWamLauncher
                   string foundSubPath = normalizedFullPath.Substring(basePath.Length + 1)
                      .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
-                  if (!foundPaths[setName].Contains(foundSubPath))
+                  if (!foundPathes[setName].Contains(foundSubPath))
                   {
                      if (normalizedFullPath.StartsWith(basePath))
                      {
-                        foundPaths[setName] += foundSubPath + "\n";
+                        foundPathes[setName] += foundSubPath + "\n";
                      }
                   }
                }

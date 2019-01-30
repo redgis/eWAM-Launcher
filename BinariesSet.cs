@@ -21,23 +21,23 @@ namespace eWamLauncher
       private string _name;
       [DataMember()] public string name { get { return _name; } set { _name = value;  NotifyPropertyChanged(); } }
 
-      private string _exePaths;
+      private string _exePathes;
       /// <summary>
       /// Paths to executables
       /// </summary>
-      [DataMember()] public string exePaths { get { return _exePaths; } set { _exePaths = value;  NotifyPropertyChanged(); } }
+      [DataMember()] public string exePathes { get { return _exePathes; } set { _exePathes = value;  NotifyPropertyChanged(); } }
 
-      private string _dllPaths;
+      private string _dllPathes;
       /// <summary>
       /// Paths to Dlls
       /// </summary>
-      [DataMember()] public string dllPaths { get { return _dllPaths; } set { _dllPaths = value;  NotifyPropertyChanged(); } }
+      [DataMember()] public string dllPathes { get { return _dllPathes; } set { _dllPathes = value;  NotifyPropertyChanged(); } }
 
-      private string _cppdllPaths;
+      private string _cppdllPathes;
       /// <summary>
       /// Paths to CPPDLLs
       /// </summary>
-      [DataMember()] public string cppdllPaths { get { return _cppdllPaths; } set { _cppdllPaths = value;  NotifyPropertyChanged(); } }
+      [DataMember()] public string cppdllPathes { get { return _cppdllPathes; } set { _cppdllPathes = value;  NotifyPropertyChanged(); } }
 
       public event PropertyChangedEventHandler PropertyChanged;
 
@@ -52,9 +52,9 @@ namespace eWamLauncher
       public BinariesSet(string name = "")
       {
          this.name = name;
-         this.exePaths = "";
-         this.dllPaths = "";
-         this.cppdllPaths = "";
+         this.exePathes = "";
+         this.dllPathes = "";
+         this.cppdllPathes = "";
       }
 
       public object Clone()

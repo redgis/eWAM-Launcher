@@ -78,7 +78,7 @@ namespace eWamLauncher.Views
 
          try
          {
-            MainWindow.ExplorePath((string)((System.Windows.FrameworkContentElement)e.OriginalSource).Tag);
+            MainWindow.ExplorePath((string)e.OriginalSource.GetType().GetProperty("Tag").GetValue(e.OriginalSource));
          }
          catch (Exception exception)
          {
