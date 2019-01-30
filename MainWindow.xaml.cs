@@ -626,7 +626,7 @@ namespace eWamLauncher
 
          try
          {
-            string newvalue = (string)e.OriginalSource.GetType().GetField("Tag").GetValue(e.OriginalSource);
+            string newvalue = (string)e.OriginalSource.GetType().GetProperty("Tag").GetValue(e.OriginalSource);
 
             if (MainWindow.ChangePath(ref newvalue))
             {
